@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, BackHandler, Alert } from 'react-native';
 import { DrawerContentScrollView, DrawerItem } from '@react-navigation/drawer';
 import {
-    useTheme,
     Avatar,
     Title,
     Caption,
@@ -12,10 +11,70 @@ import {
     TouchableRipple,
     Switch
 } from 'react-native-paper'
+import OrderLinesManager from '../../Database/OrderLinesManager';
+import OrderManager from '../../Database/OrderManager';
+import ProductsManager from '../../Database/ProductsManager';
+import ServerManager from '../../Database/ServerManager';
+import ThirdPartiesManager from '../../Database/ThirdPartiesManager';
+import TokenManager from '../../Database/TokenManager';
+import FindImages from '../../services/FindImages';
 
 
 export function DrawerContent(props) {
-    const paperTheme = useTheme();
+    componentWillMount = () => {
+        BackHandler.addEventListener('hardwareBackPress', disconnection);
+    }
+      
+    componentWillUnmount = () => {
+        BackHandler.removeEventListener('hardwareBackPress', disconnection);
+    }
+
+    const disconnection = async () => {
+        console.log("disconnecting....")
+
+        const orderLinesManager = new OrderLinesManager();
+        await orderLinesManager.initDB();
+        const res_1 = await orderLinesManager.DROP_ORDER().then(async (val) => {
+            return await val;
+        });
+
+        const orderManager = new OrderManager();
+        await orderManager.initDB();
+        const res_2 = await orderManager.DROP_ORDER().then(async (val) => {
+            return await val;
+        });
+
+        const productsManager = new ProductsManager();
+        await productsManager.initDB();
+        const res_3 = await productsManager.DROP_PRODUCT().then(async (val) => {
+            return await val;
+        });
+
+        const serverManager = new ServerManager();
+        await serverManager.initDB();
+        const res_4 = await serverManager.DROP_SERVER().then(async (val) => {
+            return await val;
+        });
+
+        const thirdPartiesManager = new ThirdPartiesManager();
+        await thirdPartiesManager.initDB();
+        const res_5 = await thirdPartiesManager.DROP_TABLE().then(async (val) => {
+            return await val;
+        });
+
+        const tokenManager = new TokenManager();
+        await tokenManager.initDB();
+        const res_6 = await tokenManager.DROP_TOKEN().then(async (val) => {
+            return await val;
+        });
+
+        const findImages = new FindImages();
+        const res_7 = findImages.deleteAll().then(async (val) => {
+            return await val;
+        });
+        
+        BackHandler.exitApp();
+    }
 
 
     return (
@@ -91,7 +150,7 @@ export function DrawerContent(props) {
                             //     />
                             // )}
                             label="Settings"
-                            onPress={() => {}}
+                            onPress={() => {props.navigation.navigate('Settings')}}
                         />
                         <DrawerItem 
                             // icon={({color, size}) => (
@@ -109,9 +168,6 @@ export function DrawerContent(props) {
                             <TouchableRipple>
                             <View style={styles.preference}>
                                 <Text>Dark Theme</Text>
-                                <View pointerEvents="none">
-                                    <Switch value={paperTheme.dark}/>
-                                </View>
                             </View>
                         </TouchableRipple>
                     </Drawer.Section>
@@ -128,7 +184,17 @@ export function DrawerContent(props) {
                     //     />
                     // )}
                     label="Sign Out"
-                    onPress={() => {/*props.navigation.navigate('logout')*/}}
+                    onPress={() => { 
+                        Alert.alert(
+                            'Déconnection',
+                            'Voulez - vous vraiment vous déconnecter ?',
+                            [
+                              {text: 'No', onPress: () => {console.log("nothing....")}},
+                              {text: 'Yes', onPress: () => disconnection},
+                            ],
+                            { cancelable: false }
+                        );
+                    }}
                 />
             </Drawer.Section>
         </View>

@@ -94,4 +94,41 @@ export default class FindImages extends Component {
 
         return await result;
     }
+
+    async getLocalImages(){
+        return await new Promise(async (resolve) => {
+
+            const RNFS = require('react-native-fs');
+            // get a list of files and directories in the main bundle
+            await RNFS.readDir(RNFS.DocumentDirectoryPath + '/iScreen/produits/images')
+                .then(async (result) => {
+                    const paths = [];
+
+                    for(let index = 0; index < result.length; index++){
+                        paths.push({uri: result[index].path});
+                    }
+                    console.log('GOT RESULT : ', paths);
+            
+                    // stat the first file
+                    return paths;
+                })
+                .then(async (statResult) => {
+                    console.log('GOT statResult : ', statResult.length);
+                    
+                    if(statResult.length > 0){
+                        await resolve(true);
+                    }else{
+                        await resolve(false);
+                    }
+                })
+                .then(async (contents) => {
+                    // log the file contents
+                    console.log('NOT reading contents!');
+                })
+                .catch(async (err) => {
+                    console.log(err.message, err.code);
+                    await resolve(false);
+                });
+        });
+    }
 }

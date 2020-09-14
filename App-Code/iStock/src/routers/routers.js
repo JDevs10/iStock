@@ -35,7 +35,7 @@ class RouterNavigation extends Component {
             <Drawer.Screen name="ProductDetails" component={ProductDetails} />
             <Drawer.Screen name="Preparation" component={Preparation} />
             <Drawer.Screen name="Inventory" component={Inventory} />
-            <Drawer.Screen name="Configuration" component={Settings} />
+            <Drawer.Screen name="Settings" component={Settings} />
           </Drawer.Navigator>
         );
       }

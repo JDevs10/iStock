@@ -178,6 +178,7 @@ class ProductsManager extends Component {
                 //await this.closeDatabase(db);
             }).catch(async (err) => {
                 console.log(err);
+                await resolve([]);
             });
         });
     }
