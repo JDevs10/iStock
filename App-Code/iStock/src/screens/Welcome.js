@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {StyleSheet, View, Text, StatusBar, ImageBackground, Footer, Animated} from  'react-native';
+import { StyleSheet, View, Text, StatusBar, Image, Footer, Animated } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import MyFooter from './footers/Footer';
 import {
@@ -11,8 +11,12 @@ import {
 } from 'react-native/Libraries/NewAppScreen';
 import { color } from 'react-native-reanimated';
 
+const IMG_SRC = require('../../img/bg.png');
+const LOGO = require('../../img/logo_istock.png');
+
+
 class Welcome extends Component {
-  
+
   componentDidMount() {
     setTimeout(() => {
       //this.props.navigation.navigate('loading');
@@ -21,48 +25,42 @@ class Welcome extends Component {
   }
 
   render() {
-
     return (
-      <LinearGradient
-        start={{x: 0.0, y: 1}} end={{x: 0.5, y: 1}}
-        colors={['#00AAFF', '#706FD3']}
-        style={styles.bg_image}>
-
-        <StatusBar translucent={true} backgroundColor={'transparent'} barStyle="light-content"/>
-
-        <ImageBackground
-          source={require('../../img/welcome-v2.3.png')}
-          style={{width: '100%', height: '100%'}}>
-
-            <MyFooter style={styles.footer}/>
-
-        </ImageBackground>
-      </LinearGradient>
-      
-
+      <View style={styles.container}>
+        <View style={styles.backgroundContainer}>
+          <Image source={IMG_SRC} resizeMode='cover' style={styles.backdrop} />
+        </View>
+        <Image style={styles.logo} source={LOGO} />
+        <MyFooter style={styles.footer} />
+      </View>
     );
   }
 }
 
 const styles = StyleSheet.create({
-  centered: {
-      flex: 1,
-      padding: 10
-    },
-    body:{
-      flex: 1,
-      alignItems: "center",
-      justifyContent: "center",
-      width: '100%',
-      height: '100%'
-    },
-    bg_image:{
-      opacity: 1
-    },
-    footer:{
-      flex: 1,
-      color: '#fff'
-    }
-  });
+
+  backgroundContainer: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  logo: {
+    width: 350,
+    height: 270,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  backdrop: {
+    flex: 1,
+    flexDirection: 'column'
+  }
+});
 
 export default Welcome;

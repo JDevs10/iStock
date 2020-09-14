@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {StyleSheet, View, Text, Image, TouchableOpacity, BackHandler, Alert, Dimensions, AsyncStorage} from  'react-native';
+import {StyleSheet, View, Text, Image, TouchableOpacity, Dimensions} from  'react-native';
 import {
   Header,
   LearnMoreLinks,
@@ -41,45 +41,12 @@ export default class NavbarDashboard extends Component {
     });
   }
 
-  componentWillMount() {
-    BackHandler.addEventListener('hardwareBackPress', this.existPressed);
-  }
-  
-  componentWillUnmount() {
-    BackHandler.removeEventListener('hardwareBackPress', this.existPressed);
-  }
-  
-  existPressed = () => {
-    Alert.alert(
-      'Exit App',
-      'Do you want to exit?',
-      [
-        {text: 'No', onPress: () => this.leaving(false)},
-        {text: 'Yes', onPress: () => this.leaving(true)},
-      ],
-      { cancelable: false });
-      return true;
-  }
-
-  async leaving(isLeaving){
-    if(isLeaving == true){
-      await AsyncStorage.removeItem('token');
-      BackHandler.exitApp();
-    }else{
-      console.log('Cancel Pressed');
-    }
-  }
-
   render() {
     if (this.state.orientation === 'portrait') {
       console.log('orientation : ', this.state.orientation);
     }
     else {
       console.log('orientation : ', this.state.orientation);
-    }
-
-    const disconnect = () => {
-      this.existPressed();
     }
 
 
@@ -128,10 +95,11 @@ export default class NavbarDashboard extends Component {
         </View>
 
         <View style={[styles.layout, {justifyContent: "flex-end", alignItems: "flex-end", width: "10%"}]}>
-          <TouchableOpacity
+          {/* <TouchableOpacity
             onPress={() => disconnect()}>
             <Image style={styles.power_image} source={require('../../img/power-off.png')}/>                  
-          </TouchableOpacity>
+          </TouchableOpacity> */}
+          <Text style={styles.text}></Text>
         </View>
 
       </View>

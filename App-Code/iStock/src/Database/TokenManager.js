@@ -117,7 +117,7 @@ class TokenManager extends Component {
         console.log("##### GET_TOKEN_BY_ID #########################");
 
         return await new Promise(async (resolve) => {
-            let token = {};
+            let token = null;
             await db.transaction(async (tx) => {
                 await tx.executeSql("SELECT t."+COLUMN_ID+", t."+COLUMN_NAME+", t."+COLUMN_SERVER+", t."+COLUMN_TOKEN+", t."+COLUMN_COMPANY+ " FROM "+TABLE_NAME+" t WHERE t."+COLUMN_ID+" = "+id, []).then(async ([tx,results]) => {
                     console.log("Query completed");
@@ -125,24 +125,21 @@ class TokenManager extends Component {
                     for (let i = 0; i < len; i++) {
                         let row = results.rows.item(i);
                         console.log('token => row: ', row);
-
-                        const {name, server, token, company} = row;
                         token = {
-                            name: name, 
-                            server: server, 
-                            token: token, 
-                            company: company
+                            name: row.name, 
+                            server: row.server, 
+                            token: row.token, 
+                            company: row.company
                         };
                     }
-                    console.log('token: ', token);
                 });
-                await resolve(token);
             }).then(async (result) => {
-                console.log('result: ', result);
                 // await this.closeDatabase(db);
+                // console.log('token: ', token);
+                await resolve(token);
             }).catch(async (err) => {
                 console.log(err);
-                await resolve({});
+                await resolve(null);
             });
         });
     }

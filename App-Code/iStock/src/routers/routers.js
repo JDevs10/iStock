@@ -16,7 +16,7 @@ import Inventory from '../screens/dashbord-screens/Inventory';
 import Settings from '../screens/dashbord-screens/Settings';
 import ProductDetails from '../screens/dashbord-screens/ProductDetails'
 
-import { DrawerContent } from '../screens/side-bar-custom/DrawerContent';
+import {DrawerContent} from '../screens/side-bar-custom/DrawerContent';
 
 
 class RouterNavigation extends Component {

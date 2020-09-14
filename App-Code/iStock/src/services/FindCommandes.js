@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { View, Text, AsyncStorage } from 'react-native';
 import axios from 'axios';
 import OrderManager from '../Database/OrderManager';
+import OrderLinesManager from '../Database/OrderLinesManager';
 
 
 class FindCommandes extends Component {
@@ -12,8 +13,11 @@ class FindCommandes extends Component {
 
   async getAllOrdersFromServer(token){
     const orderManager = new OrderManager();
+    const orderLinesManager = new OrderLinesManager();
     await orderManager.initDB();
     await orderManager.CREATE_ORDER_TABLE();
+    await orderLinesManager.initDB();
+    await orderLinesManager.CREATE_ORDER_LINES_TABLE();
 
     console.log('orderManager', 'getAllOrdersFromServer()');
     console.log('token', token);
@@ -29,10 +33,11 @@ class FindCommandes extends Component {
         .then(async (response) => {
             if(response.status == 200){
                 console.log('Status == 200');
-                console.log(response.data);
+                //console.log(response.data);
 
-                const res = await orderManager.INSERT_(response.data);
-                if(res){
+                const res_1 = await orderManager.INSERT_ORDERS(response.data);
+                const res_2 = await orderLinesManager.INSERT_ORDER_LINES(response.data);
+                if(res_1 && res_2){
                   i_++;
                   console.log('next request....');
                 }

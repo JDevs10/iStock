@@ -2,6 +2,9 @@ import React, { Component } from 'react';
 import {StyleSheet, View, Text, ImageBackground, Image, StatusBar, AsyncStorage} from  'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import MyFooter from '../footers/Footer';
+import FindProduits from '../../services/FindProduits';
+import FindImages from '../../services/FindImages';
+import FindThirdParties from '../../services/FindThirdParties';
 import FindCommandes from '../../services/FindCommandes';
 import TokenManager from '../../Database/TokenManager';
   
@@ -21,36 +24,99 @@ class Download extends Component {
     const tm = new TokenManager();
     await tm.initDB();
     const token = await tm.GET_TOKEN_BY_ID(1).then(async (val) => {
-      console.log('token : ', token);
       return await val;
     });
-    
-    setTimeout(() => {
+    console.log('token : ', token);
+
+    if(token == null){
       this.setState({
         ...this.state,
-        loadingNotify: 'Téléchargement des Commandes associer à ' + token.name + '...'
-    });
-    }, 3000);
-
-    const findCommandes = new FindCommandes();
-    const res = await findCommandes.getAllOrdersFromServer(token).then(async (val) => {
-      console.log('findCommandes.getAllOrdersFromServer : ');
-      console.log(val);
-      return val;
-    });
-
-    /*
-    const server = new Servers();
-    if(server.getAllServerUrls() == true){
-      setTimeout(() => {
-        this.props.navigation.navigate('login');
-      }, 2500);
-    }else{
-      alert("Le serveur Big Data Consulting n'est pas joignable...\n");
+        loadingNotify: 'Token Error.'
+      });
+      return;
     }
-    */
+    let currentStep = 1;
+    let allSteps = 4;
+    const res = [];
 
-   if(res == true){
+
+    // // Get all client info from server
+    // setTimeout(() => {
+    //   this.setState({
+    //     ...this.state,
+    //     loadingNotify: 'Téléchargement des Clients...'+currentStep+'/'+allSteps
+    //   });
+    // }, 3000);
+
+    // const findThirdParties = new FindThirdParties();
+    // const res1 = await findThirdParties.getAllThirdPartiesFromServer(token).then(async (val) => {
+    //   console.log('findThirdParties.getAllThirdPartiesFromServer : ');
+    //   console.log(val);
+    //   return val;
+    // });
+    // res.push(res1);
+    // currentStep++;
+
+    // // Get all products from server
+    // setTimeout(() => {
+    //   this.setState({
+    //     ...this.state,
+    //     loadingNotify: 'Téléchargement des Produits...'+currentStep+'/'+allSteps
+    //   });
+    // }, 3000);
+
+    // const findProduits = new FindProduits();
+    // const res2 = await findProduits.getAllProductsFromServer(token).then(async (val) => {
+    //   console.log('findProduits.getAllProductsFromServer : ');
+    //   console.log(val);
+    //   return val;
+    // });
+    // res.push(res2);
+    // currentStep++;
+
+    // // Get all product images from server
+    // setTimeout(() => {
+    //   this.setState({
+    //     ...this.state,
+    //     loadingNotify: 'Téléchargement des Produits...'+currentStep+'/'+allSteps
+    //   });
+    // }, 3000);
+
+    // const findImages = new FindImages();
+    // const res3 = await findImages.getAllProduitsImagesFromServer(token).then(async (val) => {
+    //   console.log('findImages.getAllProduitsImagesFromServer : ');
+    //   console.log(val);
+    //   return val;
+    // });
+    // res.push(res3);
+    // currentStep++;
+
+    // // Get all orders from server
+    // setTimeout(() => {
+    //   this.setState({
+    //     ...this.state,
+    //     loadingNotify: 'Téléchargement des Commandes associer à ' + token.name + '...'+currentStep+'/'+allSteps
+    //   });
+    // }, 3000);
+
+    // const findCommandes = new FindCommandes();
+    // const res4 = await findCommandes.getAllOrdersFromServer(token).then(async (val) => {
+    //   console.log('findCommandes.getAllOrdersFromServer : ');
+    //   console.log(val);
+    //   return val;
+    // });
+    // res.push(res4);
+    
+
+    let res_ = true;
+    // for(let x = 0; x<res.length; x++){
+    //   if(res[x] == false){ 
+    //     res_ = false;
+    //     break;
+    //   }
+    // }
+
+   if(res_ == true){
       setTimeout(() => {
         this.props.navigation.navigate('dashboard');
         return;

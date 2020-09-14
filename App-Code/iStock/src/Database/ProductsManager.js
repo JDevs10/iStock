@@ -17,7 +17,7 @@ const DATABASE_SIZE = DatabaseInfo.DATABASE_SIZE;
 const TABLE_NAME = "products";
 const COLUMN_ID = "id";
 const COLUMN_REF = "ref";
-const COLUMN_NAME = "name";
+const COLUMN_LABEL = "label";
 const COLUMN_CODEBARRE = "codebarre";
 const COLUMN_DESCRIPTION = "description";
 const COLUMN_LOT = "lot";
@@ -29,7 +29,7 @@ const COLUMN_IMAGE = "image";
 const create = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "(" +
     COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
     COLUMN_REF + " VARCHAR(255)," +
-    COLUMN_NAME + " VARCHAR(255)," +
+    COLUMN_LABEL + " VARCHAR(255)," +
     COLUMN_CODEBARRE + " VARCHAR(255)," +
     COLUMN_DESCRIPTION + " VARCHAR(255)," +
     COLUMN_LOT + " VARCHAR(255)," +
@@ -116,7 +116,7 @@ class ProductsManager extends Component {
             try{
                 for(let x = 0; x < data_.length; x++){
                     await db.transaction(async (tx) => {
-                        await tx.executeSql("INSERT INTO " + TABLE_NAME + " ("+COLUMN_ID+", "+COLUMN_REF+", "+COLUMN_NAME+", "+COLUMN_CODEBARRE+", "+COLUMN_DESCRIPTION+", "+COLUMN_LOT+", "+COLUMN_DLC+", "+COLUMN_DLUO+", "+COLUMN_IMAGE+") VALUES (NULL, '"+data_[x].ref+"', '"+data_[x].name.replace(/'/g, "''")+"', '"+data_[x].codebarre+"', '"+data_[x].description.replace(/'/g, "''")+"', '"+data_[x].lot+"', '"+data_[x].dlc+"', '"+data_[x].dluo+"', '"+data_[x].image+"')", []);
+                        await tx.executeSql("INSERT INTO " + TABLE_NAME + " ("+COLUMN_ID+", "+COLUMN_REF+", "+COLUMN_LABEL+", "+COLUMN_CODEBARRE+", "+COLUMN_DESCRIPTION+", "+COLUMN_LOT+", "+COLUMN_DLC+", "+COLUMN_DLUO+", "+COLUMN_IMAGE+") VALUES (NULL, '"+data_[x].ref+"', '"+data_[x].label.replace(/'/g, "''")+"', '"+data_[x].codebarre+"', '"+data_[x].description.replace(/'/g, "''")+"', '"+data_[x].lot+"', '"+data_[x].dlc+"', '"+data_[x].dluo+"', '"+data_[x].image+"')", []);
                     });
                 }
                 return await resolve(true);
@@ -134,7 +134,7 @@ class ProductsManager extends Component {
         return await new Promise(async (resolve) => {
             let product = {};
             await db.transaction(async (tx) => {
-                await tx.executeSql('SELECT p.'+COLUMN_ID+', p.'+COLUMN_REF+', p.'+COLUMN_NAME+', p.'+COLUMN_CODEBARRE+', p.'+COLUMN_DESCRIPTION+', p.'+COLUMN_LOT+', p.'+COLUMN_DLC+', p.'+COLUMN_DLUO+', p.'+COLUMN_IMAGE+' FROM '+TABLE_NAME+' p WHERE p.'+COLUMN_ID+' = '+id, []).then(async ([tx,results]) => {
+                await tx.executeSql('SELECT p.'+COLUMN_ID+', p.'+COLUMN_REF+', p.'+COLUMN_LABEL+', p.'+COLUMN_CODEBARRE+', p.'+COLUMN_DESCRIPTION+', p.'+COLUMN_LOT+', p.'+COLUMN_DLC+', p.'+COLUMN_DLUO+', p.'+COLUMN_IMAGE+' FROM '+TABLE_NAME+' p WHERE p.'+COLUMN_ID+' = '+id, []).then(async ([tx,results]) => {
                     console.log("Query completed");
                     var len = results.rows.length;
                     for (let i = 0; i < len; i++) {
@@ -146,7 +146,7 @@ class ProductsManager extends Component {
                     await resolve(product);
                 });
             }).then(async (result) => {
-                await this.closeDatabase(db);
+                //await this.closeDatabase(db);
             }).catch(async (err) => {
                 console.log(err);
             });
@@ -160,29 +160,22 @@ class ProductsManager extends Component {
         return await new Promise(async (resolve) => {
             const products = [];
             await db.transaction(async (tx) => {
-                await tx.executeSql('SELECT p.'+COLUMN_ID+', p.'+COLUMN_REF+', p.'+COLUMN_NAME+', p.'+COLUMN_CODEBARRE+', p.'+COLUMN_DESCRIPTION+', p.'+COLUMN_LOT+', p.'+COLUMN_DLC+', p.'+COLUMN_DLUO+', p.'+COLUMN_IMAGE+' FROM '+TABLE_NAME+' p', []).then(async ([tx,results]) => {
+                await tx.executeSql('SELECT p.'+COLUMN_ID+', p.'+COLUMN_REF+', p.'+COLUMN_LABEL+', p.'+COLUMN_CODEBARRE+', p.'+COLUMN_DESCRIPTION+', p.'+COLUMN_LOT+', p.'+COLUMN_DLC+', p.'+COLUMN_DLUO+', p.'+COLUMN_IMAGE+' FROM '+TABLE_NAME+' p', []).then(async ([tx,results]) => {
                     console.log("Query completed");
                     var len = results.rows.length;
                     for (let i = 0; i < len; i++) {
                         let row = results.rows.item(i);
-                        console.log(`ID: ${row.id}, name: ${row.name}`)
-                        const { id, ref, name, codebarre, description, lot, dlc, dluo, image } = row;
+                        //console.log(`ID: ${row.id}, label: ${row.label}`)
+                        const { id, ref, label, codebarre, description, lot, dlc, dluo, image } = row;
                         products.push({
-                            id,
-                            ref,
-                            name, 
-                            codebarre, 
-                            description, 
-                            lot, dlc, 
-                            dluo, 
-                            image
+                            id, ref, label, codebarre, description, lot, dlc, dluo, image
                         });
                     }
                     console.log(products);
                     await resolve(products);
                 });
             }).then(async (result) => {
-                await this.closeDatabase(db);
+                //await this.closeDatabase(db);
             }).catch(async (err) => {
                 console.log(err);
             });
@@ -196,7 +189,7 @@ class ProductsManager extends Component {
 
         return await new Promise(async (resolve) => {
             await db.transaction(async (tx) => {
-                await tx.executeSql("UPDATE " + TABLE_NAME + " SET " + COLUMN_REF + " = "+data_.ref+", "+COLUMN_NAME+" = "+data_.name.replace(/'/g, "''")+", "+COLUMN_CODEBARRE+" = "+data_.codebarre+", "+COLUMN_DESCRIPTION+" = "+data_.description.replace(/'/g, "''")+", "+COLUMN_LOT+" = "+data_.lot+", "+COLUMN_DLC+" = "+data_.dlc+", "+COLUMN_DLUO+" = "+data_.dluo+", "+COLUMN_EMPLACEMENT+" = "+data_.emplacement+", "+COLUMN_IMAGE+" = "+data_.image+" WHERE " + COLUMN_ID + " = " + data_.id, []);
+                await tx.executeSql("UPDATE " + TABLE_NAME + " SET " + COLUMN_REF + " = "+data_.ref+", "+COLUMN_LABEL+" = "+data_.label.replace(/'/g, "''")+", "+COLUMN_CODEBARRE+" = "+data_.codebarre+", "+COLUMN_DESCRIPTION+" = "+data_.description.replace(/'/g, "''")+", "+COLUMN_LOT+" = "+data_.lot+", "+COLUMN_DLC+" = "+data_.dlc+", "+COLUMN_DLUO+" = "+data_.dluo+", "+COLUMN_EMPLACEMENT+" = "+data_.emplacement+", "+COLUMN_IMAGE+" = "+data_.image+" WHERE " + COLUMN_ID + " = " + data_.id, []);
                 resolve(true);
 
             }).then(async (result) => {

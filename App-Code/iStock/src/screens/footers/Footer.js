@@ -1,8 +1,6 @@
 //import liraries
 import React, { Component } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
-
 
 
 // create a component
@@ -10,7 +8,7 @@ class MyFooter extends Component {
     render() {
         return (
             <View style={styles.body}>
-                <Text style={styles.text}>© iStock - Développer par l'agence Anexys</Text>
+                <Text style={styles.text}>iStock © Tous droits réservés - Développer par BDC</Text>
             </View>
         );
     }
@@ -18,7 +16,7 @@ class MyFooter extends Component {
 
 // define your styles
 const styles = StyleSheet.create({
-    body:{
+    body: {
         padding: 10,
         alignItems: "center",
         justifyContent: "center",
@@ -28,7 +26,7 @@ const styles = StyleSheet.create({
         height: '5%'
     },
     text: {
-        color: '#fff'
+        color: '#000000'
     }
 });
 

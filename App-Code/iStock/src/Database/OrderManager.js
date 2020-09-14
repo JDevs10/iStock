@@ -16,7 +16,7 @@ const DATABASE_SIZE = DatabaseInfo.DATABASE_SIZE;
 const TABLE_NAME = "orders";
 const COLUMN_ID = "id"; //INTEGER PRIMARY KEY AUTOINCREMENT
 const COLUMN_IS_SYNC = "is_sync"; //INT(2)
-const COLUMN_STATUT = "statut"; //statut INT(2)
+const COLUMN_STATUT = "statut"; //INT(2)
 const COLUMN_REF_CLIENT = "ref_client"; //INT(10)
 const COLUMN_SOCID = "socId"; //INT(10)
 const COLUMN_USER_AUTHOR_ID = "user_author_id"; //INT(10)
@@ -126,14 +126,15 @@ class OrderManager extends Component {
     }
 
     //Insert
-    async INSERT_(data_){
-        console.log("##### INSERT_ORDER #########################");
+    async INSERT_ORDERS(data_){
+        console.log("##### INSERT_ORDERS #########################");
         console.log("inserting.... ", data_.length);
         return await new Promise(async (resolve) => {
             try{
                 for(let x = 0; x < data_.length; x++){
+                    data_[x].isSync = 1;
                     await db.transaction(async (tx) => {
-                        const insert = "INSERT INTO " + TABLE_NAME + " (" + COLUMN_ID + ", " + COLUMN_IS_SYNC + ", " + COLUMN_STATUT + ", " + COLUMN_REF_CLIENT + ", " +COLUMN_SOCID + ", " +COLUMN_USER_AUTHOR_ID + ", " +COLUMN_REF_COMMANDE + ", " +COLUMN_DATE_CREATION + ", " +COLUMN_DATE_COMMANDE + ", " +COLUMN_DATE_LIVRAISON + ", " +COLUMN_NOTE_PUBLIC + ", " +COLUMN_NOTE_PRIVEE + ", " +COLUMN_TOTAL_HT + ", " +COLUMN_TOTAL_TVA + ", " +COLUMN_TOTAL_TTC + ", " +COLUMN_BROUILLION + ", " +COLUMN_REMISE_ABSOLUE + ", " +COLUMN_REMISE_PERCENT + ", " +COLUMN_REMISE +") VALUES (null, "+data_[x].isSync+", "+data_[x].statut+", "+data_[x].refClient+", "+data_[x].socId+", "+data_[x].userAuthorId+", '"+data_[x].refOrder+"', '"+data_[x].creationDate+"', '"+data_[x].orderDate+"', '"+data_[x].deliveryDate+"', '"+data_[x].publicNote.replace(/'/g, "''")+"', '"+data_[x].privateNote.replace(/'/g, "''")+"', '"+data_[x].totalHT+"', '"+data_[x].totalTVA+"', '"+data_[x].totalTCC+"', '"+data_[x].isBrouillion+"', '"+data_[x].remiseAbsolue+"', '"+data_[x].remisePercent+"', '"+data_[x].remise+"')";
+                        const insert = "INSERT INTO " + TABLE_NAME + " (" + COLUMN_ID + ", " + COLUMN_IS_SYNC + ", " + COLUMN_STATUT + ", " + COLUMN_REF_CLIENT + ", " +COLUMN_SOCID + ", " +COLUMN_USER_AUTHOR_ID + ", " +COLUMN_REF_COMMANDE + ", " +COLUMN_DATE_CREATION + ", " +COLUMN_DATE_COMMANDE + ", " +COLUMN_DATE_LIVRAISON + ", " +COLUMN_NOTE_PUBLIC + ", " +COLUMN_NOTE_PRIVEE + ", " +COLUMN_TOTAL_HT + ", " +COLUMN_TOTAL_TVA + ", " +COLUMN_TOTAL_TTC + ", " +COLUMN_BROUILLION + ", " +COLUMN_REMISE_ABSOLUE + ", " +COLUMN_REMISE_PERCENT + ", " +COLUMN_REMISE +") VALUES (null, "+data_[x].isSync+", "+data_[x].statut+", '"+data_[x].ref_client+"', "+data_[x].socid+", "+data_[x].user_author_id+", '"+data_[x].ref+"', '"+data_[x].date+"', '"+data_[x].date_commande+"', '"+data_[x].date_livraison+"', '"+data_[x].note_public.replace(/'/g, "''")+"', '"+data_[x].note_private.replace(/'/g, "''")+"', '"+data_[x].total_ht+"', '"+data_[x].total_tva+"', '"+data_[x].total_ttc+"', '"+data_[x].brouillon+"', '"+data_[x].remise_absolue+"', '"+data_[x].remise_percent+"', '"+data_[x].remise+"')";
                         await tx.executeSql(insert, []);
                     });
                 }
@@ -174,7 +175,6 @@ class OrderManager extends Component {
                     var len = results.rows.length;
                     for (let i = 0; i < len; i++) {
                         let row = results.rows.item(i);
-                        //console.log(`ID: ${row.id}, label: ${row.label}`)
                         const { id, is_sync, statut, ref_client, socId, user_author_id, ref_commande, date_creation, date_commande, date_livraison, note_public, note_privee, total_ht, total_tva, total_ttc, brouillon, remise_absolue, remise_percent, remise } = row;
                         products.push({ id, is_sync, statut, ref_client, socId, user_author_id, ref_commande, date_creation, date_commande, date_livraison, note_public, note_privee, total_ht, total_tva, total_ttc, brouillon, remise_absolue, remise_percent, remise });
                     }

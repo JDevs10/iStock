@@ -1,28 +1,29 @@
 import React, { Component } from 'react';
-import {StyleSheet, View, StatusBar, Text, ImageBackground, Image, AsyncStorage} from  'react-native';
+import { StyleSheet, View, StatusBar, Text, ImageBackground, Image, AsyncStorage } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import MyFooter from '../footers/Footer';
 import {
-    Header,
-    LearnMoreLinks,
-    Colors,
-    DebugInstructions,
-    ReloadInstructions,
-  } from 'react-native/Libraries/NewAppScreen';
+  Header,
+  LearnMoreLinks,
+  Colors,
+  DebugInstructions,
+  ReloadInstructions,
+} from 'react-native/Libraries/NewAppScreen';
 import FindServers from '../../services/FindServers';
 import TokenManager from '../../Database/TokenManager';
+const BG = require('../../../img/waiting_bg.png');
 
 
 class Loading extends Component {
 
-  constructor(props){
+  constructor(props) {
     super(props);
     this.state = {
-      loadingNotify: 'chargement...',
+      loadingNotify: 'Veuillez attendre un instant ...',
       isServers: false
     };
   }
-  
+
   async componentDidMount() {
     // setTimeout(() => {
     //   this.props.navigation.navigate('login');
@@ -32,7 +33,7 @@ class Loading extends Component {
       this.setState({
         ...this.state,
         loadingNotify: 'Téléchargement des configs du serveur...'
-    });
+      });
     }, 3000);
 
     //find token
@@ -43,7 +44,7 @@ class Loading extends Component {
     });
 
     //check if tocken exist already
-    if(token != null){
+    if (token != null) {
       this.props.navigation.navigate('download');
       return;
     }
@@ -54,11 +55,11 @@ class Loading extends Component {
     });
 
 
-    if(res == true){
+    if (res == true) {
       setTimeout(() => {
         this.props.navigation.navigate('login');
       }, 2500);
-    }else{
+    } else {
       //alert("Le serveur Big Data Consulting n'est pas joignable...\n");
       this.props.navigation.navigate('dashboard');
     }
@@ -67,20 +68,16 @@ class Loading extends Component {
   render() {
 
     return (
-        <LinearGradient
-          start={{x: 0.0, y: 1}} end={{x: 0.5, y: 1}}
-          colors={['#00AAFF', '#706FD3']}
-          style={styles.body}>
+      <View style={styles.container}>
+        <View style={styles.backgroundContainer}>
+          <Image source={BG} style={styles.backdrop} />
+        </View>
+        <Image style={styles.logo} source={require('../../../img/Loading.gif')} />
+        <Text style={styles.text}>{this.state.loadingNotify}</Text>
+      </View>
 
-          <StatusBar translucent={true} backgroundColor={'transparent'} barStyle="light-content"/>
 
-          <Image style={{width: 150, height: 150 }} source={require('../../../img/Loading-white.gif')}/>
 
-          <Text style={styles.text}>{this.state.loadingNotify}</Text>
-
-          <MyFooter/>
-
-        </LinearGradient>
     );
   }
 }
@@ -88,23 +85,38 @@ class Loading extends Component {
 export default Loading;
 
 const styles = StyleSheet.create({
-  centered: {
-    flex: 1,
-    backgroundColor: "#00AAFF",
-    padding: 10
+
+  backgroundContainer: {
+    position: 'absolute',
   },
-  body:{
+  container: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    width: '100%', 
-    height: '100%'
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#ffffff'
+
   },
-  text:{
+  logo: {
+    marginTop: 150,
+    width: 100,
+    height: 100,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  backdrop: {
+    width: 450,
+    height: 200,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
+    flexDirection: 'column'
+  },
+  text: {
     fontSize: 20,
-    color: "#ABCDEF",
+    color: "#4A4AD4",
     fontWeight: "bold",
     alignItems: "center",
     justifyContent: "center",
+    paddingTop: 80
   }
 });
