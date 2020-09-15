@@ -9,6 +9,8 @@ import NavbarDashboard from '../../navbar/navbar-dashboard';
 import MyFooter from '../footers/Footer';
 import DeviceInfo from 'react-native-device-info';
 import OrderDetailButton from './assets/OrderDetailButton';
+import SettingsManager from '../../Database/SettingsManager';
+
 
 // create a component
 class CommandeDetails extends Component {
@@ -32,6 +34,7 @@ class CommandeDetails extends Component {
         };
     
         this.state = {
+          settings: {},
           orientation: isPortrait() ? 'portrait' : 'landscape'
         };
         
@@ -43,9 +46,31 @@ class CommandeDetails extends Component {
         });
     }
 
+    async  componentDidMount(){
+      await this._settings();
+
+      this.listener = await this.props.navigation.addListener('focus', async () => {
+        // Prevent default action
+        await this._settings();
+        await console.log('Done settings update!');
+          console.log('new settings : ', this.state.settings);
+        return;
+      });
+    }
+
     productDetails = (value) => {
       // alert('Obj: \n' + JSON.stringify(value));
       this.props.navigation.navigate("ProductDetails", {product: value});
+    }
+
+    async _settings(){
+      const sm = new SettingsManager();
+      await sm.initDB();
+      const settings = await sm.GET_SETTINGS_BY_ID(1).then(async (val) => {
+        return await val;
+      });
+      console.log('settings: ', settings);
+      this.setState({settings: settings});
     }
 
 
@@ -146,41 +171,69 @@ class CommandeDetails extends Component {
                     order.lines.map((item, index) => (
                       <TouchableOpacity onPress={() => this.productDetails(item)}>
 
-                        <CardView key={index} cardElevation={10} cornerRadius={5} style={styles.cardViewStyle}>
-                          <View style={styles.cardViewStyle1}>
-                            <View style={[styles.article, {flexDirection: "row"}]}>
-                              <View>
-                                <Image style={{width: DeviceInfo.isTablet() ? 100 : 50, height: DeviceInfo.isTablet() ? 100 : 50}} source={require('../../../img/no_image.jpeg')}/>
-                              </View>
-                              <View style={{flex: 1, marginLeft: 10}}>
-                              <View style={styles.ic_and_details}>
-                                <View style={styles.aname}>
-                                <Text style={styles.articlename}>{item.name}</Text>
+                        {this.state.settings.isUseDetailedCMDLines ? 
+                          <CardView key={index} cardElevation={10} cornerRadius={5} style={styles.cardViewStyle}>
+                            <View style={styles.cardViewStyle1}>
+                              <View style={[styles.article, {flexDirection: "row"}]}>
+                                <View>
+                                  <Image style={{width: DeviceInfo.isTablet() ? 100 : 50, height: DeviceInfo.isTablet() ? 100 : 50}} source={require('../../../img/no_image.jpeg')}/>
                                 </View>
-                                <View style={styles.aref}>
-                                  <Text style={styles.ref}>{item.ref}</Text>
+                                <View style={{flex: 1, marginLeft: 10}}>
+                                <View style={styles.ic_and_details}>
+                                  <View style={styles.aname}>
+                                  <Text style={styles.articlename}>{item.name}</Text>
+                                  </View>
+                                  <View style={styles.aref}>
+                                    <Text style={styles.ref}>{item.ref}</Text>
+                                  </View>
                                 </View>
-                              </View>
-                              <View style={styles.ic_and_details}>
-                                <Icon name="boxes" size={15} style={styles.iconDetails} />
-                                <Text> XXX Produit(s)</Text>
-                              </View>
+                                <View style={styles.ic_and_details}>
+                                  <Icon name="boxes" size={15} style={styles.iconDetails} />
+                                  <Text> XXX Produit(s)</Text>
+                                </View>
 
-                              <View style={{ borderBottomColor: '#00AAFF', borderBottomWidth: 1, marginRight: 10 }} />
+                                <View style={{ borderBottomColor: '#00AAFF', borderBottomWidth: 1, marginRight: 10 }} />
 
-                              <View style={styles.pricedetails}>
-                                <View style={styles.price}>
-                                  <Text>Total TTC : {item.prixTotalTTC > 0 ? (parseFloat(item.prixTotalTTC)).toFixed(2) : '0'} €</Text>
+                                <View style={styles.pricedetails}>
+                                  <View style={styles.price}>
+                                    <Text>Total TTC : {item.prixTotalTTC > 0 ? (parseFloat(item.prixTotalTTC)).toFixed(2) : '0'} €</Text>
+                                  </View>
+                                  {/* <View style={styles.billedstate}>
+                                    {item.etat === 0 ? (<Text style={styles.billedtext_no}>Non Validé</Text>) : (<Text style={styles.billedtext_ok}>Validé</Text>)}
+                                  </View> */}
                                 </View>
-                                {/* <View style={styles.billedstate}>
-                                  {item.etat === 0 ? (<Text style={styles.billedtext_no}>Non Validé</Text>) : (<Text style={styles.billedtext_ok}>Validé</Text>)}
-                                </View> */}
+                                </View>
+                                
                               </View>
-                              </View>
-                              
                             </View>
-                          </View>
-                        </CardView>
+                          </CardView>
+                        : 
+                          <CardView key={index} cardElevation={10} cornerRadius={5} style={styles.cardViewStyle}>
+                            <View style={styles.cardViewStyle1}>
+                              <View style={[styles.article, {flexDirection: "row"}]}>
+                                <View style={{flex: 1, marginLeft: 10}}>
+                                <View style={styles.ic_and_details}>
+                                  <View style={styles.aname}>
+                                  <Text style={styles.articlename}>{item.name}</Text>
+                                  </View>
+                                  <View style={styles.aref}>
+                                    <Text style={styles.ref}>{item.ref}</Text>
+                                  </View>
+                                </View>
+                                <View style={styles.ic_and_details}>
+                                  <Icon name="boxes" size={15} style={styles.iconDetails} />
+                                  <Text> XXX Produit(s)</Text>
+                                </View>
+
+                                <View style={{ borderBottomColor: '#00AAFF', borderBottomWidth: 1, marginRight: 10 }} />
+                                </View>
+                                
+                              </View>
+                            </View>
+                          </CardView>
+                        }
+
+                        
 
                       </TouchableOpacity>
                     ))

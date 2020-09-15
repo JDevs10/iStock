@@ -204,7 +204,7 @@ class ServerManager extends Component {
 
     //Delete
     async DROP_SERVER(){
-        console.log("##### DELETE_SERVER_LIST #########################");
+        console.log("##### DROP_SERVER #########################");
 
         return await new Promise(async (resolve) => {
             await db.transaction(async function (txn) {

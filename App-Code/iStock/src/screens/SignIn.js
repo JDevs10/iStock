@@ -475,12 +475,12 @@ class SignIn extends React.Component {
 
                     {this.state.secureKeyTextEntry ?
                       <Feather
-                        name="eye"
+                        name="eye-off"
                         color="#4A4AD4"
                         size={20} />
                       :
                       <Feather
-                        name="eye-off"
+                        name="eye"
                         color="#4A4AD4"
                         size={20} />
                     }

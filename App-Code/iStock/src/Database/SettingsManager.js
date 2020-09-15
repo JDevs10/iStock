@@ -16,10 +16,14 @@ const DATABASE_SIZE = DatabaseInfo.DATABASE_SIZE;
 const TABLE_NAME = "settings";
 const COLUMN_ID = "id";
 const COLUMN_IS_USE_IMAGES = "isUseImages";
+const COLUMN_IS_USE_DETAILED_CMD = "isUseDetailedCMD";
+const COLUMN_IS_USE_DETAILED_CMD_LINES = "isUseDetailedCMDLines";
 
 const create = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "(" +
     COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-    COLUMN_IS_USE_IMAGES + " VARCHAR(255)" +
+    COLUMN_IS_USE_IMAGES + " VARCHAR(255)," +
+    COLUMN_IS_USE_DETAILED_CMD + " VARCHAR(255)," +
+    COLUMN_IS_USE_DETAILED_CMD_LINES + " VARCHAR(255)" +
 ")";
 
 
@@ -97,7 +101,7 @@ class SettingsManager extends Component {
         return await new Promise(async (resolve) => {
             try{
                 await db.transaction(async (tx) => {
-                    await tx.executeSql("INSERT INTO " + TABLE_NAME + " ("+COLUMN_IS_USE_IMAGES+") VALUES (1, '"+(data_.isUseImages == true ? 'true' : 'false')+"')", []);
+                    await tx.executeSql("INSERT INTO " + TABLE_NAME + " ("+COLUMN_ID+", "+COLUMN_IS_USE_IMAGES+", "+COLUMN_IS_USE_DETAILED_CMD+", "+COLUMN_IS_USE_DETAILED_CMD_LINES+") VALUES (1, '"+(data_.isUseImages == true ? 'true' : 'false')+"', '"+(data_.isUseDetailedCMD == true ? 'true' : 'false')+"', '"+(data_.isUseDetailedCMDLines == true ? 'true' : 'false')+"')", []);
                 });
                 return await resolve(true);
             } catch(error){
@@ -113,7 +117,7 @@ class SettingsManager extends Component {
         return await new Promise(async (resolve) => {
             let token = null;
             await db.transaction(async (tx) => {
-                await tx.executeSql("SELECT s."+COLUMN_IS_USE_IMAGES+" FROM "+TABLE_NAME+" s WHERE s."+COLUMN_ID+" = "+id, []).then(async ([tx,results]) => {
+                await tx.executeSql("SELECT s."+COLUMN_IS_USE_IMAGES+", s."+COLUMN_IS_USE_DETAILED_CMD+", s."+COLUMN_IS_USE_DETAILED_CMD_LINES+" FROM "+TABLE_NAME+" s WHERE s."+COLUMN_ID+" = "+id, []).then(async ([tx,results]) => {
                     console.log("Query completed");
                     var len = results.rows.length;
                     for (let i = 0; i < len; i++) {
@@ -121,6 +125,8 @@ class SettingsManager extends Component {
                         console.log('token => row: ', row);
                         token = {
                             isUseImages: (row.isUseImages == 'true' ? true : false),
+                            isUseDetailedCMD: (row.isUseDetailedCMD == 'true' ? true : false),
+                            isUseDetailedCMDLines: (row.isUseDetailedCMDLines == 'true' ? true : false),
                         };
                     }
                 });
@@ -141,7 +147,7 @@ class SettingsManager extends Component {
 
         return await new Promise(async (resolve) => {
             await db.transaction(async (tx) => {
-                await tx.executeSql("UPDATE "+TABLE_NAME+" SET "+COLUMN_IS_USE_IMAGES+" = '"+(data.isUseImages == true ? 'true' : 'false')+"' WHERE "+COLUMN_ID+" = 1", []);
+                await tx.executeSql("UPDATE "+TABLE_NAME+" SET "+COLUMN_IS_USE_IMAGES+" = '"+(data.isUseImages == true ? 'true' : 'false')+"', "+COLUMN_IS_USE_DETAILED_CMD+" = '"+(data.isUseDetailedCMD == true ? 'true' : 'false')+"', "+COLUMN_IS_USE_DETAILED_CMD_LINES+" = '"+(data.isUseDetailedCMDLines == true ? 'true' : 'false')+"' WHERE "+COLUMN_ID+" = 1", []);
 
             }).then(async (result) => {
                 await resolve(true);

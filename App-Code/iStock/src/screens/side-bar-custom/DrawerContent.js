@@ -190,7 +190,7 @@ export function DrawerContent(props) {
                             'Voulez - vous vraiment vous déconnecter ?',
                             [
                               {text: 'No', onPress: () => {console.log("nothing....")}},
-                              {text: 'Yes', onPress: () => disconnection},
+                              {text: 'Yes', onPress: () => {disconnection()}},
                             ],
                             { cancelable: false }
                         );

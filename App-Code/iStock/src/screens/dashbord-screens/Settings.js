@@ -33,6 +33,8 @@ class Settings extends Component {
       server: "",
       key: "",
       isUseImages: false,
+      isUseDetailedCMD: false,
+      isUseDetailedCMDLines: false,
       appVersion: "",
     }
   }
@@ -57,8 +59,10 @@ class Settings extends Component {
 
     this.setState({
       server: (token == null ? "" : token.server),
-      key: (token == null ? "" : token.key),
+      key: (token == null ? "" : token.token),
       isUseImages: (list == null ? false : list.isUseImages),
+      isUseDetailedCMD: (list == null ? false : list.isUseDetailedCMD),
+      isUseDetailedCMDLines: (list == null ? false : list.isUseDetailedCMDLines),
       appVersion: "1.0",
     });
   }
@@ -98,7 +102,7 @@ class Settings extends Component {
                   size={30} />
                 <Text style={styles.textInput}>License </Text>
               </View>
-              <Text style={styles.textInput}>{this.state.key}</Text>
+              <TextInput style={styles.textInput} value={this.state.key} secureTextEntry={false}/>
             </View>
 
 
@@ -119,6 +123,42 @@ class Settings extends Component {
               </View>
             </View>
 
+
+            <View style={styles.action}>
+              <View style={styles.action_}>
+                <FontAwesome
+                  name="columns"
+                  color="#4A4AD4"
+                  size={30} />
+                <Text style={styles.textInput}>Affichage des CMDs détaillé</Text>
+                <Switch
+                  trackColor={{ false: "#D3D3D3", true: "#4A4AD4" }}
+                  thumbColor={true ? "#00AAFF" : "#4A4AD4"}
+                  ios_backgroundColor="#3e3e3e"
+                  onValueChange={() => { this.setState({isUseDetailedCMD: !this.state.isUseDetailedCMD}) }}
+                  value={this.state.isUseDetailedCMD}
+                />
+              </View>
+            </View>
+
+
+            <View style={styles.action}>
+              <View style={styles.action_}>
+                <FontAwesome
+                  name="columns"
+                  color="#4A4AD4"
+                  size={30} />
+                <Text style={styles.textInput}>Affichage des lignes CMD détaillé</Text>
+                <Switch
+                  trackColor={{ false: "#D3D3D3", true: "#4A4AD4" }}
+                  thumbColor={true ? "#00AAFF" : "#4A4AD4"}
+                  ios_backgroundColor="#3e3e3e"
+                  onValueChange={() => { this.setState({isUseDetailedCMDLines: !this.state.isUseDetailedCMDLines}) }}
+                  value={this.state.isUseDetailedCMDLines}
+                />
+              </View>
+            </View>
+
             <View style={[styles.action]}>
               <View style={styles.action_}>
                 <FontAwesome
@@ -133,7 +173,9 @@ class Settings extends Component {
           </ScrollView>
 
           {/* Main twist button */}
-          <SettingsDetailButton navigation={this.props.navigation} parentData={{isUseImages: this.state.isUseImages}}/>
+          <SettingsDetailButton 
+            navigation={this.props.navigation} 
+            parentData={{isUseImages: this.state.isUseImages, isUseDetailedCMD: this.state.isUseDetailedCMD, isUseDetailedCMDLines: this.state.isUseDetailedCMDLines}}/>
           {/* END Main twist button */}
 
         </Animatable.View>
@@ -197,7 +239,7 @@ const styles = StyleSheet.create({
   },
   action_:{
     flexDirection: 'row',
-    width: 300,
+    width: 350,
   },
   actionError: {
     flexDirection: 'row',

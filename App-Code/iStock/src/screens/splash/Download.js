@@ -54,7 +54,9 @@ class Download extends Component {
     await sm.initDB();
     await sm.CREATE_SETTINGS_TABLE();
     const settings = {
-      isUseImages: false
+      isUseImages: false,
+      isUseDetailedCMD: true,
+      isUseDetailedCMDLines: true
     };
     const res_sm = await sm.INSERT_SETTINGS(settings).then(async (val) => {
       console.log('INSERT_SETTINGS => val: ', val);

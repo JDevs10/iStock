@@ -73,6 +73,8 @@ class SettingsDetailButton extends Component {
             console.log('this.props.parentData : ', this.props.parentData);
             const data = {
                 isUseImages: this.props.parentData.isUseImages,
+                isUseDetailedCMD: this.props.parentData.isUseDetailedCMD,
+                isUseDetailedCMDLines: this.props.parentData.isUseDetailedCMDLines
             };
 
             const sm = new SettingsManager();

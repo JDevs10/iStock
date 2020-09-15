@@ -131,4 +131,21 @@ export default class FindImages extends Component {
                 });
         });
     }
+
+    async deleteAll(){
+        return await new Promise(async (resolve) => {
+            console.log('Deleting '+IMAGE_PATH+' directory...');
+
+            const RNFS = require('react-native-fs');
+            await RNFS.unlink(IMAGE_PATH)
+                .then(async () => {
+                    console.log('Repertory '+IMAGE_PATH+' deleted!');
+                    await resolve(true);
+                })
+                .catch(async (err) => {
+                    console.log('deleteAll() => error ',err.message);
+                    await resolve(false);
+                });
+        });
+    }
 }

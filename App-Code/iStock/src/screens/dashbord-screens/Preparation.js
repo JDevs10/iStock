@@ -13,6 +13,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import NavbarDashboard from '../../navbar/navbar-dashboard';
 import MyFooter from '../footers/Footer';
 import PreparationButton from '../dashbord-screens/assets/PreparationButton';
+import SettingsManager from '../../Database/SettingsManager';
 
 class Preparation extends Component {
   constructor(props){
@@ -35,6 +36,7 @@ class Preparation extends Component {
     };
 
     this.state = {
+      settings: {},
       orientation: isPortrait() ? 'portrait' : 'landscape'
     };
     
@@ -43,6 +45,18 @@ class Preparation extends Component {
       this.setState({
         orientation: isPortrait() ? 'portrait' : 'landscape'
       });
+    });
+  }
+
+  async  componentDidMount(){
+    await this._settings();
+
+    this.listener = await this.props.navigation.addListener('focus', async () => {
+      // Prevent default action
+      await this._settings();
+      await console.log('Done settings update!');
+        console.log('new settings : ', this.state.settings);
+      return;
     });
   }
 
@@ -57,6 +71,15 @@ class Preparation extends Component {
     this.props.navigation.navigate("CommandeDetails", {order: value});
   }
 
+  async _settings(){
+    const sm = new SettingsManager();
+    await sm.initDB();
+    const settings = await sm.GET_SETTINGS_BY_ID(1).then(async (val) => {
+      return await val;
+    });
+    console.log('settings: ', settings);
+    this.setState({settings: settings});
+  }
 
   render() {
     const test_cmd_list = [
@@ -176,9 +199,12 @@ class Preparation extends Component {
         marginRight: 10,
         color: '#00AAFF',
       },
-      pricedetails: {
-        flexDirection: 'row',
+      refDetails: {
+        flexDirection: "row-reverse",
         width: '100%',
+      },
+      ref: {
+        width: '40%',
       },
       price: {
         width: '75%',
@@ -220,52 +246,84 @@ class Preparation extends Component {
                 {item.etat === 0 ? 
                   <TouchableOpacity onPress={() => this.orderDetails(item)}>
 
-                    <CardView key={index} cardElevation={10} cornerRadius={5} style={styles.cardViewStyle}>
-                      <View style={styles.cardViewStyle1}>
-                          <View style={styles.order}>
-                              <TouchableOpacity onPress={() => this._Showcommande(item)}>
-                              <View style={styles.ic_and_details}>
-                                  <View style={styles.cname}>
-                                  <Text style={styles.entreprisename}>{item.client}</Text>
-                                  </View>
-                                  <View style={styles.cdate}>
-                                    <Text style={styles.date}>18 Juin 2020</Text>
-                                  {/* {item.id == 0 ? (<Text style={styles.ref_null}>Nouvelle commande</Text>) : (<Text style={styles.ref}>{item.ref}</Text>)} */}
-                                  </View>
-                              </View>
-                              <View style={styles.ic_and_details}>
-                                  <Icon name="boxes" size={15} style={styles.iconDetails} />
-                                  <Text>{item.lines.length} Produit(s)</Text>
-                              </View>
-                              <View style={styles.ic_and_details}>
-                                  <Icon name="calendar-alt" size={15} style={styles.iconDetails} />
-                                  <Text>Faite le : {item.creationDate}</Text>
-                              </View>
-                              <View style={styles.ic_and_details}>
-                                  <Icon name="user" size={15} style={styles.iconDetails} />
-                                  <Text style={{ marginBottom: 10 }}>Vendu par : {item.user}</Text>
-                              </View>
-                              <View style={{ borderBottomColor: '#00AAFF', borderBottomWidth: 1, marginRight: 10 }} />
-                              <View style={styles.pricedetails}>
-                                  <View style={styles.price}>
-                                  <Text>Total TTC : {item.prixTotalTTC > 0 ? (parseFloat(item.prixTotalTTC)).toFixed(2) : '0'} €</Text>
-                                  </View>
-                                  <View style={styles.billedstate}>
-                                  {item.etat === 0 ? (<Text style={styles.billedtext_no}>Brouillon</Text>) : (<Text style={styles.billedtext_ok}>Validé</Text>)}
-                                  </View>
-                              </View>
-                              </TouchableOpacity>
-                              <View style={styles.butons_commande}>
-                              {/*(<ButtonSpinner style={styles.submit_on} positionSpinner={'centered-without-text'} onPress={() => this._relance_commande(rowData.ref_commande)} styleSpinner={{ color: '#FFFFFF' }}>
-                              <Icon name="sync" size={20} style={styles.iconValiderpanier} />
-                              <Text style={styles.iconPanier}>Relancer la commande</Text>
-                              </ButtonSpinner> -->)*/}
-                              {1 === 0 ? (<Text style={styles.notif}><Icon name="cloud-upload-alt" size={20} style={styles.notif_icon} /></Text>) : (<Text style={styles.notif}></Text>)}
-                              </View>
-                          </View>
-                      </View>
-                    </CardView>
-    
+                    {this.state.settings.isUseDetailedCMD ? 
+                      <CardView key={index} cardElevation={10} cornerRadius={5} style={styles.cardViewStyle}>
+                        <View style={styles.cardViewStyle1}>
+                            <View style={styles.order}>
+                                <TouchableOpacity onPress={() => this._Showcommande(item)}>
+                                <View style={styles.ic_and_details}>
+                                    <View style={styles.cname}>
+                                    <Text style={styles.entreprisename}>{item.client}</Text>
+                                    </View>
+                                    <View style={styles.cdate}>
+                                      <Text style={styles.date}>18 Juin 2020</Text>
+                                    {/* {item.id == 0 ? (<Text style={styles.ref_null}>Nouvelle commande</Text>) : (<Text style={styles.ref}>{item.ref}</Text>)} */}
+                                    </View>
+                                </View>
+                                <View style={styles.ic_and_details}>
+                                    <Icon name="boxes" size={15} style={styles.iconDetails} />
+                                    <Text>{item.lines.length} Produit(s)</Text>
+                                </View>
+                                <View style={styles.ic_and_details}>
+                                    <Icon name="calendar-alt" size={15} style={styles.iconDetails} />
+                                    <Text>Faite le : {item.creationDate}</Text>
+                                </View>
+                                <View style={styles.ic_and_details}>
+                                    <Icon name="user" size={15} style={styles.iconDetails} />
+                                    <Text style={{ marginBottom: 10 }}>Vendu par : {item.user}</Text>
+                                </View>
+                                <View style={{ borderBottomColor: '#00AAFF', borderBottomWidth: 1, marginRight: 10 }} />
+                                <View style={styles.pricedetails}>
+                                    <View style={styles.price}>
+                                    <Text>Total TTC : {item.prixTotalTTC > 0 ? (parseFloat(item.prixTotalTTC)).toFixed(2) : '0'} €</Text>
+                                    </View>
+                                    <View style={styles.billedstate}>
+                                    {item.etat === 0 ? (<Text style={styles.billedtext_no}>Brouillon</Text>) : (<Text style={styles.billedtext_ok}>Validé</Text>)}
+                                    </View>
+                                </View>
+                                </TouchableOpacity>
+                                <View style={styles.butons_commande}>
+                                {/*(<ButtonSpinner style={styles.submit_on} positionSpinner={'centered-without-text'} onPress={() => this._relance_commande(rowData.ref_commande)} styleSpinner={{ color: '#FFFFFF' }}>
+                                <Icon name="sync" size={20} style={styles.iconValiderpanier} />
+                                <Text style={styles.iconPanier}>Relancer la commande</Text>
+                                </ButtonSpinner> -->)*/}
+                                {1 === 0 ? (<Text style={styles.notif}><Icon name="cloud-upload-alt" size={20} style={styles.notif_icon} /></Text>) : (<Text style={styles.notif}></Text>)}
+                                </View>
+                            </View>
+                        </View>
+                      </CardView>
+                    : 
+                      <CardView key={index} cardElevation={5} cornerRadius={5} style={[styles.cardViewStyle, {height: 120}]}>
+                        <View style={[styles.cardViewStyle1, {paddingTop: 0}]}>
+                            <View style={styles.order}>
+                                <TouchableOpacity onPress={() => this._Showcommande(item)}>
+                                <View style={styles.ic_and_details}>
+                                    <View style={styles.cname}>
+                                      <Text style={styles.entreprisename}>{item.client}</Text>
+                                    </View>
+                                    <View style={styles.cdate}>
+                                      <Text style={styles.date}>18 Juin 2020</Text>
+                                    </View>
+                                </View>
+                                <View style={styles.ic_and_details}>
+                                    <Icon name="boxes" size={15} style={styles.iconDetails} />
+                                    <Text>{item.lines.length} Produit(s)</Text>
+                                </View>
+                                <View style={styles.refDetails}>
+                                    <View style={styles.ref}>
+                                      <Text>CMD200500-100200</Text>
+                                    </View>
+                                </View>
+                                  <View style={{ borderBottomColor: '#00AAFF', borderBottomWidth: 1, marginRight: 10 }} />
+                                </TouchableOpacity>
+                                <View style={styles.butons_commande}>
+                                  {1 === 0 ? (<Text style={styles.notif}><Icon name="cloud-upload-alt" size={20} style={styles.notif_icon} /></Text>) : (<Text style={styles.notif}></Text>)}
+                                </View>
+                            </View>
+                        </View>
+                      </CardView>
+                    }
+
                   </TouchableOpacity>
                 : 
                   null
