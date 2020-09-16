@@ -300,207 +300,216 @@ class SignIn extends React.Component {
           style={styles.body}>
 
           <ScrollView>
+            <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+              <View style={styles.action}>
+                <FontAwesome
+                  name="user-o"
+                  color="#4A4AD4"
+                  size={20} />
+                <TextInput
+                  name="identifiant"
+                  placeholder="Identifiant ..."
+                  style={styles.textInput}
+                  autoCapitalize="none"
+                  onChangeText={(val) => textInputChanged(val)} />
 
-            <View style={styles.action}>
-              <FontAwesome
-                name="user-o"
-                color="#4A4AD4"
-                size={20} />
-              <TextInput
-                name="identifiant"
-                placeholder="Identifiant ..."
-                style={styles.textInput}
-                autoCapitalize="none"
-                onChangeText={(val) => textInputChanged(val)} />
-
-              {this.state.check_textInputChange ?
-                <Animatable.View animation="bounceIn">
-                  <Feather
-                    name="check-circle"
-                    color="#4A4AD4"
-                    size={20} />
-                </Animatable.View>
-                :
-                null}
-            </View>
-
-
-            <View style={styles.action}>
-              <FontAwesome
-                name="lock"
-                color="#4A4AD4"
-                size={20} />
-              <TextInput
-                placeholder="Mot de passe ..."
-                style={styles.textInput}
-                autoCapitalize="none"
-                secureTextEntry={this.state.secureTextEntry ? true : false}
-                onChangeText={(val) => handlePasswordChange(val)} />
-
-
-
-              <View style={{ flexDirection: "row" }}>
-                <View style={{ paddingRight: 5 }}>
-                  <TouchableOpacity style={styles.eye_style}
-                    onPress={updateSecureTextEntry}>
-
-                    {this.state.secureTextEntry ?
-                      <Feather
-                        name="eye-off"
-                        color="#4A4AD4"
-                        size={20} />
-                      :
-                      <Feather
-                        name="eye"
-                        color="#4A4AD4"
-                        size={20} />
-                    }
-
-                  </TouchableOpacity>
-
-                </View>
-                <View style={{ paddingLeft: 5 }}>
-                  {this.state.check_textInputChange_pwd_c ?
-                    <Animatable.View animation="bounceIn">
-                      <Feather
-                        name="check-circle"
-                        color="#4A4AD4"
-                        size={20} />
-                    </Animatable.View>
-                    :
-                    null}
-
-                </View>
+                {this.state.check_textInputChange ?
+                  <Animatable.View animation="bounceIn">
+                    <Feather
+                      name="check-circle"
+                      color="#4A4AD4"
+                      size={20} />
+                  </Animatable.View>
+                  :
+                  null}
               </View>
-
             </View>
 
+            <View style={{ justifyContent: 'center', alignItems: 'center' }}>
 
-            <View style={styles.action}>
-              <FontAwesome
-                name="lock"
-                color="#4A4AD4"
-                size={20} />
-              <TextInput
-                placeholder="Retaper votre mot de passe ..."
-                style={styles.textInput}
-                autoCapitalize="none"
-                secureTextEntry={this.state.secureTextEntry_c ? true : false}
-                onChangeText={(val) => handlePasswordChange_c(val)} />
+              <View style={styles.action}>
+                <FontAwesome
+                  name="lock"
+                  color="#4A4AD4"
+                  size={20} />
+                <TextInput
+                  placeholder="Mot de passe ..."
+                  style={styles.textInput}
+                  autoCapitalize="none"
+                  secureTextEntry={this.state.secureTextEntry ? true : false}
+                  onChangeText={(val) => handlePasswordChange(val)} />
 
 
 
+                <View style={{ flexDirection: "row" }}>
+                  <View style={{ paddingRight: 5 }}>
+                    <TouchableOpacity style={styles.eye_style}
+                      onPress={updateSecureTextEntry}>
 
-              <View style={{ flexDirection: "row" }}>
-                <View style={{ paddingRight: 5 }}>
-                  <TouchableOpacity style={styles.eye_style}
-                    onPress={updateSecureTextEntry_c}>
+                      {this.state.secureTextEntry ?
+                        <Feather
+                          name="eye-off"
+                          color="#4A4AD4"
+                          size={20} />
+                        :
+                        <Feather
+                          name="eye"
+                          color="#4A4AD4"
+                          size={20} />
+                      }
 
-                    {this.state.secureTextEntry_c ?
-                      <Feather
-                        name="eye-off"
-                        color="#4A4AD4"
-                        size={20} />
+                    </TouchableOpacity>
+
+                  </View>
+                  <View style={{ paddingLeft: 5 }}>
+                    {this.state.check_textInputChange_pwd_c ?
+                      <Animatable.View animation="bounceIn">
+                        <Feather
+                          name="check-circle"
+                          color="#4A4AD4"
+                          size={20} />
+                      </Animatable.View>
                       :
-                      <Feather
-                        name="eye"
-                        color="#4A4AD4"
-                        size={20} />
-                    }
+                      null}
 
-                  </TouchableOpacity>
-
+                  </View>
                 </View>
-                <View style={{ paddingLeft: 5 }}>
-                  {this.state.check_textInputChange_pwd_c ?
-                    <Animatable.View animation="bounceIn">
-                      <Feather
-                        name="check-circle"
-                        color="#00AAFF"
-                        size={20} />
-                    </Animatable.View>
-                    :
-                    null}
 
-                </View>
               </View>
-
             </View>
 
+            <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+
+              <View style={styles.action}>
+                <FontAwesome
+                  name="lock"
+                  color="#4A4AD4"
+                  size={20} />
+                <TextInput
+                  placeholder="Retaper votre mot de passe ..."
+                  style={styles.textInput}
+                  autoCapitalize="none"
+                  secureTextEntry={this.state.secureTextEntry_c ? true : false}
+                  onChangeText={(val) => handlePasswordChange_c(val)} />
 
 
 
-            <View style={styles.action}>
-              <FontAwesome
-                name="server"
-                color="#4A4AD4"
-                size={20} />
-              <TextInput
-                placeholder="Nom du serveur"
-                style={styles.textInput}
-                autoCapitalize="none"
-                onChangeText={(val) => textInputChanged_server(val)} />
 
-              {this.state.check_textInputChange_server ?
-                <Animatable.View animation="bounceIn">
-                  <Feather
-                    name="check-circle"
-                    color="#4A4AD4"
-                    size={20} />
-                </Animatable.View>
-                :
-                null}
+                <View style={{ flexDirection: "row" }}>
+                  <View style={{ paddingRight: 5 }}>
+                    <TouchableOpacity style={styles.eye_style}
+                      onPress={updateSecureTextEntry_c}>
 
-            </View>
+                      {this.state.secureTextEntry_c ?
+                        <Feather
+                          name="eye-off"
+                          color="#4A4AD4"
+                          size={20} />
+                        :
+                        <Feather
+                          name="eye"
+                          color="#4A4AD4"
+                          size={20} />
+                      }
 
+                    </TouchableOpacity>
 
-            <View style={styles.action}>
-              <FontAwesome
-                name="key"
-                color="#4A4AD4"
-                size={20} />
-              <TextInput
-                placeholder="Licence, Ex: xxxx-xxxx-xxxx-xxxx-xxxx"
-                style={styles.textInput}
-                autoCapitalize="none"
-                secureTextEntry={this.state.secureKeyTextEntry ? true : false}
-                onChangeText={(val) => handleKeyChange(val)} />
-
-
-
-              <View style={{ flexDirection: "row" }}>
-                <View style={{ paddingRight: 5 }}>
-                  <TouchableOpacity style={styles.eye_style}
-                    onPress={updateSecureKeyTextEntry}>
-
-                    {this.state.secureKeyTextEntry ?
-                      <Feather
-                        name="eye"
-                        color="#4A4AD4"
-                        size={20} />
+                  </View>
+                  <View style={{ paddingLeft: 5 }}>
+                    {this.state.check_textInputChange_pwd_c ?
+                      <Animatable.View animation="bounceIn">
+                        <Feather
+                          name="check-circle"
+                          color="#00AAFF"
+                          size={20} />
+                      </Animatable.View>
                       :
-                      <Feather
-                        name="eye-off"
-                        color="#4A4AD4"
-                        size={20} />
-                    }
-                  </TouchableOpacity>
+                      null}
 
+                  </View>
                 </View>
-                <View style={{ paddingLeft: 5 }}>
-                  {this.state.check_textInputChange_key ?
-                    <Animatable.View animation="bounceIn">
-                      <Feather
-                        name="check-circle"
-                        color="#4A4AD4"
-                        size={20} />
-                    </Animatable.View>
-                    :
-                    null}
 
-                </View>
               </View>
+            </View>
 
+
+
+            <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+
+              <View style={styles.action}>
+                <FontAwesome
+                  name="server"
+                  color="#4A4AD4"
+                  size={20} />
+                <TextInput
+                  placeholder="Nom du serveur"
+                  style={styles.textInput}
+                  autoCapitalize="none"
+                  onChangeText={(val) => textInputChanged_server(val)} />
+
+                {this.state.check_textInputChange_server ?
+                  <Animatable.View animation="bounceIn">
+                    <Feather
+                      name="check-circle"
+                      color="#4A4AD4"
+                      size={20} />
+                  </Animatable.View>
+                  :
+                  null}
+
+              </View>
+            </View>
+
+            <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+
+              <View style={styles.action}>
+                <FontAwesome
+                  name="key"
+                  color="#4A4AD4"
+                  size={20} />
+                <TextInput
+                  placeholder="Licence, Ex: xxxx-xxxx-xxxx-xxxx-xxxx"
+                  style={styles.textInput}
+                  autoCapitalize="none"
+                  secureTextEntry={this.state.secureKeyTextEntry ? true : false}
+                  onChangeText={(val) => handleKeyChange(val)} />
+
+
+
+                <View style={{ flexDirection: "row" }}>
+                  <View style={{ paddingRight: 5 }}>
+                    <TouchableOpacity style={styles.eye_style}
+                      onPress={updateSecureKeyTextEntry}>
+
+                      {this.state.secureKeyTextEntry ?
+                        <Feather
+                          name="eye"
+                          color="#4A4AD4"
+                          size={20} />
+                        :
+                        <Feather
+                          name="eye-off"
+                          color="#4A4AD4"
+                          size={20} />
+                      }
+                    </TouchableOpacity>
+
+                  </View>
+                  <View style={{ paddingLeft: 5 }}>
+                    {this.state.check_textInputChange_key ?
+                      <Animatable.View animation="bounceIn">
+                        <Feather
+                          name="check-circle"
+                          color="#4A4AD4"
+                          size={20} />
+                      </Animatable.View>
+                      :
+                      null}
+
+                  </View>
+                </View>
+
+              </View>
             </View>
 
             <View style={styles.button}>
@@ -592,7 +601,8 @@ const styles = StyleSheet.create({
     marginTop: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#f2f2f2',
-    paddingBottom: 5
+    paddingBottom: 5,
+    width: '90%'
   },
   actionError: {
     flexDirection: 'row',

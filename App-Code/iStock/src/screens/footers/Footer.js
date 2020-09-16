@@ -23,7 +23,9 @@ const styles = StyleSheet.create({
         position: "absolute",
         bottom: 0,
         width: '100%',
-        height: '5%'
+        height: '5%',
+        marginTop: 5,
+        marginBottom: 5
     },
     text: {
         color: '#000000'

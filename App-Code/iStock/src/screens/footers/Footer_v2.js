@@ -8,7 +8,7 @@ class MyFooter_v2 extends Component {
     render() {
         return (
             <View style={styles.body}>
-                <Text style={styles.text}>© iStock - Développer par l'agence Anexys</Text>
+                <Text style={styles.text}>iStock © Tous droits réservés - Développer par BDC</Text>
             </View>
         );
     }
@@ -16,7 +16,7 @@ class MyFooter_v2 extends Component {
 
 // define your styles
 const styles = StyleSheet.create({
-    body:{
+    body: {
         alignItems: "center",
         justifyContent: "center",
         position: "absolute",
