@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {StyleSheet, View, Text, ImageBackground, Image, StatusBar, AsyncStorage} from  'react-native';
+import { StyleSheet, View, Text, ImageBackground, Image, StatusBar, AsyncStorage } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import MyFooter from '../footers/Footer';
 import FindProduits from '../../services/FindProduits';
@@ -12,15 +12,16 @@ import CheckData from '../../services/CheckData';
 
 const BG = require('../../../img/waiting_bg.png');
 
+
 class Download extends Component {
 
-  constructor(props){
+  constructor(props) {
     super(props);
     this.state = {
       loadingNotify: 'Initialiser les Téléchargements...',
     };
   }
-  
+
   async componentDidMount() {
 
     // check all data
@@ -82,8 +83,8 @@ class Download extends Component {
       this.props.navigation.navigate('login');
       return;
     }
-/*
 
+    /*
     let currentStep = 1;
     let allSteps = 4;
     const res = [];
@@ -172,11 +173,12 @@ class Download extends Component {
     }
 
    if(res_ == true){
+
       setTimeout(() => {
         this.props.navigation.navigate('dashboard');
         return;
       }, 2500);
-    }else{
+    } else {
       alert("Le serveur Big Data Consulting n'est pas joignable...\n");
     }
     */
@@ -212,7 +214,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#ffffff'
-
   },
   logo: {
     marginTop: 150,

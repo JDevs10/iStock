@@ -1,17 +1,17 @@
 import React, { Component } from 'react';
 import { SafeAreaView, StyleSheet, ScrollView, View, Text, Image, Button, StatusBar, Animated, Dimensions } from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import { Header, LearnMoreLinks, Colors, DebugInstructions, ReloadInstructions} from 'react-native/Libraries/NewAppScreen';
+import { Header, LearnMoreLinks, Colors, DebugInstructions, ReloadInstructions } from 'react-native/Libraries/NewAppScreen';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import LinearGradient from 'react-native-linear-gradient';
-import NavbarDashboard from '../../navbar/navbar-dashboard';
+import NavbarHome from '../../navbar/navbar-home';
 import MyFooter from '../footers/Footer';
 import DeviceInfo, { isLandscape } from 'react-native-device-info';
 import MainButton from '../dashbord-screens/assets/MainButton';
 
 
 export default class Dashboard extends Component {
-  constructor(props){
+  constructor(props) {
     super(props);
 
     /**
@@ -33,7 +33,7 @@ export default class Dashboard extends Component {
     this.state = {
       orientation: isPortrait() ? 'portrait' : 'landscape'
     };
-    
+
     // Event Listener for orientation changes
     Dimensions.addEventListener('change', () => {
       this.setState({
@@ -67,61 +67,30 @@ export default class Dashboard extends Component {
         height: this.state.orientation === 'portrait' ? '80%' : '60%',
         width: '100%',
         position: "absolute",
-        bottom: this.state.orientation === 'portrait' ? "10%" : "20%",
+        bottom: this.state.orientation === 'portrait' ? "12%" : "22%",
       }
     });
-    
+
 
     return (
       <LinearGradient
-        start={{x: 0.0, y: 1}} end={{x: 0.5, y: 1}}
+        start={{ x: 0.0, y: 1 }} end={{ x: 0.5, y: 1 }}
         colors={['#00AAFF', '#706FD3']}
         style={styles.container}>
 
-        <NavbarDashboard navigation={ this.props }/>
+        <NavbarHome navigation={this.props} />
         <View style={styles.mainBody}>
-          <ScrollView style={{flex: 1}}>
-            
-            <Text>Dashboard !</Text>
-            <Text>Dashboard !</Text>
-            <Text>Dashboard !</Text>
-            <Text>Dashboard !</Text>
-            <Text>Dashboard !</Text>
-            <Text>Dashboard !</Text>
-            <Text>Dashboard !</Text>
-            <Text>Dashboard !</Text>
-            <Text>Dashboard !</Text>
-            <Text>Dashboard !</Text>
-            <Text>Dashboard !</Text>
-            <Text>Dashboard !</Text>
-            <Text>Dashboard !</Text>
-            <Text>Dashboard !</Text>
-            <Text>Dashboard !</Text>
-            <Text>Dashboard !</Text>
-            <Text>Dashboard !</Text>
-            <Text>Dashboard !</Text>
-            <Text>Dashboard !</Text>
-            <Text>Dashboard !</Text>
-            <Text>Dashboard !</Text>
-            <Text>Dashboard !</Text>
-            <Text>Dashboard !</Text>
-            <Text>Dashboard !</Text>
-            <Text>Dashboard !</Text>
-            <Text>Dashboard !</Text>
-            <Text>Dashboard !</Text>
-            <Text>Dashboard !</Text>
-            <Text>Dashboard !</Text>
-            <Text>Dashboard !</Text>
-            <Text>Dashboard !</Text>
+          <ScrollView style={{ flex: 1 }}>
+
 
           </ScrollView>
 
-          
+
           {/* Main twist button */}
-          <MainButton navigation={this.props.navigation}/>
+          <MainButton navigation={this.props.navigation} />
           {/* END Main twist button */}
         </View>
-        <MyFooter/>
+        <MyFooter />
       </LinearGradient>
     );
   }
