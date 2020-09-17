@@ -9,62 +9,88 @@ import NavbarDashboard from '../../navbar/navbar-dashboard';
 import MyFooter from '../footers/Footer';
 import DeviceInfo from 'react-native-device-info';
 import OrderDetailButton from './assets/OrderDetailButton';
+import SettingsManager from '../../Database/SettingsManager';
+
 
 // create a component
 class CommandeDetails extends Component {
-  constructor(props) {
-    super(props);
+  
+    constructor(props){
+        super(props);
+    
+        /**
+         * Returns true if the screen is in portrait mode
+         */
+        const isPortrait = () => {
+          const dim = Dimensions.get('screen');
+          return dim.height >= dim.width;
+        };
+    
+        /**
+        * Returns true of the screen is in landscape mode
+        */
+        const isLandscape = () => {
+          const dim = Dimensions.get('screen');
+          return dim.width >= dim.height;
+        };
+    
+        this.state = {
+          settings: {},
+          orientation: isPortrait() ? 'portrait' : 'landscape'
+        };
+        
+        // Event Listener for orientation changes
+        Dimensions.addEventListener('change', () => {
+          this.setState({
+            orientation: isPortrait() ? 'portrait' : 'landscape'
+          });
+        });
+    }
 
-    /**
-     * Returns true if the screen is in portrait mode
-     */
-    const isPortrait = () => {
-      const dim = Dimensions.get('screen');
-      return dim.height >= dim.width;
-    };
+    async  componentDidMount(){
+      await this._settings();
 
-    /**
-    * Returns true of the screen is in landscape mode
-    */
-    const isLandscape = () => {
-      const dim = Dimensions.get('screen');
-      return dim.width >= dim.height;
-    };
-
-    this.state = {
-      orientation: isPortrait() ? 'portrait' : 'landscape'
-    };
-
-    // Event Listener for orientation changes
-    Dimensions.addEventListener('change', () => {
-      this.setState({
-        orientation: isPortrait() ? 'portrait' : 'landscape'
+      this.listener = await this.props.navigation.addListener('focus', async () => {
+        // Prevent default action
+        await this._settings();
+        await console.log('Done settings update!');
+          console.log('new settings : ', this.state.settings);
+        return;
       });
-    });
-  }
-
-  productDetails = (value) => {
-    // alert('Obj: \n' + JSON.stringify(value));
-    this.props.navigation.navigate("ProductDetails", { product: value });
-  }
-
-
-  render() {
-    // console.log('this.props.navigation : ', this.props.route.params);
-
-    const params = this.props.route.params;
-    const order = params ? params.order : null;
-    console.log('order : ', order);
-
-
-    if (this.state.orientation === 'portrait') {
-      console.log('orientation : ', this.state.orientation);
-    }
-    else {
-      console.log('orientation : ', this.state.orientation);
     }
 
-    const styles = StyleSheet.create({
+    productDetails = (value) => {
+      // alert('Obj: \n' + JSON.stringify(value));
+      this.props.navigation.navigate("ProductDetails", {product: value});
+    }
+
+    async _settings(){
+      const sm = new SettingsManager();
+      await sm.initDB();
+      const settings = await sm.GET_SETTINGS_BY_ID(1).then(async (val) => {
+        return await val;
+      });
+      console.log('settings: ', settings);
+      this.setState({settings: settings});
+    }
+
+
+    render() {
+        // console.log('this.props.navigation : ', this.props.route.params);
+        
+        const params = this.props.route.params;
+        const order = params ? params.order : null;
+        console.log('order : ', order);
+
+
+        if (this.state.orientation === 'portrait') {
+            console.log('orientation : ', this.state.orientation);
+        }
+        else {
+            console.log('orientation : ', this.state.orientation);
+        }
+      
+        const styles = StyleSheet.create({
       container: {
         flex: 1,
       },
@@ -137,53 +163,83 @@ class CommandeDetails extends Component {
         width: '75%',
       },
     });
+      
 
+        return (
+            <LinearGradient
+                start={{x: 0.0, y: 1}} end={{x: 0.5, y: 1}}
+                colors={['#00AAFF', '#706FD3']}
+                style={styles.container}>
 
-    return (
-      <LinearGradient
-        start={{ x: 0.0, y: 1 }} end={{ x: 0.5, y: 1 }}
-        colors={['#00AAFF', '#706FD3']}
-        style={styles.container}>
+                <NavbarDashboard navigation={ this.props } textTittleValue={"Commande " + order.ref}/>
+                <View style={styles.mainBody}>
 
-        <NavbarDashboard navigation={this.props} textTittleValue={"Commande " + order.ref} />
-        <View style={styles.mainBody}>
+                <ScrollView style={{flex: 1}}>
+                {
+                    order.lines.map((item, index) => (
+                      <TouchableOpacity onPress={() => this.productDetails(item)}>
 
-          <ScrollView style={{ flex: 1 }}>
-            {
-              order.lines.map((item, index) => (
-                <TouchableOpacity onPress={() => this.productDetails(item)}>
+                        {this.state.settings.isUseDetailedCMDLines ? 
+                          <CardView key={index} cardElevation={10} cornerRadius={5} style={styles.cardViewStyle}>
+                            <View style={styles.cardViewStyle1}>
+                              <View style={[styles.article, { flexDirection: "row" }]}>
+                                <View>
+                                  <Image style={{ width: DeviceInfo.isTablet() ? 100 : 50, height: DeviceInfo.isTablet() ? 100 : 50 }} source={require('../../../img/no_image.jpeg')} />
+                                </View>
+                                <View style={{ flex: 1, marginLeft: 10 }}>
+                                  <View style={styles.ic_and_details}>
+                                    <View style={styles.aname}>
+                                      <Text style={styles.articlename}>{item.name}</Text>
+                                    </View>
+                                    <View style={styles.aref}>
+                                      <Text style={styles.ref}>{item.ref}</Text>
+                                    </View>
+                                  </View>
+                                  <View style={styles.ic_and_details}>
+                                    <Icon name="boxes" size={15} style={styles.iconDetails} />
+                                    <Text> XXX Produit(s)</Text>
+                                  </View>
 
-                  <CardView key={index} cardElevation={10} cornerRadius={5} style={styles.cardViewStyle}>
-                    <View style={styles.cardViewStyle1}>
-                      <View style={[styles.article, { flexDirection: "row" }]}>
-                        <View>
-                          <Image style={{ width: DeviceInfo.isTablet() ? 100 : 50, height: DeviceInfo.isTablet() ? 100 : 50 }} source={require('../../../img/no_image.jpeg')} />
-                        </View>
-                        <View style={{ flex: 1, marginLeft: 10 }}>
-                          <View style={styles.ic_and_details}>
-                            <View style={styles.aname}>
-                              <Text style={styles.articlename}>{item.name}</Text>
+                                  <View style={{ borderBottomColor: '#00AAFF', borderBottomWidth: 1, marginRight: 10 }} />
+
+                                  <View style={styles.pricedetails}>
+                                    <View style={styles.price}>
+                                      <Text>Total TTC : {item.prixTotalTTC > 0 ? (parseFloat(item.prixTotalTTC)).toFixed(2) : '0'} €</Text>
+                                    </View>
+                                    {/* <View style={styles.billedstate}>
+                                          {item.etat === 0 ? (<Text style={styles.billedtext_no}>Non Validé</Text>) : (<Text style={styles.billedtext_ok}>Validé</Text>)}
+                                        </View> */}
+                                  </View>
+                                </View>
+                                
+                              </View>
                             </View>
-                            <View style={styles.aref}>
-                              <Text style={styles.ref}>{item.ref}</Text>
-                            </View>
-                          </View>
-                          <View style={styles.ic_and_details}>
-                            <Icon name="boxes" size={15} style={styles.iconDetails} />
-                            <Text> XXX Produit(s)</Text>
-                          </View>
+                          </CardView>
+                        : 
+                          <CardView key={index} cardElevation={10} cornerRadius={5} style={styles.cardViewStyle}>
+                            <View style={styles.cardViewStyle1}>
+                              <View style={[styles.article, {flexDirection: "row"}]}>
+                                <View style={{flex: 1, marginLeft: 10}}>
+                                <View style={styles.ic_and_details}>
+                                  <View style={styles.aname}>
+                                  <Text style={styles.articlename}>{item.name}</Text>
+                                  </View>
+                                  <View style={styles.aref}>
+                                    <Text style={styles.ref}>{item.ref}</Text>
+                                  </View>
+                                </View>
+                                <View style={styles.ic_and_details}>
+                                  <Icon name="boxes" size={15} style={styles.iconDetails} />
+                                  <Text> XXX Produit(s)</Text>
+                                </View>
 
-                          <View style={{ borderBottomColor: '#00AAFF', borderBottomWidth: 1, marginRight: 10 }} />
-
-                          <View style={styles.pricedetails}>
-                            <View style={styles.price}>
-                              <Text>Total TTC : {item.prixTotalTTC > 0 ? (parseFloat(item.prixTotalTTC)).toFixed(2) : '0'} €</Text>
+                                <View style={{ borderBottomColor: '#00AAFF', borderBottomWidth: 1, marginRight: 10 }} />
+                                </View>
+                                
+                              </View>
                             </View>
-                            {/* <View style={styles.billedstate}>
-                                  {item.etat === 0 ? (<Text style={styles.billedtext_no}>Non Validé</Text>) : (<Text style={styles.billedtext_ok}>Validé</Text>)}
-                                </View> */}
-                          </View>
-                        </View>
+                          </CardView>
+                        }
 
                       </View>
                     </View>

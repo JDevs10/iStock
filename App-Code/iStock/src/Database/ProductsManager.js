@@ -178,6 +178,7 @@ class ProductsManager extends Component {
                 //await this.closeDatabase(db);
             }).catch(async (err) => {
                 console.log(err);
+                await resolve([]);
             });
         });
     }
@@ -235,7 +236,7 @@ class ProductsManager extends Component {
 
     //Delete
     async DROP_PRODUCT(){
-        console.log("##### DELETE_PRODUCT_LIST #########################");
+        console.log("##### DROP_PRODUCT #########################");
 
         return await new Promise(async (resolve) => {
             await db.transaction(async function (txn) {

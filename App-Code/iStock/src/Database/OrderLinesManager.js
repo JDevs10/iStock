@@ -130,6 +130,54 @@ class OrderLinesManager extends Component {
         });
     }
 
+    async GET_LINES(){
+        console.log("##### GET_LINES #########################");
+
+        return await new Promise(async (resolve) => {
+            try{
+                const lines = [];
+                await db.transaction(async (tx) => {
+                    await tx.executeSql("SELECT l." + COLUMN_ID + ", l." + COLUMN_ORDER_ID + ", l." + COLUMN_LABEL + ", l." + COLUMN_REF + ", l." +COLUMN_QTE + ", l." +COLUMN_PRICE + ", l." +COLUMN_TVA_TX + ", l." +COLUMN_TOTAL_HT + ", l." +COLUMN_TOTAL_TVA + ", l." +COLUMN_TOTAL_TTC + " FROM " + TABLE_NAME + " as l", [], async (tx, results) => {
+                        var len = results.rows.length;
+                        for (let i = 0; i < len; i++) {
+                            let row = results.rows.item(i);
+                            lines.push(row);
+                        }
+                        // console.log(products);
+                        await resolve(lines);
+                    });
+                });
+            } catch(error){
+                console.log("error: ", error);
+                return resolve(null);
+            }
+        });
+    }
+
+    async GET_LINES_CHECKDATA(){
+        console.log("##### GET_LINES #########################");
+
+        return await new Promise(async (resolve) => {
+            try{
+                const lines = [];
+                await db.transaction(async (tx) => {
+                    await tx.executeSql("SELECT l." + COLUMN_ID + ", l." + COLUMN_ORDER_ID + ", l." + COLUMN_LABEL + ", l." + COLUMN_REF + ", l." +COLUMN_QTE + ", l." +COLUMN_PRICE + ", l." +COLUMN_TVA_TX + ", l." +COLUMN_TOTAL_HT + ", l." +COLUMN_TOTAL_TVA + ", l." +COLUMN_TOTAL_TTC + " FROM " + TABLE_NAME + " as l", [], async (tx, results) => {
+                        var len = results.rows.length;
+                        for (let i = 0; i < len; i++) {
+                            let row = results.rows.item(i);
+                            lines.push(row);
+                        }
+                        // console.log(products);
+                        await resolve(lines);
+                    });
+                });
+            } catch(error){
+                console.log("error: ", error);
+                return resolve([]);
+            }
+        });
+    }
+
     async GET_LINES_BY_ORDER_ID(id){
         console.log("##### GET_LINES_BY_ORDER_ID #########################");
 
@@ -144,7 +192,7 @@ class OrderLinesManager extends Component {
                             lines.push(row);
                         }
                         // console.log(products);
-                        await resolve(lines);
+                        await resolve(lines[0]);
                     });
                 });
             } catch(error){
@@ -172,7 +220,7 @@ class OrderLinesManager extends Component {
 
     //Delete
     async DROP_ORDER(){
-        console.log("##### DELETE_ORDER_LIST #########################");
+        console.log("##### DROP_ORDER #########################");
 
         return await new Promise(async (resolve) => {
             await db.transaction(async function (txn) {

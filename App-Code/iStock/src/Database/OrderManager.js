@@ -146,6 +146,32 @@ class OrderManager extends Component {
         });
     }
 
+    async GET_LIST(){
+        console.log("##### GET_LIST #########################");
+
+        return await new Promise(async (resolve) => {
+            const products = [];
+            await db.transaction(async (tx) => {
+                await tx.executeSql("SELECT p." + COLUMN_ID + ", p." + COLUMN_IS_SYNC + ", p." + COLUMN_STATUT + ", p." + COLUMN_REF_CLIENT + ", p." +COLUMN_SOCID + ", p." +COLUMN_USER_AUTHOR_ID + ", p." +COLUMN_REF_COMMANDE + ", p." +COLUMN_DATE_CREATION + ", p." +COLUMN_DATE_COMMANDE + ", p." +COLUMN_DATE_LIVRAISON + ", p." +COLUMN_NOTE_PUBLIC + ", p." +COLUMN_NOTE_PRIVEE + ", p." +COLUMN_TOTAL_HT + ", p." +COLUMN_TOTAL_TVA + ", p." +COLUMN_TOTAL_TTC + ", p." +COLUMN_BROUILLION + ", p." +COLUMN_REMISE_ABSOLUE + ", p." +COLUMN_REMISE_PERCENT + ", p." +COLUMN_REMISE +" FROM " + TABLE_NAME + " as p", []).then(async ([tx,results]) => {
+                    console.log("Query completed");
+                    var len = results.rows.length;
+                    for (let i = 0; i < len; i++) {
+                        let row = results.rows.item(i);
+                        const { id, is_sync, statut, ref_client, socId, user_author_id, ref_commande, date_creation, date_commande, date_livraison, note_public, note_privee, total_ht, total_tva, total_ttc, brouillon, remise_absolue, remise_percent, remise } = row;
+                        products.push({ id, is_sync, statut, ref_client, socId, user_author_id, ref_commande, date_creation, date_commande, date_livraison, note_public, note_privee, total_ht, total_tva, total_ttc, brouillon, remise_absolue, remise_percent, remise });
+                    }
+                    // console.log(products);
+                    await resolve(products);
+                });
+            }).then(async (result) => {
+                //await this.closeDatabase(db);
+            }).catch(async (err) => {
+                console.log('err: ', err);
+                await resolve([]);
+            });
+        });
+    }
+
     async GET_ORDER_BY_ID(id){
         console.log("##### GET_ORDER_BY_ID #########################");
 
@@ -208,7 +234,7 @@ class OrderManager extends Component {
 
     //Delete
     async DROP_ORDER(){
-        console.log("##### DELETE_ORDER_LIST #########################");
+        console.log("##### DROP_ORDER #########################");
 
         return await new Promise(async (resolve) => {
             await db.transaction(async function (txn) {

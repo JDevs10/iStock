@@ -158,7 +158,7 @@ class TokenManager extends Component {
 
     //Delete
     async DROP_TOKEN(){
-        console.log("##### DELETE_TOKEN_LIST #########################");
+        console.log("##### DROP_TOKEN #########################");
 
         return await new Promise(async (resolve) => {
             await db.transaction(async function (txn) {

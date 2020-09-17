@@ -25,9 +25,6 @@ class Loading extends Component {
   }
 
   async componentDidMount() {
-    // setTimeout(() => {
-    //   this.props.navigation.navigate('login');
-    // }, 2500);
 
     setTimeout(() => {
       this.setState({
@@ -60,8 +57,7 @@ class Loading extends Component {
         this.props.navigation.navigate('login');
       }, 2500);
     } else {
-      //alert("Le serveur Big Data Consulting n'est pas joignable...\n");
-      this.props.navigation.navigate('dashboard');
+      alert("Le serveur Big Data Consulting n'est pas joignable...\n");
     }
   }
 
@@ -75,8 +71,6 @@ class Loading extends Component {
         <Image style={styles.logo} source={require('../../../img/Loading.gif')} />
         <Text style={styles.text}>{this.state.loadingNotify}</Text>
       </View>
-
-
 
     );
   }

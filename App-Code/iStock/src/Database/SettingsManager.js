@@ -13,20 +13,22 @@ const DATABASE_VERSION = DatabaseInfo.DATABASE_VERSION;
 const DATABASE_DISPLAY_NAME = DatabaseInfo.DATABASE_DISPLAY_NAME;
 const DATABASE_SIZE = DatabaseInfo.DATABASE_SIZE;
 
-const TABLE_NAME = "servers";
+const TABLE_NAME = "settings";
 const COLUMN_ID = "id";
-const COLUMN_NAME = "name";
-const COLUMN_URL = "url";
+const COLUMN_IS_USE_IMAGES = "isUseImages";
+const COLUMN_IS_USE_DETAILED_CMD = "isUseDetailedCMD";
+const COLUMN_IS_USE_DETAILED_CMD_LINES = "isUseDetailedCMDLines";
 
 const create = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "(" +
     COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-    COLUMN_NAME + " VARCHAR(255)," +
-    COLUMN_URL + " VARCHAR(255)" +
+    COLUMN_IS_USE_IMAGES + " VARCHAR(255)," +
+    COLUMN_IS_USE_DETAILED_CMD + " VARCHAR(255)," +
+    COLUMN_IS_USE_DETAILED_CMD_LINES + " VARCHAR(255)" +
 ")";
 
 
 // create a component
-class ServerManager extends Component {
+class SettingsManager extends Component {
     //Init database
     async initDB() {
         return await new Promise(async (resolve) => {
@@ -73,8 +75,8 @@ class ServerManager extends Component {
 
 
     //Create
-    async CREATE_SERVER_TABLE(){
-        console.log("##### CREATE_SERVER_TABLE #########################");
+    async CREATE_SETTINGS_TABLE(){
+        console.log("##### CREATE_SETTINGS_TABLE #########################");
         return await new Promise(async (resolve) => {
             try{
                 await db.transaction(async function (txn) {
@@ -92,119 +94,85 @@ class ServerManager extends Component {
         });
     }
 
-    //Insert a list
-    async INSERT_SERVER_L(data_){
-        console.log("##### INSERT_SERVER - List #########################");
-
-        console.log("inserting.... ", data_.length);
+    //Insert
+    async INSERT_SETTINGS(data_){
+        console.log("##### INSERT_SETTINGS #########################");
+        console.log("inserting.... ", data_);
         return await new Promise(async (resolve) => {
             try{
-                for(let x = 0; x < data_.length; x++){
-                    console.log("INSERT INTO " + TABLE_NAME + " ("+COLUMN_ID+", "+COLUMN_NAME+", "+COLUMN_URL+") VALUES (NULL, '"+data_[x].name+"', '"+data_[x].url+"')");
-                    await db.transaction(async (tx) => {
-                        await tx.executeSql("INSERT INTO " + TABLE_NAME + " ("+COLUMN_ID+", "+COLUMN_NAME+", "+COLUMN_URL+") VALUES (NULL, '"+data_[x].name+"', '"+data_[x].url+"')", []);
-                    });
-                }
+                await db.transaction(async (tx) => {
+                    await tx.executeSql("INSERT INTO " + TABLE_NAME + " ("+COLUMN_ID+", "+COLUMN_IS_USE_IMAGES+", "+COLUMN_IS_USE_DETAILED_CMD+", "+COLUMN_IS_USE_DETAILED_CMD_LINES+") VALUES (1, '"+(data_.isUseImages == true ? 'true' : 'false')+"', '"+(data_.isUseDetailedCMD == true ? 'true' : 'false')+"', '"+(data_.isUseDetailedCMDLines == true ? 'true' : 'false')+"')", []);
+                });
                 return await resolve(true);
             } catch(error){
-                return resolve(false);
+                return await resolve(false);
             }
         });
     }
 
     //Get by id
-    async GET_SERVER_BY_ID(id){
-        console.log("##### GET_SERVER_BY_ID #########################");
+    async GET_SETTINGS_BY_ID(id){
+        console.log("##### GET_SETTINGS_BY_ID #########################");
 
         return await new Promise(async (resolve) => {
-            let server = {};
+            let token = null;
             await db.transaction(async (tx) => {
-                await tx.executeSql('SELECT s.id, s.name, s.url FROM '+TABLE_NAME+' s WHERE s.id = '+id, []).then(async ([tx,results]) => {
+                await tx.executeSql("SELECT s."+COLUMN_IS_USE_IMAGES+", s."+COLUMN_IS_USE_DETAILED_CMD+", s."+COLUMN_IS_USE_DETAILED_CMD_LINES+" FROM "+TABLE_NAME+" s WHERE s."+COLUMN_ID+" = "+id, []).then(async ([tx,results]) => {
                     console.log("Query completed");
                     var len = results.rows.length;
                     for (let i = 0; i < len; i++) {
                         let row = results.rows.item(i);
-                        console.log(`ID: ${row.id}, name: ${row.name}`)
-                        server = row;
+                        console.log('token => row: ', row);
+                        token = {
+                            isUseImages: (row.isUseImages == 'true' ? true : false),
+                            isUseDetailedCMD: (row.isUseDetailedCMD == 'true' ? true : false),
+                            isUseDetailedCMDLines: (row.isUseDetailedCMDLines == 'true' ? true : false),
+                        };
                     }
-                    console.log(server);
-                    await resolve(server);
                 });
             }).then(async (result) => {
-                await this.closeDatabase(db);
+                // await this.closeDatabase(db);
+                // console.log('token: ', token);
+                await resolve(token);
             }).catch(async (err) => {
                 console.log(err);
+                await resolve(null);
             });
         });
     }
 
-    // get all
-    async GET_SERVER_LIST(){
-        console.log("##### GET_SERVER_LIST #########################");
+    // Update image path
+    async UPDATE_SETTINGS(data){
+        console.log("##### UPDATE_SETTINGS #########################");
 
         return await new Promise(async (resolve) => {
-            const categories = [];
             await db.transaction(async (tx) => {
-                await tx.executeSql('SELECT s.id, s.name, s.url FROM '+TABLE_NAME+' s', []).then(async ([tx,results]) => {
-                    console.log("Query completed");
-                    var len = results.rows.length;
-                    for (let i = 0; i < len; i++) {
-                        let row = results.rows.item(i);
-                        console.log(`ID: ${row.id}, name: ${row.name}`)
-                        const { id, name, url } = row;
-                        categories.push({
-                            id,
-                            name,
-                            url
-                        });
-                    }
-                    console.log(categories);
-                    await resolve(categories);
-                });
+                await tx.executeSql("UPDATE "+TABLE_NAME+" SET "+COLUMN_IS_USE_IMAGES+" = '"+(data.isUseImages == true ? 'true' : 'false')+"', "+COLUMN_IS_USE_DETAILED_CMD+" = '"+(data.isUseDetailedCMD == true ? 'true' : 'false')+"', "+COLUMN_IS_USE_DETAILED_CMD_LINES+" = '"+(data.isUseDetailedCMDLines == true ? 'true' : 'false')+"' WHERE "+COLUMN_ID+" = 1", []);
+
             }).then(async (result) => {
-                await this.closeDatabase(db);
+                await resolve(true);
             }).catch(async (err) => {
-                console.log(err);
-            });
-        });
-
-    }
-
-    //Update
-    async UPDATE_SERVER_BY_ID(data_){
-        console.log("##### UPDATE_SERVER_BY_ID #########################");
-
-        return await new Promise(async (resolve) => {
-            await db.transaction(async (tx) => {
-                await tx.executeSql("UPDATE " + TABLE_NAME + " SET " + COLUMN_NAME + " = "+data_.name+", "+COLUMN_URL+" = "+data_.url+" WHERE " + COLUMN_ID + " = " + data_.id, []);
-                resolve(true);
-
-            }).then(async (result) => {
-                console.error('result : ', result);
-                resolve(false);
+                console.log('err: ', err);
+                await resolve(false);
             });
         });
     }
 
     //Delete
-    async DELETE_SERVER_LIST(){
-        console.log("##### DELETE_SERVER_LIST #########################");
+    async DELETE_SETTINGS_LIST(){
+        console.log("##### DELETE_SETTINGS_LIST #########################");
 
         return await new Promise(async (resolve) => {
             await db.transaction(async (tx) => {
                 await tx.executeSql("DELETE FROM " + TABLE_NAME, []);
-                resolve(true);
-
-            }).then(async (result) => {
-                console.error('result : ', result);
-                resolve(false);
             });
+            return await resolve(true);
         });
     }
 
     //Delete
-    async DROP_SERVER(){
-        console.log("##### DROP_SERVER #########################");
+    async DROP_SETTINGS(){
+        console.log("##### DROP_SETTINGS #########################");
 
         return await new Promise(async (resolve) => {
             await db.transaction(async function (txn) {
@@ -214,7 +182,8 @@ class ServerManager extends Component {
             return await resolve(true);
         });
     }
+
 }
 
 //make this component available to the app
-export default ServerManager;
+export default SettingsManager;
