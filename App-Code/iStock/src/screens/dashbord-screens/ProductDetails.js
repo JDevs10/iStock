@@ -6,7 +6,7 @@ import { StyleSheet, ScrollView, TouchableOpacity, View, Text, TextInput, FlatLi
 import { Card, Button } from 'react-native-elements'
 import LinearGradient from 'react-native-linear-gradient';
 import NavbarDashboard from '../../navbar/navbar-dashboard';
-import MyFooter from '../footers/Footer';
+import MyFooter_v2 from '../footers/MyFooter_v2';
 import DeviceInfo from 'react-native-device-info';
 import ProductDetailButton from './assets/ProductDetailButton';
 
@@ -237,22 +237,30 @@ class ProductDetails extends Component {
           <ScrollView style={{ flex: 1 }}>
 
             <View>
-              {/*<Text>{JSON.stringify(product)}</Text> */}
+              <Text>{JSON.stringify(product)}</Text>
             </View>
 
             <CardView cardElevation={10} cornerRadius={5} style={styles.cardViewStyle}>
               <View style={styles.cardViewStyle1}>
                 <View style={[styles.article, { flexDirection: "row" }]}>
                   <View>
-                    <Image style={{ width: DeviceInfo.isTablet() ? 180 : 50, height: DeviceInfo.isTablet() ? 180 : 50 }} source={require('../../../img/no_image.jpeg')} />
-                  </View>
+                    {product.image.length > 0 ? 
+                      <Image style={{ width: DeviceInfo.isTablet() ? 400 : 50, height: DeviceInfo.isTablet() ? 400 : 50 }} source={{uri: product.image}} />
+                    : 
+                      <Image style={{ width: DeviceInfo.isTablet() ? 400 : 50, height: DeviceInfo.isTablet() ? 400 : 50 }} source={require('../../../img/no_image.jpeg')} />
+                    }
+                    </View>
                   <View style={{ flex: 1, marginLeft: 40 }}>
                     <View style={styles.ic_and_details}>
                       <View style={styles.aname}>
                         <Text style={styles.articlename}>{product.name}</Text>
-                        <View style={{ flexDirection: "row", marginTop: 10, marginBottom: 50 }}>
+                        <View style={{ flexDirection: "row", marginTop: 10 }}>
                           <Text style={styles.subtexts}>Référence : </Text>
                           <Text style={styles.ref}>{product.ref}</Text>
+                        </View>
+                        <View style={{ flexDirection: "row", marginBottom: 50 }}>
+                          <Text style={styles.subtexts}>Code-Barre : </Text>
+                          <Text style={styles.ref}>xxxxxxxx</Text>
                         </View>
                       </View>
                     </View>
@@ -264,141 +272,30 @@ class ProductDetails extends Component {
                     </View>
                     <View style={[styles.ic_and_details, { marginTop: 40 }]}>
                       <Icon name="boxes" size={15} style={styles.iconDetails} />
-                      <Text> XXX en stock</Text>
+                      <Text>XXX en stock</Text>
+                    </View>
+                    <View style={[styles.ic_and_details]}>
+                      <Icon name="boxes" size={15} style={styles.iconDetails} />
+                      <Text>N°Lot : XXXXXXXXXXX</Text>
+                    </View>
+                    <View style={[styles.ic_and_details]}>
+                      <Icon name="boxes" size={15} style={styles.iconDetails} />
+                      <Text>DLC : xx/xx/xxxx</Text>
+                    </View>
+                    <View style={[styles.ic_and_details]}>
+                      <Icon name="boxes" size={15} style={styles.iconDetails} />
+                      <Text>DLUO : xx/xx/xxxx</Text>
+                    </View>
+                    <View style={[styles.ic_and_details]}>
+                      <Icon name="boxes" size={15} style={styles.iconDetails} />
+                      <Text>Emplacement : xxxxx</Text>
                     </View>
                   </View>
                 </View>
               </View>
             </CardView>
 
-            <CardView cardElevation={10} cornerRadius={5} style={[{ paddingBottom: 20, marginBottom: 50 }, styles.cardViewStyle]}>
-              <View>
-                <Text style={{ marginTop: 15, marginLeft: 20, fontWeight: "bold", fontSize: 15 }}>Qte commande</Text>
-                <View style={styles.qtys_container}>
-                  <TouchableOpacity style={styles.Buttons_actions} onPress={() => this.setState({ ...this.state, qte_cmd: (this.state.qte_cmd > 1 ? this.state.qte_cmd - 1 : 0) })}>
-                    <Text style={styles.buttons_text}>-</Text>
-                  </TouchableOpacity>
-                  {this.state.qte_cmd == 0 ?
-                    <TextInput style={styles.qtys_input} placeholder="Qte commande*" value={""} />
-                    :
-                    <TextInput style={styles.qtys_input} placeholder="Qte commande*" value={"" + this.state.qte_cmd} />
-                  }
-                  <TouchableOpacity style={styles.Buttons_actions} onPress={() => this.setState({ ...this.state, qte_cmd: this.state.qte_cmd + 1 })}>
-                    <Text style={styles.buttons_text}>+</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
 
-              <View>
-                <Text style={{ marginTop: 15, marginLeft: 20, fontWeight: "bold", fontSize: 15 }}>Remise</Text>
-                <View style={styles.qtys_container}>
-                  <TouchableOpacity style={styles.Buttons_actions} onPress={() => this.setState({ ...this.state, remise: (this.state.remise > 1 ? this.state.remise - 1 : 0) })}>
-                    <Text style={styles.buttons_text}>-</Text>
-                  </TouchableOpacity>
-                  {this.state.remise == 0 ?
-                    <TextInput style={styles.qtys_input} placeholder="Remise*" value={""} />
-                    :
-                    <TextInput style={styles.qtys_input} placeholder="Remise*" value={"" + this.state.remise} />
-                  }
-                  <TouchableOpacity style={styles.Buttons_actions} onPress={() => this.setState({ ...this.state, remise: this.state.remise + 1 })}>
-                    <Text style={styles.buttons_text}>+</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              <View>
-                <Text style={{ marginTop: 15, marginLeft: 20, fontWeight: "bold", fontSize: 15 }}>Prix Unitaire</Text>
-                <View style={styles.qtys_container}>
-                  {this.state.prixUnitaire == 0 ?
-                    <TextInput style={styles.qtys_input} placeholder="PU*" onChangeText={(text) => this.setState({ ...this.state, prixUnitaire: text })} keyboardType={'decimal-pad'} />
-                    :
-                    <TextInput style={styles.qtys_input} placeholder="PU*" value={"" + this.state.prixUnitaire} onChangeText={(text) => this.setState({ ...this.state, prixUnitaire: text })} keyboardType={'decimal-pad'} />
-                  }
-                  <TouchableOpacity style={styles.Buttons_del} onPress={() => this.setState({ ...this.state, prixUnitaire: 0 })}>
-                    <Text style={styles.button_del_text}>x</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              <View>
-                <Text style={{ marginTop: 15, marginLeft: 20, fontWeight: "bold", fontSize: 15 }}>Prix TTC</Text>
-                <View style={styles.ttc_container}>
-                  <View style={{ flexDirection: "row", padding: 5 }}>
-                    {this.state.PTTC == 0 ?
-                      <TextInput style={{ flex: 15, marginLeft: 20 }} placeholder="PTTC*" keyboardType={'decimal-pad'} onTextInput={""} />
-                      :
-                      <TextInput style={{ flex: 15, marginLeft: 20 }} placeholder="PTTC*" value={"" + this.state.PTTC} keyboardType={'decimal-pad'} />
-                    }
-                    <TouchableOpacity style={styles.Buttons_actions} onPress={() => this.setState({ ...this.state, PTTC_List: !this.state.PTTC_List })}>
-                      <Icon name="arrow-down" size={20} style={{ color: '#ffffff' }} />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-                {this.state.PTTC_List ?
-                  <View style={{ marginTop: 10, borderColor: "#ABCDEF", borderWidth: 0, borderTopWidth: 1, paddingLeft: 30, padding: 5 }}>
-                    <ScrollView style={{ flex: 1 }}>
-                      {
-                        pttcList.map((item, index) => (
-                          <TouchableOpacity onPress={() => this.pttcSelected(item)}>
-
-                            <View key={index}>
-                              <View style={{ width: '15%', borderBottomWidth: 1, borderColor: "#ABCDEF", marginTop: 10, marginBottom: 10 }}>
-                                <Text>{item.name}</Text>
-                              </View>
-                            </View>
-
-                          </TouchableOpacity>
-                        ))
-                      }
-                    </ScrollView>
-                  </View>
-                  :
-                  null
-                }
-
-              </View>
-
-              <View>
-                <Text style={{ marginTop: 15, marginLeft: 20, fontWeight: "bold", fontSize: 15 }}>Emplacement</Text>
-                <View style={styles.qtys_container}>
-                  <View style={{ flexDirection: "row", padding: 5 }}>
-                    <TouchableOpacity style={styles.Buttons_actions} onPress={() => this.setState({ ...this.state, emplacement_List: !this.state.emplacement_List })}>
-                      <Icon name="search" size={20} style={{ color: '#ffffff' }} />
-                    </TouchableOpacity>
-                    {this.state.emplacement == "" ?
-                      <TextInput style={{ flex: 15, marginLeft: 20 }} placeholder="Emplacement*" value={""} />
-                      :
-                      <TextInput style={{ flex: 15, marginLeft: 20, color: '#000000' }} placeholder="Emplacement*" value={this.state.emplacement} />
-                    }
-
-                  </View>
-                </View>
-
-                {this.state.emplacement_List ?
-                  <View style={{ marginTop: 10, borderColor: "#706FD3", borderWidth: 0, borderTopWidth: 1, paddingLeft: 30, padding: 5 }}>
-                    <ScrollView style={{ flex: 1 }}>
-                      {
-                        emplacementList.map((item, index) => (
-                          <TouchableOpacity onPress={() => this.emplacementSelected(item)}>
-
-                            <View key={index}>
-                              <View style={{ width: '80%', borderBottomWidth: 1, borderColor: "#706FD3", marginTop: 10, marginBottom: 20 }}>
-                                <Text>{item.name}</Text>
-                              </View>
-                            </View>
-
-                          </TouchableOpacity>
-                        ))
-                      }
-                    </ScrollView>
-                  </View>
-                  :
-                  null
-                }
-              </View>
-
-
-            </CardView>
 
           </ScrollView>
 
@@ -408,7 +305,7 @@ class ProductDetails extends Component {
           {/* END Main twist button */}
 
         </View>
-        <MyFooter />
+        <MyFooter_v2 />
       </LinearGradient>
     );
   }

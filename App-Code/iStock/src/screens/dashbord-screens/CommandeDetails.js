@@ -6,7 +6,7 @@ import { StyleSheet, ScrollView, TouchableOpacity, View, Text, FlatList, Image, 
 import { Card, Button } from 'react-native-elements'
 import LinearGradient from 'react-native-linear-gradient';
 import NavbarDashboard from '../../navbar/navbar-dashboard';
-import MyFooter from '../footers/Footer';
+import MyFooter_v2 from '../footers/MyFooter_v2';
 import DeviceInfo from 'react-native-device-info';
 import OrderDetailButton from './assets/OrderDetailButton';
 import SettingsManager from '../../Database/SettingsManager';
@@ -241,11 +241,7 @@ class CommandeDetails extends Component {
                           </CardView>
                         }
 
-                      </View>
-                    </View>
-                  </CardView>
-
-                </TouchableOpacity>
+                      </TouchableOpacity>
               ))
             }
 
@@ -259,7 +255,7 @@ class CommandeDetails extends Component {
           {/* END Main twist button */}
 
         </View>
-        <MyFooter />
+        <MyFooter_v2 />
       </LinearGradient>
     );
   }

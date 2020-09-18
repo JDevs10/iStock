@@ -9,7 +9,7 @@ import {
 } from 'react-native/Libraries/NewAppScreen';
 import LinearGradient from 'react-native-linear-gradient';
 import NavbarDashboard from '../../navbar/navbar-dashboard';
-import MyFooter from '../footers/Footer';
+import MyFooter_v2 from '../footers/MyFooter_v2';
 import InventoryButton from '../dashbord-screens/assets/InventoryButton';
 
 class Inventory extends Component {
@@ -37,7 +37,7 @@ class Inventory extends Component {
               Inventory !
           </Text>
         </View>
-        <MyFooter/>
+        <MyFooter_v2/>
       </LinearGradient>
     );
   }

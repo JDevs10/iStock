@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { StyleSheet, View, Text, ImageBackground, Image, StatusBar, AsyncStorage } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import MyFooter from '../footers/Footer';
+import MyFooter from '../footers/MyFooter';
 import FindProduits from '../../services/FindProduits';
 import FindImages from '../../services/FindImages';
 import FindThirdParties from '../../services/FindThirdParties';
@@ -84,7 +84,7 @@ class Download extends Component {
       return;
     }
 
-    /*
+    
     let currentStep = 1;
     let allSteps = 4;
     const res = [];
@@ -181,7 +181,7 @@ class Download extends Component {
     } else {
       alert("Le serveur Big Data Consulting n'est pas joignable...\n");
     }
-    */
+    
    setTimeout(() => {
       this.props.navigation.navigate('dashboard');
       return;

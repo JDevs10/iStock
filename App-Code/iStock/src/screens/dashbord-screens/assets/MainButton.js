@@ -47,17 +47,17 @@ export default class MainButton extends Component {
         ]).start();
     }
 
-    navigateTo_cmd = () => {
-        console.log('Commande');
-        this.props.navigation.navigate("Commande");
-        this.default__();
-    }
-    navigateTo_ppt = () => {
+    navigateTo_1 = () => {
         console.log('Preparation');
         this.props.navigation.navigate("Preparation");
         this.default__();
     }
-    navigateTo_ity = () => {
+    // navigateTo_2 = () => {
+    //     console.log('Preparation');
+    //     this.props.navigation.navigate("Preparation");
+    //     this.default__();
+    // }
+    navigateTo_3 = () => {
         console.log('Inventory');
         this.props.navigation.navigate("Inventory");
         this.default__();
@@ -110,27 +110,27 @@ export default class MainButton extends Component {
 
             <Animated.View style={{position: 'relative', left: btn_1X, top: btn_1Y }}>
                 <View style={styles.secondaryButtons}>
-                    <TouchableOpacity onPress={this.navigateTo_cmd}>
+                    <TouchableOpacity onPress={this.navigateTo_1}>
                         {/* <FontAwesome name="home" color="#05375a" size={DeviceInfo.isTablet() ? 60 : 30} /> */}
-                        <Text>Commande</Text>
+                        <Text>Préparation</Text>
                     </TouchableOpacity>
                 </View>
             </Animated.View>
 
-            <Animated.View style={{position: 'relative', left: btn_2X, top: btn_2Y }}>
+            {/* <Animated.View style={{position: 'relative', left: btn_2X, top: btn_2Y }}>
                 <View style={styles.secondaryButtons}>
-                    <TouchableOpacity onPress={this.navigateTo_ppt}>
-                        {/* <FontAwesome name="home" color="#05375a" size={DeviceInfo.isTablet() ? 60 : 30} /> */}
+                    <TouchableOpacity onPress={this.navigateTo_2}>
+                        <FontAwesome name="home" color="#05375a" size={DeviceInfo.isTablet() ? 60 : 30} />
                         <Text>préparation</Text>
                     </TouchableOpacity>
                 </View>
-            </Animated.View>
+            </Animated.View> */}
             <Animated.View style={{position: 'relative', left: btn_3X, top: btn_3Y }}>
                 <View style={styles.secondaryButtons}>
-                    <TouchableOpacity onPress={this.navigateTo_ity}>
+                    <TouchableOpacity onPress={this.navigateTo_3}>
                         {/* <FontAwesome name="key" color="#05375a" size={60} />  */}
                         {/* <Image style={{width: DeviceInfo.isTablet() ? 60 : 30, height: DeviceInfo.isTablet() ? 60 : 30 }} source={require('../../../../img/power-off.png')}/> */}
-                        <Text>inventory</Text>
+                        <Text>Inventaire</Text>
                     </TouchableOpacity>
                 </View>
             </Animated.View>

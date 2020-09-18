@@ -17,7 +17,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Feather from 'react-native-vector-icons/Feather';
 import NavbarDashboard from '../../navbar/navbar-dashboard';
-import MyFooter from '../footers/Footer';
+import MyFooter_v2 from '../footers/MyFooter_v2';
 import DeviceInfo, { isLandscape } from 'react-native-device-info';
 import { Switch } from 'react-native-paper';
 import SettingsManager from '../../Database/SettingsManager';
@@ -179,7 +179,7 @@ class Settings extends Component {
           {/* END Main twist button */}
 
         </Animatable.View>
-        <MyFooter />
+        <MyFooter_v2 />
       </View>
     );
   }

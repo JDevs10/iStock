@@ -19,7 +19,7 @@ class FindProduits extends Component {
         console.log('productsManager', 'getAllProductsFromServer()');
         console.log('token', token);
         
-        let i_ = 0;
+        let i_ = 225;
         let ind = 0;
     
         return await new Promise(async (resolve)=> {
@@ -30,7 +30,7 @@ class FindProduits extends Component {
             .then(async (response) => {
                 if(response.status == 200){
                     console.log('Status == 200');
-                    console.log(response.data);
+                    //console.log(response.data);
     
                     const res = await productsManager.INSERT_PRODUCT_L(response.data);
                     if(res){

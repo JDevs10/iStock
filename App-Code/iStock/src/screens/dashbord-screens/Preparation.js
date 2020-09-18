@@ -9,11 +9,16 @@ import {
   DebugInstructions,
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
+import ButtonSpinner from 'react-native-button-spinner';
 import LinearGradient from 'react-native-linear-gradient';
 import NavbarDashboard from '../../navbar/navbar-dashboard';
-import MyFooter from '../footers/Footer';
+import MyFooter_v2 from '../footers/MyFooter_v2';
 import PreparationButton from '../dashbord-screens/assets/PreparationButton';
 import SettingsManager from '../../Database/SettingsManager';
+import OrderManager from '../../Database/OrderManager';
+import OrderLinesManager from '../../Database/OrderLinesManager';
+import Statut from '../../utilities/Statut';
+const _statut_ = new Statut();
 
 class Preparation extends Component {
   constructor(props) {
@@ -36,6 +41,7 @@ class Preparation extends Component {
     };
 
     this.state = {
+      data: [],
       settings: {},
       orientation: isPortrait() ? 'portrait' : 'landscape'
     };
@@ -50,6 +56,7 @@ class Preparation extends Component {
 
   async  componentDidMount(){
     await this._settings();
+    await this._getPickingData();
 
     this.listener = await this.props.navigation.addListener('focus', async () => {
       // Prevent default action
@@ -81,37 +88,51 @@ class Preparation extends Component {
     this.setState({settings: settings});
   }
 
+  async _getPickingData(){
+    const om = new OrderManager();
+    const data = await om.GET_ORDER_LIST_BETWEEN_v2(0, 20).then(async (val) => {
+      console.log("Order data : ", val);
+      return await val;
+    });
+
+    this.setState({ data: data});
+  }
+
+  _relance_commande(ref){
+    alert("ref : " + ref);
+  }
+
   render() {
     const test_cmd_list = [
       {
         id: 1, name: "Commande 1", prixTotalTTC: 154, user: "JL", client: "Client A", ref: "PROV-00000001", creationDate: "10-05-2020", etat: 0, lines: [
-          { img: "../../../img/no_image.jpeg", ref: "0299431", name: "Article 1", qte: 3, prixHT: 50, prixTTC: 51.3, remise: "0%" },
-          { img: "../../../img/no_image.jpeg", ref: "0299431", name: "Article 2", qte: 3, prixHT: 50, prixTTC: 51.3, remise: "0%" },
-          { img: "../../../img/no_image.jpeg", ref: "0299431", name: "Article 3", qte: 3, prixHT: 50, prixTTC: 51.3, remise: "0%" }
+          { image: "", ref: "0299431", name: "Article 1", qte: 3, prixHT: 50, prixTTC: 51.3, remise: "0%" },
+          { image: "", ref: "0299431", name: "Article 2", qte: 3, prixHT: 50, prixTTC: 51.3, remise: "0%" },
+          { image: "", ref: "0299431", name: "Article 3", qte: 3, prixHT: 50, prixTTC: 51.3, remise: "0%" }
         ]
       },
       {
         id: 2, name: "Commande 2", prixTotalTTC: 241, user: "Amine", client: "Client B", ref: "CMD-00000003", creationDate: "05-05-2020", etat: 1, lines: [
-          { img: "../../../img/no_image.jpeg", ref: "0299431", name: "Article 1", qte: 3, prixHT: 50, prixTTC: 51.3, remise: "0%" },
-          { img: "../../../img/no_image.jpeg", ref: "0299431", name: "Article 2", qte: 3, prixHT: 50, prixTTC: 51.3, remise: "0%" },
-          { img: "../../../img/no_image.jpeg", ref: "0299431", name: "Article 3", qte: 3, prixHT: 50, prixTTC: 51.3, remise: "0%" },
-          { img: "../../../img/no_image.jpeg", ref: "0299431", name: "Article 4", qte: 3, prixHT: 50, prixTTC: 51.3, remise: "0%" }
+          { image: "", ref: "0299431", name: "Article 1", qte: 3, prixHT: 50, prixTTC: 51.3, remise: "0%" },
+          { image: "", ref: "0299431", name: "Article 2", qte: 3, prixHT: 50, prixTTC: 51.3, remise: "0%" },
+          { image: "", ref: "0299431", name: "Article 3", qte: 3, prixHT: 50, prixTTC: 51.3, remise: "0%" },
+          { image: "", ref: "0299431", name: "Article 4", qte: 3, prixHT: 50, prixTTC: 51.3, remise: "0%" }
         ]
       },
       {
         id: 3, name: "Commande 3", prixTotalTTC: 114, user: "Ilias", client: "Client C", ref: "PROV-00009142", creationDate: "11-05-2020", etat: 0, lines: [
-          { img: "../../../img/no_image.jpeg", ref: "0299431", name: "Article 1", qte: 3, prixHT: 50, prixTTC: 51.3, remise: "0%" },
+          { image: "", ref: "0299431", name: "Article 1", qte: 3, prixHT: 50, prixTTC: 51.3, remise: "0%" },
         ]
       },
       {
         id: 4, name: "Commande 4", prixTotalTTC: 325, user: "Fahd", client: "Client D", ref: "CMD-09999999", creationDate: "01-04-2020", etat: 1, lines: [
-          { img: "../../../img/no_image.jpeg", ref: "0299431", name: "Article 1", qte: 3, prixHT: 50, prixTTC: 51.3, remise: "0%" },
-          { img: "../../../img/no_image.jpeg", ref: "0299431", name: "Article 2", qte: 3, prixHT: 50, prixTTC: 51.3, remise: "0%" },
+          { image: "", ref: "0299431", name: "Article 1", qte: 3, prixHT: 50, prixTTC: 51.3, remise: "0%" },
+          { image: "", ref: "0299431", name: "Article 2", qte: 3, prixHT: 50, prixTTC: 51.3, remise: "0%" },
         ]
       },
       {
         id: 5, name: "Commande 5", prixTotalTTC: 999, user: "Admin", client: "Client E", ref: "PROV-12345678", creationDate: "9-07-2020", etat: 0, lines: [
-          { img: "../../../img/no_image.jpeg", ref: "0299431", name: "Article 1", qte: 3, prixHT: 50, prixTTC: 51.3, remise: "0%" },
+          { image: "", ref: "0299431", name: "Article 1", qte: 3, prixHT: 50, prixTTC: 51.3, remise: "0%" },
         ]
       }
     ];
@@ -141,7 +162,7 @@ class Preparation extends Component {
       },
       cardViewStyle: {
         width: '95%',
-        height: 220,
+        // height: 320,
         margin: 20,
         // marginBottom: 20,
       },
@@ -178,7 +199,7 @@ class Preparation extends Component {
         margin: 20
       },
       cardViewStyle1: {
-        paddingTop: 20,
+        //paddingTop: 10,
         alignItems: 'center',
         flexDirection: 'row',
         width: '95%',
@@ -227,7 +248,8 @@ class Preparation extends Component {
         width: '100%',
       },
       ref: {
-        width: '40%',
+        fontWeight: "bold",
+        width: '100%',
       },
       price: {
         width: '75%',
@@ -249,9 +271,10 @@ class Preparation extends Component {
       },
       butons_commande: {
         flexDirection: 'row',
-        alignItems: 'center',
+        // alignItems: 'center',
+        justifyContent: "flex-end",
         width: '100%',
-        marginTop: 30,
+        // marginTop: 30,
       },
     });
 
@@ -267,9 +290,9 @@ class Preparation extends Component {
         <View style={styles.mainBody}>
           <ScrollView style={{ flex: 1 }}>
             {
-              test_cmd_list.map((item, index) => (
+              this.state.data.map((item, index) => (
                 <View>
-                  {item.etat === 0 ?
+                  {item.statut === 1 ?
                     <TouchableOpacity onPress={() => this.orderDetails(item)}>
       
                     {this.state.settings.isUseDetailedCMD ? 
@@ -280,41 +303,45 @@ class Preparation extends Component {
                             <TouchableOpacity onPress={() => this._Showcommande(item)}>
                               <View style={styles.ic_and_details}>
                                 <View style={styles.cname}>
-                                  <Text style={styles.entreprisename}>{item.client}</Text>
+                                  <Text style={styles.entreprisename}>Client XXX</Text>
                                 </View>
                                 <View style={styles.cdate}>
-                                  <Text style={styles.date}>18 Juin 2020</Text>
-                                  {/* {item.id == 0 ? (<Text style={styles.ref_null}>Nouvelle commande</Text>) : (<Text style={styles.ref}>{item.ref}</Text>)} */}
+                                  {item.id == 0 ? (<Text>Nouvelle commande</Text>) : (<Text style={styles.ref}>{item.ref_commande}</Text>)}
                                 </View>
                               </View>
-                              <View style={styles.ic_and_details}>
+                              {/* <View style={styles.ic_and_details}>
                                 <Icon name="boxes" size={15} style={styles.iconDetails} />
                                 <Text>{item.lines.length} Produit(s)</Text>
-                              </View>
+                              </View> */}
                               <View style={styles.ic_and_details}>
-                                <Icon name="calendar-alt" size={15} style={styles.iconDetails} />
-                                <Text>Faite le : {item.creationDate}</Text>
+                                <View style={{flexDirection: "row", width: "80%"}}>
+                                  <Icon name="calendar-alt" size={15} style={styles.iconDetails} />
+                                  <Text>Faite le : {item.date_commande}</Text>
+                                </View>
+                                <View style={styles.cdate}>
+                                  <Text style={styles.date}>Livré Le {item.date_livraison}</Text>
+                                </View>
                               </View>
                               <View style={styles.ic_and_details}>
                                 <Icon name="user" size={15} style={styles.iconDetails} />
-                                <Text style={{ marginBottom: 10 }}>Vendu par : {item.user}</Text>
+                                <Text style={{ marginBottom: 10 }}>Vendu par : </Text>
                               </View>
                               <View style={{ borderBottomColor: '#00AAFF', borderBottomWidth: 1, marginRight: 10 }} />
                               <View style={styles.pricedetails}>
                                 <View style={styles.price}>
-                                  <Text>Total TTC : {item.prixTotalTTC > 0 ? (parseFloat(item.prixTotalTTC)).toFixed(2) : '0'} €</Text>
+                                  <Text>Total TTC : {1.9952 > 0 ? (parseFloat(1.9952)).toFixed(2) : '0'} €</Text>
                                 </View>
                                 <View style={styles.billedstate}>
-                                  {item.etat === 0 ? (<Text style={styles.billedtext_no}>Brouillon</Text>) : (<Text style={styles.billedtext_ok}>Validé</Text>)}
+                                  <Text>{_statut_.getOrderStatut(item.statut)}</Text>
                                 </View>
                               </View>
                             </TouchableOpacity>
                             <View style={styles.butons_commande}>
-                              {/*(<ButtonSpinner style={styles.submit_on} positionSpinner={'centered-without-text'} onPress={() => this._relance_commande(rowData.ref_commande)} styleSpinner={{ color: '#FFFFFF' }}>
-                              <Icon name="sync" size={20} style={styles.iconValiderpanier} />
-                              <Text style={styles.iconPanier}>Relancer la commande</Text>
-                              </ButtonSpinner> -->)*/}
-                              {1 === 0 ? (<Text style={styles.notif}><Icon name="cloud-upload-alt" size={20} style={styles.notif_icon} /></Text>) : (<Text style={styles.notif}></Text>)}
+                              {/* <ButtonSpinner style={styles.submit_on} positionSpinner={'right'} onPress={() => this._relance_commande(item.ref_commande)} styleSpinner={{ color: '#FFFFFF' }}>
+                                <Icon name="sync" size={20} style={styles.iconValiderpanier} />
+                                <Text style={styles.iconPanier}> Relancer la commande</Text>
+                              </ButtonSpinner> */}
+                              {0 === 0 ? (<Text style={styles.notif}><Icon name="cloud-upload-alt" size={20} style={styles.notif_icon} /></Text>) : (<Text style={styles.notif}></Text>)}
                             </View>
                           </View>
                         </View>
@@ -326,15 +353,15 @@ class Preparation extends Component {
                                 <TouchableOpacity onPress={() => this._Showcommande(item)}>
                                 <View style={styles.ic_and_details}>
                                     <View style={styles.cname}>
-                                      <Text style={styles.entreprisename}>{item.client}</Text>
+                                      <Text style={styles.entreprisename}>Client XXX</Text>
                                     </View>
                                     <View style={styles.cdate}>
-                                      <Text style={styles.date}>18 Juin 2020</Text>
+                                      {item.id == 0 ? (<Text>Nouvelle commande</Text>) : (<Text style={styles.ref}>{item.ref_commande}</Text>)}
                                     </View>
                                 </View>
                                 <View style={styles.ic_and_details}>
                                     <Icon name="boxes" size={15} style={styles.iconDetails} />
-                                    <Text>{item.lines.length} Produit(s)</Text>
+                                    <Text>XXX Produit(s)</Text>
                                 </View>
                                 <View style={styles.refDetails}>
                                     <View style={styles.ref}>
@@ -377,7 +404,7 @@ class Preparation extends Component {
           {/* END Main twist button */}
 
         </View>
-        <MyFooter />
+        <MyFooter_v2 />
       </LinearGradient>
     );
   }

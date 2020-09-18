@@ -32,7 +32,7 @@ class FindCommandes extends Component {
             { headers: { 'DOLAPIKEY': token.token, 'Accept': 'application/json' } })
         .then(async (response) => {
             if(response.status == 200){
-                console.log('Status == 200');
+                //console.log('Status == 200');
                 //console.log(response.data);
 
                 const res_1 = await orderManager.INSERT_ORDERS(response.data);

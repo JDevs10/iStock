@@ -30,7 +30,7 @@ class FindThirdPaties extends Component {
             .then(async (response) => {
                 if(response.status == 200){
                     console.log('Status == 200');
-                    console.log(response.data);
+                    //console.log(response.data);
     
                     const res = await thirdPartiesManager.INSERT_TPM(response.data);
                     if(res){

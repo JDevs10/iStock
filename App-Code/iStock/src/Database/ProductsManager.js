@@ -115,6 +115,7 @@ class ProductsManager extends Component {
         return await new Promise(async (resolve) => {
             try{
                 for(let x = 0; x < data_.length; x++){
+                    data_[x].image = "";
                     await db.transaction(async (tx) => {
                         await tx.executeSql("INSERT INTO " + TABLE_NAME + " ("+COLUMN_ID+", "+COLUMN_REF+", "+COLUMN_LABEL+", "+COLUMN_CODEBARRE+", "+COLUMN_DESCRIPTION+", "+COLUMN_LOT+", "+COLUMN_DLC+", "+COLUMN_DLUO+", "+COLUMN_IMAGE+") VALUES (NULL, '"+data_[x].ref+"', '"+data_[x].label.replace(/'/g, "''")+"', '"+data_[x].codebarre+"', '"+data_[x].description.replace(/'/g, "''")+"', '"+data_[x].lot+"', '"+data_[x].dlc+"', '"+data_[x].dluo+"', '"+data_[x].image+"')", []);
                     });
@@ -165,13 +166,12 @@ class ProductsManager extends Component {
                     var len = results.rows.length;
                     for (let i = 0; i < len; i++) {
                         let row = results.rows.item(i);
-                        //console.log(`ID: ${row.id}, label: ${row.label}`)
                         const { id, ref, label, codebarre, description, lot, dlc, dluo, image } = row;
                         products.push({
                             id, ref, label, codebarre, description, lot, dlc, dluo, image
                         });
                     }
-                    console.log(products);
+                    //console.log(products);
                     await resolve(products);
                 });
             }).then(async (result) => {

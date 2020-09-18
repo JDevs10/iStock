@@ -1,7 +1,6 @@
 //import liraries
 import React, { Component } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
 
 // create a component
 class MyFooter_v2 extends Component {
@@ -17,15 +16,18 @@ class MyFooter_v2 extends Component {
 // define your styles
 const styles = StyleSheet.create({
     body: {
+        padding: 10,
         alignItems: "center",
         justifyContent: "center",
         position: "absolute",
         bottom: 0,
         width: '100%',
-        height: '10%'
+        height: '5%',
+        marginTop: 5,
+        marginBottom: 5
     },
     text: {
-        color: '#fff'
+        color: '#ffffff'
     }
 });
 

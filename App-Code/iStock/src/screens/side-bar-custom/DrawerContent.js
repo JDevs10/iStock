@@ -73,7 +73,8 @@ export function DrawerContent(props) {
             return await val;
         });
         
-        BackHandler.exitApp();
+        //BackHandler.exitApp();
+        props.navigation.navigate('Welcome');
     }
 
 
@@ -116,8 +117,8 @@ export function DrawerContent(props) {
                             //     size={size}
                             //     />
                             // )}
-                            label="Acceuil"
-                            onPress={() => {}}
+                            label="Dashboard"
+                            onPress={() => {props.navigation.navigate('Dashboard')}}
                         />
                         <DrawerItem 
                             // icon={({color, size}) => (
