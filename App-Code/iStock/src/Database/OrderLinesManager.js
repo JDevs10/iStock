@@ -115,12 +115,10 @@ class OrderLinesManager extends Component {
         return await new Promise(async (resolve) => {
             try{
                 for(let x = 0; x < data_.length; x++){
-                    for(let y = 0; y < data_[x].lines.length; y++){
-                        await db.transaction(async (tx) => {
-                            const insert = "INSERT INTO " + TABLE_NAME + " (" + COLUMN_ID + ", " + COLUMN_ORDER_ID + ", " + COLUMN_LABEL + ", " + COLUMN_REF + ", " +COLUMN_QTE + ", " +COLUMN_PRICE + ", " +COLUMN_TVA_TX + ", " +COLUMN_TOTAL_HT + ", " +COLUMN_TOTAL_TVA + ", " +COLUMN_TOTAL_TTC + ") VALUES (null, '"+data_[x].lines[y].fk_commande+"', '"+data_[x].lines[y].label.replace(/'/g, "''")+"', '"+data_[x].lines[y].ref+"', '"+data_[x].lines[y].qty+"', '"+data_[x].lines[y].price+"', '"+data_[x].lines[y].tva_tx+"', '"+data_[x].lines[y].total_ht+"', '"+data_[x].lines[y].total_tva+"', '"+data_[x].lines[y].total_ttc+"')";
-                            await tx.executeSql(insert, []);
-                        });
-                    }
+                    await db.transaction(async (tx) => {
+                        const insert = "INSERT INTO " + TABLE_NAME + " (" + COLUMN_ID + ", " + COLUMN_ORDER_ID + ", " + COLUMN_LABEL + ", " + COLUMN_REF + ", " +COLUMN_QTE + ", " +COLUMN_PRICE + ", " +COLUMN_TVA_TX + ", " +COLUMN_TOTAL_HT + ", " +COLUMN_TOTAL_TVA + ", " +COLUMN_TOTAL_TTC + ") VALUES (null, '"+data_[x].fk_commande+"', '"+(data_[x] != null ? data_[x].label.replace(/'/g, "''") : "null")+"', '"+data_[x].ref+"', '"+data_[x].qty+"', '"+data_[x].price+"', '"+data_[x].tva_tx+"', '"+data_[x].total_ht+"', '"+data_[x].total_tva+"', '"+data_[x].total_ttc+"')";
+                        await tx.executeSql(insert, []);
+                    });
                 }
                 return await resolve(true);
             } catch(error){
@@ -192,7 +190,7 @@ class OrderLinesManager extends Component {
                             lines.push(row);
                         }
                         // console.log(products);
-                        await resolve(lines[0]);
+                        await resolve(lines);
                     });
                 });
             } catch(error){

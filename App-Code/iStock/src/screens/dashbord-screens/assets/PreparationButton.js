@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import {StyleSheet, View, Text, Image, TouchableHighlight, Animated, Alert} from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
+import Icon from 'react-native-vector-icons/FontAwesome5';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import DeviceInfo from 'react-native-device-info';
 
@@ -112,7 +113,8 @@ export default class PreparationButton extends Component {
             <Animated.View style={{position: 'relative', left: btn_1X, top: btn_1Y }}>
                 <View style={styles.secondaryButtons}>
                     <TouchableOpacity onPress={this.action_1}>
-                    <Image style={{width: DeviceInfo.isTablet() ? 50 : 25, height: DeviceInfo.isTablet() ? 80 : 40 }} source={require('../../../../img/return-button-v1.png')}/>
+                        {/* <Image style={{width: DeviceInfo.isTablet() ? 50 : 25, height: DeviceInfo.isTablet() ? 80 : 40 }} source={require('../../../../img/return-button-v1.png')}/> */}
+                        <Icon name="chevron-left" size={DeviceInfo.isTablet() ? 60 : 40} style={{color: "#fff"}} />
                     </TouchableOpacity>
                 </View>
             </Animated.View>
@@ -120,7 +122,8 @@ export default class PreparationButton extends Component {
             <Animated.View style={{position: 'relative', left: btn_2X, top: btn_2Y }}>
                 <View style={styles.secondaryButtons}>
                     <TouchableOpacity onPress={this.action_2}>
-                        <Image style={{width: DeviceInfo.isTablet() ? 60 : 40, height: DeviceInfo.isTablet() ? 60 : 40 }} source={require('../../../../img/plus-white.png')}/>
+                        {/* <Image style={{width: DeviceInfo.isTablet() ? 60 : 40, height: DeviceInfo.isTablet() ? 60 : 40 }} source={require('../../../../img/plus-white.png')}/> */}
+                        <Icon name="filter" size={DeviceInfo.isTablet() ? 60 : 30} style={{color: "#fff"}} />
                     </TouchableOpacity>
                 </View>
             </Animated.View>
@@ -128,8 +131,9 @@ export default class PreparationButton extends Component {
                 <View style={styles.secondaryButtons}>
                     <TouchableOpacity onPress={this.action_3}>
                         {/* <FontAwesome name="key" color="#05375a" size={60} />  */}
-                        <Image style={{width: DeviceInfo.isTablet() ? 60 : 40, height: DeviceInfo.isTablet() ? 60 : 40 }} source={require('../../../../img/Info.png')}/>
+                        {/* <Image style={{width: DeviceInfo.isTablet() ? 60 : 40, height: DeviceInfo.isTablet() ? 60 : 40 }} source={require('../../../../img/Info.png')}/> */}
                         {/* <Text>inventory</Text> */}
+                        <Icon name="info" size={DeviceInfo.isTablet() ? 60 : 40} style={{color: "#fff"}} />
                     </TouchableOpacity>
                 </View>
             </Animated.View>

@@ -52,6 +52,11 @@ const create = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "(" +
 
 // create a component
 class ThirdPartiesManager extends Component {
+    //public variables
+    _TABLE_NAME_ = "thirdparties";
+    _COLUMN_REF_ = "ref";
+    _COLUMN_NAME_ = "mane";
+
     //Init database
     async initDB() {
         return await new Promise(async (resolve) => {

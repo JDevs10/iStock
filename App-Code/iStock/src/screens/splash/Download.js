@@ -6,6 +6,7 @@ import FindProduits from '../../services/FindProduits';
 import FindImages from '../../services/FindImages';
 import FindThirdParties from '../../services/FindThirdParties';
 import FindCommandes from '../../services/FindCommandes';
+import FindCommandesLines from '../../services/FindCommandesLines';
 import SettingsManager from '../../Database/SettingsManager';
 import TokenManager from '../../Database/TokenManager';
 import CheckData from '../../services/CheckData';
@@ -130,7 +131,7 @@ class Download extends Component {
       setTimeout(() => {
         this.setState({
           ...this.state,
-          loadingNotify: 'Téléchargement des Produits...'+currentStep+'/'+allSteps
+          loadingNotify: 'Téléchargement des Produits image...'+currentStep+'/'+allSteps
         });
       }, 3000);
   
@@ -162,6 +163,23 @@ class Download extends Component {
       return val;
     });
     res.push(res4);
+
+
+    // Get all orders lines from server
+    setTimeout(() => {
+      this.setState({
+        ...this.state,
+        loadingNotify: 'Téléchargement des Commandes associer à ' + token.name + '...'+currentStep+'/'+allSteps
+      });
+    }, 3000);
+
+    const findCommandesLines = new FindCommandesLines();
+    const res5 = await findCommandesLines.getCommandesLines(token).then(async (val) => {
+      console.log('findCommandesLines.getCommandesLines : ');
+      console.log(val);
+      return val;
+    });
+    res.push(res5);
     
 
     let res_ = true;

@@ -24,8 +24,8 @@ class FindThirdPaties extends Component {
     
         return await new Promise(async (resolve)=> {
           while(i_ < 600){
-            console.log(`${token.server}/api/index.php/thirdparties?sortfield=t.rowid&sortorder=DESC&limit=50&page=${i_}&DOLAPIKEY=${token.token}`);
-            await axios.get(`${token.server}/api/index.php/thirdparties?sortfield=t.rowid&sortorder=DESC&limit=50&page=${i_}`, 
+            console.log(`${token.server}/api/index.php/thirdparties?sortfield=t.rowid&sortorder=ASC&limit=50&page=${i_}&DOLAPIKEY=${token.token}`);
+            await axios.get(`${token.server}/api/index.php/thirdparties?sortfield=t.rowid&sortorder=ASC&limit=50&page=${i_}`, 
                 { headers: { 'DOLAPIKEY': token.token, 'Accept': 'application/json' } })
             .then(async (response) => {
                 if(response.status == 200){

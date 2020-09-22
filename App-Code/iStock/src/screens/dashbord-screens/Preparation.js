@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import CardView from 'react-native-cardview';
 import Icon from 'react-native-vector-icons/FontAwesome5';
-import { StyleSheet, ScrollView, TouchableOpacity, View, Text, Dimensions, Alert } from 'react-native';
+import { StyleSheet, ScrollView, TouchableOpacity, View, Text, TextInput, Dimensions, Alert } from 'react-native';
 import {
   Header,
   LearnMoreLinks,
@@ -16,8 +16,10 @@ import MyFooter_v2 from '../footers/MyFooter_v2';
 import PreparationButton from '../dashbord-screens/assets/PreparationButton';
 import SettingsManager from '../../Database/SettingsManager';
 import OrderManager from '../../Database/OrderManager';
-import OrderLinesManager from '../../Database/OrderLinesManager';
 import Statut from '../../utilities/Statut';
+import moment from "moment";
+import DeviceInfo from 'react-native-device-info';
+
 const _statut_ = new Statut();
 
 class Preparation extends Component {
@@ -41,6 +43,7 @@ class Preparation extends Component {
     };
 
     this.state = {
+      isFilter: true,
       data: [],
       settings: {},
       orientation: isPortrait() ? 'portrait' : 'landscape'
@@ -62,19 +65,15 @@ class Preparation extends Component {
       // Prevent default action
       await this._settings();
       await console.log('Done settings update!');
-        console.log('new settings : ', this.state.settings);
+      console.log('new settings : ', this.state.settings);
+      await this._getPickingData();
       return;
     });
   }
 
-  orderDetails = (value) => {
-    alert('Obj: \n' + JSON.stringify(value));
-    this.props.navigation.navigate("CommandeDetails", { order: value });
-  }
-
   _Showcommande = (value) => {
     console.log(value);
-    // alert('Obj: \n' + JSON.stringify(value));
+    alert('Obj: \n' + JSON.stringify(value));
     this.props.navigation.navigate("CommandeDetails", { order: value });
   }
 
@@ -90,6 +89,7 @@ class Preparation extends Component {
 
   async _getPickingData(){
     const om = new OrderManager();
+    await om.initDB();
     const data = await om.GET_ORDER_LIST_BETWEEN_v2(0, 20).then(async (val) => {
       console.log("Order data : ", val);
       return await val;
@@ -163,7 +163,7 @@ class Preparation extends Component {
       cardViewStyle: {
         width: '95%',
         // height: 320,
-        margin: 20,
+        margin: 10,
         // marginBottom: 20,
       },
       cardViewStyle1: {
@@ -183,13 +183,22 @@ class Preparation extends Component {
         marginLeft: 20,
         flexDirection: "row",
       },
+      filterCard: {
+        // height: 90,
+        width: '95%',
+        justifyContent: "center",
+        alignContent: "center",
+        alignItems: "center",
+        margin: 10,
+        // marginBottom: 70,
+      },
       lastCard: {
         height: 70,
         width: '95%',
         justifyContent: "center",
         alignContent: "center",
         alignItems: "center",
-        margin: 20,
+        margin: 10,
         marginBottom: 70,
       },
       lastCard_text: {
@@ -288,13 +297,43 @@ class Preparation extends Component {
 
         <NavbarDashboard navigation={this.props} textTittleValue={"Préparation"} />
         <View style={styles.mainBody}>
+          {this.state.isFilter ? 
+            <CardView cardElevation={7} cornerRadius={10} style={styles.filterCard}>
+              <View style={{width: "100%", flexDirection: "row", justifyContent: "space-between", padding: 5}}>
+                <TouchableOpacity>
+                  <View style={{padding: 5, alignItems: "center"}}>
+                    <Icon name="users" size={DeviceInfo.isTablet() ? 60 : 20} style={{color: "#000"}}/>
+                  </View>
+                </TouchableOpacity>
+                <View style={{width: "40%", borderWidth: 2, borderColor: "#000", borderRadius: 25, justifyContent: 'center', alignItems: 'center' }}>
+                  <Text style={{color: "#000"}}> Date de début </Text>
+                </View>
+                <TouchableOpacity>
+                  <View style={{padding: 5, alignItems: "center"}}>
+                    <Icon name="search" size={DeviceInfo.isTablet() ? 60 : 20} style={{color: "#000"}}/>
+                  </View>
+                </TouchableOpacity>
+                <View style={{width: "40%", borderWidth: 2, borderColor: "#000", borderRadius: 25, justifyContent: 'center', alignItems: 'center' }}>
+                  <Text style={{color: "#000"}}> Date de fin </Text>
+                </View>
+              </View>
+              <View style={{width: "100%", flexDirection: "row", justifyContent: "space-between", alignItems: 'center', padding: 5}}>
+                <TextInput style={{width: "50%", borderWidth: 2, borderColor: "#000", borderRadius: 25}} placeholder="Filter par ref client / ref CMD..." placeholderTextColor="black" value={this.state.filterName} secureTextEntry={false} />
+                <TouchableOpacity><View style={{backgroundColor: "#D7D7D7", padding: 5, borderRadius: 25, width: 60, alignItems: "center"}}><Icon name="users" size={DeviceInfo.isTablet() ? 60 : 20} style={{color: "#00AAFF"}}/></View></TouchableOpacity>
+                <TouchableOpacity><View style={{backgroundColor: "#D7D7D7", padding: 5, borderRadius: 25, width: 60, alignItems: "center"}}><Icon name="trash" size={DeviceInfo.isTablet() ? 60 : 20} style={{color: "#00AAFF"}}/></View></TouchableOpacity>
+                <TouchableOpacity><View style={{backgroundColor: "#00AAFF", padding: 5, borderRadius: 25, width: 60, alignItems: "center"}}><Icon name="search" size={DeviceInfo.isTablet() ? 60 : 20} style={{color: "#fff"}}/></View></TouchableOpacity>
+              </View>
+            </CardView>
+          :
+            null
+          }
+
           <ScrollView style={{ flex: 1 }}>
             {
               this.state.data.map((item, index) => (
                 <View>
-                  {item.statut === 1 ?
-                    <TouchableOpacity onPress={() => this.orderDetails(item)}>
-      
+                  {/* {item.statut === 1 ? */}
+    
                     {this.state.settings.isUseDetailedCMD ? 
                      
                       <CardView key={index} cardElevation={10} cornerRadius={5} style={styles.cardViewStyle}>
@@ -303,36 +342,32 @@ class Preparation extends Component {
                             <TouchableOpacity onPress={() => this._Showcommande(item)}>
                               <View style={styles.ic_and_details}>
                                 <View style={styles.cname}>
-                                  <Text style={styles.entreprisename}>Client XXX</Text>
+                                  <Text style={styles.entreprisename}>{item.client_name}</Text>
                                 </View>
                                 <View style={styles.cdate}>
                                   {item.id == 0 ? (<Text>Nouvelle commande</Text>) : (<Text style={styles.ref}>{item.ref_commande}</Text>)}
                                 </View>
                               </View>
-                              {/* <View style={styles.ic_and_details}>
+                              <View style={styles.ic_and_details}>
                                 <Icon name="boxes" size={15} style={styles.iconDetails} />
-                                <Text>{item.lines.length} Produit(s)</Text>
-                              </View> */}
+                                <Text>{item.lines_nb} Produit(s)</Text>
+                              </View>
                               <View style={styles.ic_and_details}>
                                 <View style={{flexDirection: "row", width: "80%"}}>
                                   <Icon name="calendar-alt" size={15} style={styles.iconDetails} />
-                                  <Text>Faite le : {item.date_commande}</Text>
+                                  <Text>Faite le : {moment(new Date(new Number(item.date_commande+"000"))).format('DD-MM-YYYY')}</Text>
                                 </View>
                                 <View style={styles.cdate}>
-                                  <Text style={styles.date}>Livré Le {item.date_livraison}</Text>
+                                  <Text style={styles.date}>Livré Le {moment(new Date(new Number(item.date_livraison+"000"))).format('DD-MM-YYYY')}</Text>
                                 </View>
-                              </View>
-                              <View style={styles.ic_and_details}>
-                                <Icon name="user" size={15} style={styles.iconDetails} />
-                                <Text style={{ marginBottom: 10 }}>Vendu par : </Text>
                               </View>
                               <View style={{ borderBottomColor: '#00AAFF', borderBottomWidth: 1, marginRight: 10 }} />
                               <View style={styles.pricedetails}>
                                 <View style={styles.price}>
-                                  <Text>Total TTC : {1.9952 > 0 ? (parseFloat(1.9952)).toFixed(2) : '0'} €</Text>
+                                  <Text>Total TTC : {item.total_ttc > 0 ? (parseFloat(item.total_ttc)).toFixed(2) : '0'} €</Text>
                                 </View>
                                 <View style={styles.billedstate}>
-                                  <Text>{_statut_.getOrderStatut(item.statut)}</Text>
+                                  <Text style={{color: "#000", backgroundColor: _statut_.getOrderStatutColorStyles(item.statut)}}>{_statut_.getOrderStatut(item.statut)}</Text>
                                 </View>
                               </View>
                             </TouchableOpacity>
@@ -341,7 +376,7 @@ class Preparation extends Component {
                                 <Icon name="sync" size={20} style={styles.iconValiderpanier} />
                                 <Text style={styles.iconPanier}> Relancer la commande</Text>
                               </ButtonSpinner> */}
-                              {0 === 0 ? (<Text style={styles.notif}><Icon name="cloud-upload-alt" size={20} style={styles.notif_icon} /></Text>) : (<Text style={styles.notif}></Text>)}
+                              {/* {0 === 0 ? (<Text style={styles.notif}><Icon name="cloud-upload-alt" size={20} style={styles.notif_icon} /></Text>) : (<Text style={styles.notif}></Text>)} */}
                             </View>
                           </View>
                         </View>
@@ -353,35 +388,37 @@ class Preparation extends Component {
                                 <TouchableOpacity onPress={() => this._Showcommande(item)}>
                                 <View style={styles.ic_and_details}>
                                     <View style={styles.cname}>
-                                      <Text style={styles.entreprisename}>Client XXX</Text>
+                                      <Text style={styles.entreprisename}>{item.client_name}</Text>
                                     </View>
-                                    <View style={styles.cdate}>
+                                    {/* <View style={styles.cdate}>
                                       {item.id == 0 ? (<Text>Nouvelle commande</Text>) : (<Text style={styles.ref}>{item.ref_commande}</Text>)}
+                                    </View> */}
+                                    <View style={styles.cdate}>
+                                      <Text style={styles.date}>Livré Le {moment(new Date(new Number(item.date_livraison+"000"))).format('DD-MM-YYYY')}</Text>
                                     </View>
                                 </View>
                                 <View style={styles.ic_and_details}>
-                                    <Icon name="boxes" size={15} style={styles.iconDetails} />
-                                    <Text>XXX Produit(s)</Text>
+                                  <Icon name="boxes" size={15} style={styles.iconDetails} />
+                                  <Text>{item.lines_nb} Produit(s)</Text>
                                 </View>
                                 <View style={styles.refDetails}>
-                                    <View style={styles.ref}>
-                                      <Text>CMD200500-100200</Text>
-                                    </View>
+                                  {/* <View style={styles.cdate}> */}
+                                    {item.id == 0 ? (<Text>Nouvelle commande</Text>) : (<Text style={styles.ref}>{item.ref_commande}</Text>)}
+                                  {/* </View> */}
                                 </View>
                                   <View style={{ borderBottomColor: '#00AAFF', borderBottomWidth: 1, marginRight: 10 }} />
                                 </TouchableOpacity>
                                 <View style={styles.butons_commande}>
-                                  {1 === 0 ? (<Text style={styles.notif}><Icon name="cloud-upload-alt" size={20} style={styles.notif_icon} /></Text>) : (<Text style={styles.notif}></Text>)}
+                                  {/* {1 === 0 ? (<Text style={styles.notif}><Icon name="cloud-upload-alt" size={20} style={styles.notif_icon} /></Text>) : (<Text style={styles.notif}></Text>)} */}
                                 </View>
                             </View>
                         </View>
                       </CardView>
                     }
 
-                  </TouchableOpacity>
-                : 
+                {/* : 
                   null
-                }
+                } */}
               </View>
             ))
           }
@@ -390,7 +427,7 @@ class Preparation extends Component {
 
             <CardView cardElevation={7} cornerRadius={10} style={styles.lastCard}>
               <View>
-                <Text style={styles.lastCard_text}>No More Data</Text>
+                <Text style={styles.lastCard_text}>No More Data...</Text>
               </View>
             </CardView>
 
