@@ -9,6 +9,7 @@ export default class PreparationButton extends Component {
   constructor(props) {
     super(props);
     this.state = {
+        isFilter: true
     };
   }
 
@@ -52,7 +53,9 @@ export default class PreparationButton extends Component {
     }
     action_2 = () => {
         console.log('action_2');
-        this.default__();
+        this.props.isFilterPressed({isFilter: this.state.isFilter});
+        this.setState({isFilter: !this.state.isFilter});
+        //this.default__();
     }
     action_3 = () => {
         console.log('action_3');

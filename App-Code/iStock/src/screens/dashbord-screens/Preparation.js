@@ -18,7 +18,7 @@ import SettingsManager from '../../Database/SettingsManager';
 import OrderManager from '../../Database/OrderManager';
 import Statut from '../../utilities/Statut';
 import moment from "moment";
-import DeviceInfo from 'react-native-device-info';
+import OrderFilter from './assets/OrderFilter';
 
 const _statut_ = new Statut();
 
@@ -43,7 +43,7 @@ class Preparation extends Component {
     };
 
     this.state = {
-      isFilter: true,
+      isFilter: false,
       data: [],
       settings: {},
       orientation: isPortrait() ? 'portrait' : 'landscape'
@@ -98,44 +98,21 @@ class Preparation extends Component {
     this.setState({ data: data});
   }
 
-  _relance_commande(ref){
-    alert("ref : " + ref);
+  _onFilterPressed(data){
+    console.log("_onFilterPressed : ", data);
+    this.setState({isFilter: data.isFilter});
   }
 
+  _onUpdateFilterData(data){
+    console.log("_onUpdateFilterData : ", data);
+  }
+
+  _onDataToFilter(data){
+    console.log("Filter config data : ", data);
+  }
+
+
   render() {
-    const test_cmd_list = [
-      {
-        id: 1, name: "Commande 1", prixTotalTTC: 154, user: "JL", client: "Client A", ref: "PROV-00000001", creationDate: "10-05-2020", etat: 0, lines: [
-          { image: "", ref: "0299431", name: "Article 1", qte: 3, prixHT: 50, prixTTC: 51.3, remise: "0%" },
-          { image: "", ref: "0299431", name: "Article 2", qte: 3, prixHT: 50, prixTTC: 51.3, remise: "0%" },
-          { image: "", ref: "0299431", name: "Article 3", qte: 3, prixHT: 50, prixTTC: 51.3, remise: "0%" }
-        ]
-      },
-      {
-        id: 2, name: "Commande 2", prixTotalTTC: 241, user: "Amine", client: "Client B", ref: "CMD-00000003", creationDate: "05-05-2020", etat: 1, lines: [
-          { image: "", ref: "0299431", name: "Article 1", qte: 3, prixHT: 50, prixTTC: 51.3, remise: "0%" },
-          { image: "", ref: "0299431", name: "Article 2", qte: 3, prixHT: 50, prixTTC: 51.3, remise: "0%" },
-          { image: "", ref: "0299431", name: "Article 3", qte: 3, prixHT: 50, prixTTC: 51.3, remise: "0%" },
-          { image: "", ref: "0299431", name: "Article 4", qte: 3, prixHT: 50, prixTTC: 51.3, remise: "0%" }
-        ]
-      },
-      {
-        id: 3, name: "Commande 3", prixTotalTTC: 114, user: "Ilias", client: "Client C", ref: "PROV-00009142", creationDate: "11-05-2020", etat: 0, lines: [
-          { image: "", ref: "0299431", name: "Article 1", qte: 3, prixHT: 50, prixTTC: 51.3, remise: "0%" },
-        ]
-      },
-      {
-        id: 4, name: "Commande 4", prixTotalTTC: 325, user: "Fahd", client: "Client D", ref: "CMD-09999999", creationDate: "01-04-2020", etat: 1, lines: [
-          { image: "", ref: "0299431", name: "Article 1", qte: 3, prixHT: 50, prixTTC: 51.3, remise: "0%" },
-          { image: "", ref: "0299431", name: "Article 2", qte: 3, prixHT: 50, prixTTC: 51.3, remise: "0%" },
-        ]
-      },
-      {
-        id: 5, name: "Commande 5", prixTotalTTC: 999, user: "Admin", client: "Client E", ref: "PROV-12345678", creationDate: "9-07-2020", etat: 0, lines: [
-          { image: "", ref: "0299431", name: "Article 1", qte: 3, prixHT: 50, prixTTC: 51.3, remise: "0%" },
-        ]
-      }
-    ];
 
     if (this.state.orientation === 'portrait') {
       console.log('orientation : ', this.state.orientation);
@@ -182,15 +159,6 @@ class Preparation extends Component {
         marginRight: 20,
         marginLeft: 20,
         flexDirection: "row",
-      },
-      filterCard: {
-        // height: 90,
-        width: '95%',
-        justifyContent: "center",
-        alignContent: "center",
-        alignItems: "center",
-        margin: 10,
-        // marginBottom: 70,
       },
       lastCard: {
         height: 70,
@@ -297,36 +265,8 @@ class Preparation extends Component {
 
         <NavbarDashboard navigation={this.props} textTittleValue={"Préparation"} />
         <View style={styles.mainBody}>
-          {this.state.isFilter ? 
-            <CardView cardElevation={7} cornerRadius={10} style={styles.filterCard}>
-              <View style={{width: "100%", flexDirection: "row", justifyContent: "space-between", padding: 5}}>
-                <TouchableOpacity>
-                  <View style={{padding: 5, alignItems: "center"}}>
-                    <Icon name="users" size={DeviceInfo.isTablet() ? 60 : 20} style={{color: "#000"}}/>
-                  </View>
-                </TouchableOpacity>
-                <View style={{width: "40%", borderWidth: 2, borderColor: "#000", borderRadius: 25, justifyContent: 'center', alignItems: 'center' }}>
-                  <Text style={{color: "#000"}}> Date de début </Text>
-                </View>
-                <TouchableOpacity>
-                  <View style={{padding: 5, alignItems: "center"}}>
-                    <Icon name="search" size={DeviceInfo.isTablet() ? 60 : 20} style={{color: "#000"}}/>
-                  </View>
-                </TouchableOpacity>
-                <View style={{width: "40%", borderWidth: 2, borderColor: "#000", borderRadius: 25, justifyContent: 'center', alignItems: 'center' }}>
-                  <Text style={{color: "#000"}}> Date de fin </Text>
-                </View>
-              </View>
-              <View style={{width: "100%", flexDirection: "row", justifyContent: "space-between", alignItems: 'center', padding: 5}}>
-                <TextInput style={{width: "50%", borderWidth: 2, borderColor: "#000", borderRadius: 25}} placeholder="Filter par ref client / ref CMD..." placeholderTextColor="black" value={this.state.filterName} secureTextEntry={false} />
-                <TouchableOpacity><View style={{backgroundColor: "#D7D7D7", padding: 5, borderRadius: 25, width: 60, alignItems: "center"}}><Icon name="users" size={DeviceInfo.isTablet() ? 60 : 20} style={{color: "#00AAFF"}}/></View></TouchableOpacity>
-                <TouchableOpacity><View style={{backgroundColor: "#D7D7D7", padding: 5, borderRadius: 25, width: 60, alignItems: "center"}}><Icon name="trash" size={DeviceInfo.isTablet() ? 60 : 20} style={{color: "#00AAFF"}}/></View></TouchableOpacity>
-                <TouchableOpacity><View style={{backgroundColor: "#00AAFF", padding: 5, borderRadius: 25, width: 60, alignItems: "center"}}><Icon name="search" size={DeviceInfo.isTablet() ? 60 : 20} style={{color: "#fff"}}/></View></TouchableOpacity>
-              </View>
-            </CardView>
-          :
-            null
-          }
+          
+          <OrderFilter onDataToFilter={this._onDataToFilter.bind(this)} settings={{isFilter: this.state.isFilter}}/>
 
           <ScrollView style={{ flex: 1 }}>
             {
@@ -437,7 +377,7 @@ class Preparation extends Component {
 
 
           {/* Main twist button */}
-          <PreparationButton navigation={this.props.navigation} />
+          <PreparationButton navigation={this.props.navigation} isFilterPressed={this._onFilterPressed.bind(this)}/>
           {/* END Main twist button */}
 
         </View>
