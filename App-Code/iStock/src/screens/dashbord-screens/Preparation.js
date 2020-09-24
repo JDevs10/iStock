@@ -43,6 +43,7 @@ class Preparation extends Component {
     };
 
     this.state = {
+      isLoading: true,
       isFilter: false,
       data: [],
       settings: {},
@@ -88,6 +89,8 @@ class Preparation extends Component {
   }
 
   async _getPickingData(){
+    this.setState({isLoading: true});
+
     const om = new OrderManager();
     await om.initDB();
     const data = await om.GET_ORDER_LIST_BETWEEN_v2(0, 20).then(async (val) => {
@@ -95,7 +98,7 @@ class Preparation extends Component {
       return await val;
     });
 
-    this.setState({ data: data});
+    this.setState({ data: data, isLoading: false});
   }
 
   _onFilterPressed(data){
@@ -108,7 +111,7 @@ class Preparation extends Component {
   }
 
   _onDataToFilter(data){
-    console.log("Filter config data : ", data);
+    console.log("Filter config data : ", data); 
   }
 
 
@@ -232,7 +235,11 @@ class Preparation extends Component {
         width: '75%',
       },
       billedstate: {
-        width: '25%',
+        width: 60,
+        alignItems: "center", 
+        alignContent: "center", 
+        justifyContent: "center",
+        padding: 2
       },
       billedtext_ok: {
         color: '#00BFA6',
@@ -306,8 +313,8 @@ class Preparation extends Component {
                                 <View style={styles.price}>
                                   <Text>Total TTC : {item.total_ttc > 0 ? (parseFloat(item.total_ttc)).toFixed(2) : '0'} €</Text>
                                 </View>
-                                <View style={styles.billedstate}>
-                                  <Text style={{color: "#000", backgroundColor: _statut_.getOrderStatutColorStyles(item.statut)}}>{_statut_.getOrderStatut(item.statut)}</Text>
+                                <View style={[styles.billedstate, {backgroundColor: _statut_.getOrderStatutColorStyles(item.statut)}]}>
+                                  <Text style={{color: "#000"}}>{_statut_.getOrderStatut(item.statut)}</Text>
                                 </View>
                               </View>
                             </TouchableOpacity>
@@ -364,12 +371,20 @@ class Preparation extends Component {
           }
 
 
-
+            {this.state.isLoading ? 
+              <CardView cardElevation={7} cornerRadius={10} style={styles.lastCard}>
+                <View>
+                  <Text style={styles.lastCard_text}>Loading Data...</Text>
+                </View>
+              </CardView>
+            : 
             <CardView cardElevation={7} cornerRadius={10} style={styles.lastCard}>
               <View>
                 <Text style={styles.lastCard_text}>No More Data...</Text>
               </View>
             </CardView>
+            }
+            
 
           </ScrollView>
 
