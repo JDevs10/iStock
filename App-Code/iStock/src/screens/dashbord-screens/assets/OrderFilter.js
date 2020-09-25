@@ -51,6 +51,7 @@ class OrderFilter extends Component {
         }
 
         this.props.onDataToFilter(filterData);
+        
     }
 
 

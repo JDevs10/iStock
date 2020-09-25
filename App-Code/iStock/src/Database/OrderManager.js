@@ -8,6 +8,7 @@ SQLite.enablePromise(true);
 import DatabaseInfo from './DatabaseInfo';
 import ThirdPartiesManager from './ThirdPartiesManager';
 import OrderLinesManager from './OrderLinesManager';
+import moment from "moment";
 
 let db;
 
@@ -50,7 +51,7 @@ const create = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "(" +
     COLUMN_REF_COMMANDE + " VARCHAR(255)," +
     COLUMN_DATE_CREATION + " VARCHAR(255)," +
     COLUMN_DATE_COMMANDE + " VARCHAR(255)," +
-    COLUMN_DATE_LIVRAISON + " VARCHAR(255)," +
+    COLUMN_DATE_LIVRAISON + " INT(255)," +
     COLUMN_NOTE_PUBLIC + " VARCHAR(255)," +
     COLUMN_NOTE_PRIVEE + " VARCHAR(255)," +
     COLUMN_TOTAL_HT + " VARCHAR(255)," +
@@ -139,7 +140,7 @@ class OrderManager extends Component {
                 for(let x = 0; x < data_.length; x++){
                     data_[x].isSync = 1;
                     await db.transaction(async (tx) => {
-                        const insert = "INSERT INTO " + TABLE_NAME + " (" + COLUMN_ID + ", "+COLUMN_COMMANDE_ID+", " + COLUMN_IS_SYNC + ", " + COLUMN_STATUT + ", " + COLUMN_REF_CLIENT + ", " +COLUMN_SOCID + ", " +COLUMN_USER_AUTHOR_ID + ", " +COLUMN_REF_COMMANDE + ", " +COLUMN_DATE_CREATION + ", " +COLUMN_DATE_COMMANDE + ", " +COLUMN_DATE_LIVRAISON + ", " +COLUMN_NOTE_PUBLIC + ", " +COLUMN_NOTE_PRIVEE + ", " +COLUMN_TOTAL_HT + ", " +COLUMN_TOTAL_TVA + ", " +COLUMN_TOTAL_TTC + ", " +COLUMN_BROUILLION + ", " +COLUMN_REMISE_ABSOLUE + ", " +COLUMN_REMISE_PERCENT + ", " +COLUMN_REMISE +") VALUES (null, "+data_[x].id+", "+data_[x].isSync+", "+data_[x].statut+", '"+data_[x].ref_client+"', "+data_[x].socid+", "+data_[x].user_author_id+", '"+data_[x].ref+"', '"+data_[x].date+"', '"+data_[x].date_commande+"', '"+data_[x].date_livraison+"', '"+data_[x].note_public.replace(/'/g, "''")+"', '"+data_[x].note_private.replace(/'/g, "''")+"', '"+data_[x].total_ht+"', '"+data_[x].total_tva+"', '"+data_[x].total_ttc+"', '"+data_[x].brouillon+"', '"+data_[x].remise_absolue+"', '"+data_[x].remise_percent+"', '"+data_[x].remise+"')";
+                        const insert = "INSERT INTO " + TABLE_NAME + " (" + COLUMN_ID + ", "+COLUMN_COMMANDE_ID+", " + COLUMN_IS_SYNC + ", " + COLUMN_STATUT + ", " + COLUMN_REF_CLIENT + ", " +COLUMN_SOCID + ", " +COLUMN_USER_AUTHOR_ID + ", " +COLUMN_REF_COMMANDE + ", " +COLUMN_DATE_CREATION + ", " +COLUMN_DATE_COMMANDE + ", " +COLUMN_DATE_LIVRAISON + ", " +COLUMN_NOTE_PUBLIC + ", " +COLUMN_NOTE_PRIVEE + ", " +COLUMN_TOTAL_HT + ", " +COLUMN_TOTAL_TVA + ", " +COLUMN_TOTAL_TTC + ", " +COLUMN_BROUILLION + ", " +COLUMN_REMISE_ABSOLUE + ", " +COLUMN_REMISE_PERCENT + ", " +COLUMN_REMISE +") VALUES (null, "+data_[x].id+", "+data_[x].isSync+", "+data_[x].statut+", '"+data_[x].ref_client+"', "+data_[x].socid+", "+data_[x].user_author_id+", '"+data_[x].ref+"', '"+data_[x].date+"', '"+data_[x].date_commande+"', "+data_[x].date_livraison+", '"+data_[x].note_public.replace(/'/g, "''")+"', '"+data_[x].note_private.replace(/'/g, "''")+"', '"+data_[x].total_ht+"', '"+data_[x].total_tva+"', '"+data_[x].total_ttc+"', '"+data_[x].brouillon+"', '"+data_[x].remise_absolue+"', '"+data_[x].remise_percent+"', '"+data_[x].remise+"')";
                         await tx.executeSql(insert, []);
                     });
                 }
@@ -272,8 +273,8 @@ class OrderManager extends Component {
                         const { id, commande_id, is_sync, statut, ref_client, client_name, socId, user_author_id, ref_commande, date_creation, date_commande, date_livraison, note_public, note_privee, total_ht, total_tva, total_ttc, brouillon, remise_absolue, remise_percent, remise } = row;
                         orders.push({ id, commande_id, is_sync, statut, ref_client, client_name, socId, user_author_id, ref_commande, date_creation, date_commande, date_livraison, note_public, note_privee, total_ht, total_tva, total_ttc, brouillon, remise_absolue, remise_percent, remise, lines_nb: lines.length });
                     }
-                    console.log("SELECT p." + COLUMN_ID + ", p."+COLUMN_COMMANDE_ID+", p." + COLUMN_IS_SYNC + ", p." + COLUMN_STATUT + ", p." +COLUMN_SOCID + ", p." +COLUMN_USER_AUTHOR_ID + ", p." +COLUMN_REF_COMMANDE + ", p." +COLUMN_DATE_CREATION + ", p." +COLUMN_DATE_COMMANDE + ", p." +COLUMN_DATE_LIVRAISON + ", p." +COLUMN_NOTE_PUBLIC + ", p." +COLUMN_NOTE_PRIVEE + ", p." +COLUMN_TOTAL_HT + ", p." +COLUMN_TOTAL_TVA + ", p." +COLUMN_TOTAL_TTC + ", p." +COLUMN_BROUILLION + ", p." +COLUMN_REMISE_ABSOLUE + ", p." +COLUMN_REMISE_PERCENT + ", p." +COLUMN_REMISE +", t."+thirdPartiesManager._COLUMN_NAME_+" as client_name FROM " + TABLE_NAME + " as p, "+thirdPartiesManager._TABLE_NAME_+" as t WHERE p."+COLUMN_SOCID+" = t."+thirdPartiesManager._COLUMN_REF_+" AND p."+COLUMN_STATUT+" = 1 AND p."+COLUMN_ID+" BETWEEN " + from + " AND " + to);
-                    console.log("orders : ", orders);
+                    //console.log("SELECT p." + COLUMN_ID + ", p."+COLUMN_COMMANDE_ID+", p." + COLUMN_IS_SYNC + ", p." + COLUMN_STATUT + ", p." +COLUMN_SOCID + ", p." +COLUMN_USER_AUTHOR_ID + ", p." +COLUMN_REF_COMMANDE + ", p." +COLUMN_DATE_CREATION + ", p." +COLUMN_DATE_COMMANDE + ", p." +COLUMN_DATE_LIVRAISON + ", p." +COLUMN_NOTE_PUBLIC + ", p." +COLUMN_NOTE_PRIVEE + ", p." +COLUMN_TOTAL_HT + ", p." +COLUMN_TOTAL_TVA + ", p." +COLUMN_TOTAL_TTC + ", p." +COLUMN_BROUILLION + ", p." +COLUMN_REMISE_ABSOLUE + ", p." +COLUMN_REMISE_PERCENT + ", p." +COLUMN_REMISE +", t."+thirdPartiesManager._COLUMN_NAME_+" as client_name FROM " + TABLE_NAME + " as p, "+thirdPartiesManager._TABLE_NAME_+" as t WHERE p."+COLUMN_SOCID+" = t."+thirdPartiesManager._COLUMN_REF_+" AND p."+COLUMN_STATUT+" = 1 AND p."+COLUMN_ID+" BETWEEN " + from + " AND " + to);
+                    //console.log("orders : ", orders);
                     await resolve(orders);
                 });
             }).then(async (result) => {
@@ -286,12 +287,64 @@ class OrderManager extends Component {
     }
 
     // filtered sql
-    async GET_ORDER_LIST_BETWEEN_v2(from, to, filteredCnfig){
-        console.log("##### GET_ORDER_LIST_BETWEEN_v2 #########################");
+    async GET_ORDER_LIST_BETWEEN_FILTER_v2(from, to, filteredCnfig){
+        console.log("##### GET_ORDER_LIST_BETWEEN_FILTER_v2 #########################");
         console.log("Fom => "+from+" | To => "+to);
         console.log("filteredCnfig => ", filteredCnfig);
         const thirdPartiesManager = new ThirdPartiesManager();
 
+        let sql = "SELECT c." + COLUMN_ID + ", c."+COLUMN_COMMANDE_ID+", c." + COLUMN_IS_SYNC + ", c." + COLUMN_STATUT + ", c." +COLUMN_SOCID + ", c." +COLUMN_USER_AUTHOR_ID + ", c." +COLUMN_REF_COMMANDE + ", c." +COLUMN_DATE_CREATION + ", c." +COLUMN_DATE_COMMANDE + ", c." +COLUMN_DATE_LIVRAISON + ", c." +COLUMN_NOTE_PUBLIC + ", c." +COLUMN_NOTE_PRIVEE + ", c." +COLUMN_TOTAL_HT + ", c." +COLUMN_TOTAL_TVA + ", c." +COLUMN_TOTAL_TTC + ", c." +COLUMN_BROUILLION + ", c." +COLUMN_REMISE_ABSOLUE + ", c." +COLUMN_REMISE_PERCENT + ", c." +COLUMN_REMISE +", t."+thirdPartiesManager._COLUMN_NAME_+" as client_name FROM " + TABLE_NAME + " as c, "+thirdPartiesManager._TABLE_NAME_+" as t WHERE ";
+
+        if(filteredCnfig.filterName != null){
+            if(filteredCnfig.filterName.toUpperCase().includes("CMD")){
+                sql += "c." + COLUMN_REF_COMMANDE + " LIKE '" + filteredCnfig.filterName.toUpperCase() + "%' ";
+            }else{
+                sql += "t."+thirdPartiesManager._COLUMN_NAME_ + " LIKE '%" + filteredCnfig.filterName.toUpperCase() + "%' ";
+            }
+        }
+
+        if(filteredCnfig.startDate != null ){
+            sql += "AND c." + COLUMN_DATE_LIVRAISON + " < "+ (Date.parse(filteredCnfig.startDate) / 1000)+ " ";
+
+        }
+
+        if(filteredCnfig.endDate != null){
+            sql += "AND c." + COLUMN_DATE_LIVRAISON + " > "+ (Date.parse(filteredCnfig.startDate) / 1000)+ " ";
+
+        }
+
+
+
+
+
+        /*
+        if(filteredCnfig.filterName != null && filteredCnfig.startDate != null && filteredCnfig.endDate == null){
+            sql += "AND c." + COLUMN_DATE_LIVRAISON + " < "+ (Date.parse(filteredCnfig.startDate) / 1000)+ " ";
+
+        }else if(filteredCnfig.filterName == null && filteredCnfig.startDate != null && filteredCnfig.endDate == null){
+            sql += "c." + COLUMN_DATE_LIVRAISON + " < "+ (Date.parse(filteredCnfig.startDate) / 1000)+ " ";
+        
+        }else if(filteredCnfig.filterName == null && filteredCnfig.startDate == null && filteredCnfig.endDate != null){
+            sql += "c." + COLUMN_DATE_LIVRAISON + " < "+ (Date.parse(filteredCnfig.startDate) / 1000)+ " ";
+        }
+
+
+        if(filteredCnfig.filterName != null && filteredCnfig.startDate != null && filteredCnfig.endDate != null){
+            sql += "AND c." + COLUMN_DATE_LIVRAISON + " > "+ (Date.parse(filteredCnfig.endDate) / 1000)+ " ";
+        }
+        else if(filteredCnfig.filterName == null && filteredCnfig.startDate != null && filteredCnfig.endDate != null){
+            sql += "c." + COLUMN_DATE_LIVRAISON + " < "+ (Date.parse(filteredCnfig.startDate) / 1000)+ " AND c." + COLUMN_DATE_LIVRAISON + " > "+ (Date.parse(filteredCnfig.endDate) / 1000)+ " ";
+        }
+        else if(filteredCnfig.filterName == null && filteredCnfig.startDate == null && filteredCnfig.endDate != null){
+            sql += "c." + COLUMN_DATE_LIVRAISON + " > "+ (Date.parse(filteredCnfig.endDate) / 1000)+ " ";
+        }
+        */
+
+        console.log("Builed SQL => ", sql);
+
+
+        return await [];
+        /*
         return await new Promise(async (resolve) => {
             const orders = [];
             await db.transaction(async (tx) => {
@@ -321,6 +374,7 @@ class OrderManager extends Component {
                 await resolve([]);
             });
         });
+        */
     }
 
     //Delete

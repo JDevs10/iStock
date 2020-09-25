@@ -45,7 +45,7 @@ class Preparation extends Component {
     this.state = {
       isLoading: true,
       isFilter: false,
-      filterConfig: null,
+      filterConfig: {},
       data: [],
       settings: {},
       orientation: isPortrait() ? 'portrait' : 'landscape'
@@ -92,19 +92,20 @@ class Preparation extends Component {
   async _getPickingData(){
     this.setState({isLoading: true});
     let data = [];
-    
-    if(this.state.filterConfig == null){
+
+    console.log("this.state.filterConfig : ", Object.keys(this.state.filterConfig).length);
+    if(Object.keys(this.state.filterConfig).length == 0){
       const om = new OrderManager();
       await om.initDB();
       data = await om.GET_ORDER_LIST_BETWEEN_v2(0, 30).then(async (val) => {
-        console.log("Order data : ", val);
+        //console.log("Order data : ", val);
         return await val;
       });
 
     }else{
       const om = new OrderManager();
       await om.initDB();
-      data = await om.GET_ORDER_LIST_BETWEEN_v2(0, 30, this.state.filterConfig).then(async (val) => {
+      data = await om.GET_ORDER_LIST_BETWEEN_FILTER_v2(0, 30, this.state.filterConfig).then(async (val) => {
         console.log("Order data filtered : ", val);
         return await val;
       });
@@ -118,13 +119,13 @@ class Preparation extends Component {
     this.setState({isFilter: data.isFilter});
   }
 
-  _onUpdateFilterData(data){
-    console.log("_onUpdateFilterData : ", data);
-  }
+  // _onUpdateFilterData(data){
+  //   console.log("_onUpdateFilterData : ", data);
+  // }
 
-  _onDataToFilter(data){
-    console.log("Filter config data : ", data); 
-    this.setState({filterConfig: data});
+  async _onDataToFilter(data){
+    console.log("Filter config data : ", data);
+    await this.setState({filterConfig: data});
     this._getPickingData();
   }
 
