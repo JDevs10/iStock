@@ -11,7 +11,7 @@ import {
 } from 'react-native/Libraries/NewAppScreen';
 import LinearGradient from 'react-native-linear-gradient';
 import NavbarDashboard from '../../navbar/navbar-dashboard';
-import MyFooter from '../footers/Footer';
+import MyFooter_v2 from '../footers/MyFooter_v2';
 import OrderButton from '../dashbord-screens/assets/OrderButton';
 //import { TouchableOpacity } from 'react-native-gesture-handler';
 
@@ -331,7 +331,7 @@ class Commande extends Component {
           {/* END Main twist button */}
 
         </View>
-        <MyFooter />
+        <MyFooter_v2 />
       </LinearGradient>
     );
   }

@@ -19,6 +19,9 @@ import ThirdPartiesManager from '../../Database/ThirdPartiesManager';
 import TokenManager from '../../Database/TokenManager';
 import FindImages from '../../services/FindImages';
 
+import FindThirdParties from '../../services/FindThirdParties';
+import FindCommandes from '../../services/FindCommandes';
+
 
 export function DrawerContent(props) {
     componentWillMount = () => {
@@ -27,6 +30,40 @@ export function DrawerContent(props) {
       
     componentWillUnmount = () => {
         BackHandler.removeEventListener('hardwareBackPress', disconnection);
+    }
+
+    const download_tiers = async () => {
+        //find token
+        const tm = new TokenManager();
+        await tm.initDB();
+        const token = await tm.GET_TOKEN_BY_ID(1).then(async (val) => {
+            return await val;
+        });
+        console.log('token : ', token);
+
+        const findThirdParties = new FindThirdParties();
+        const res4 = await findThirdParties.getAllThirdPartiesFromServer(token).then(async (val) => {
+            console.log('findThirdParties.getAllThirdPartiesFromServer : ');
+            console.log(val);
+            return val;
+        });
+    }
+
+    const download_orders = async () => {
+        //find token
+        const tm = new TokenManager();
+        await tm.initDB();
+        const token = await tm.GET_TOKEN_BY_ID(1).then(async (val) => {
+            return await val;
+        });
+        console.log('token : ', token);
+
+        const findCommandes = new FindCommandes();
+        const res4 = await findCommandes.getAllOrdersFromServer(token).then(async (val) => {
+            console.log('findCommandes.getAllOrdersFromServer : ');
+            console.log(val);
+            return val;
+        });
     }
 
     const disconnection = async () => {
@@ -116,8 +153,8 @@ export function DrawerContent(props) {
                             //     size={size}
                             //     />
                             // )}
-                            label="Acceuil"
-                            onPress={() => {}}
+                            label="Dashboard"
+                            onPress={() => {props.navigation.navigate('Dashboard')}}
                         />
                         <DrawerItem 
                             // icon={({color, size}) => (
@@ -129,6 +166,28 @@ export function DrawerContent(props) {
                             // )}
                             label="Settings"
                             onPress={() => {props.navigation.navigate('Settings')}}
+                        />
+                        <DrawerItem 
+                            // icon={({color, size}) => (
+                            //     <Icon 
+                            //     name="settings-outline" 
+                            //     color={color}
+                            //     size={size}
+                            //     />
+                            // )}
+                            label="Download Thiers"
+                            onPress={() => {download_tiers();}}
+                        />
+                        <DrawerItem 
+                            // icon={({color, size}) => (
+                            //     <Icon 
+                            //     name="settings-outline" 
+                            //     color={color}
+                            //     size={size}
+                            //     />
+                            // )}
+                            label="Download Orders"
+                            onPress={() => {download_orders();}}
                         />
                         <DrawerItem 
                             // icon={({color, size}) => (

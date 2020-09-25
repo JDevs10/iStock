@@ -5,7 +5,7 @@ import { Header, LearnMoreLinks, Colors, DebugInstructions, ReloadInstructions }
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import LinearGradient from 'react-native-linear-gradient';
 import NavbarHome from '../../navbar/navbar-home';
-import MyFooter from '../footers/Footer';
+import MyFooter_v2 from '../footers/MyFooter_v2';
 import DeviceInfo, { isLandscape } from 'react-native-device-info';
 import MainButton from '../dashbord-screens/assets/MainButton';
 
@@ -90,7 +90,7 @@ export default class Dashboard extends Component {
           <MainButton navigation={this.props.navigation} />
           {/* END Main twist button */}
         </View>
-        <MyFooter />
+        <MyFooter_v2 />
       </LinearGradient>
     );
   }

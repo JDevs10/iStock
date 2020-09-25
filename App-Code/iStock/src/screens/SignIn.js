@@ -23,7 +23,7 @@ import { useTheme } from 'react-native-paper';
 
 import Users from '../models/Users';
 import Animated from 'react-native-reanimated';
-import MyFooter from './footers/Footer';
+import MyFooter from './footers/MyFooter';
 const IMG_SRC = require('../../img/bg_login.png');
 
 {/* <Button title="Login" onPress={() => this.props.navigation.navigate('dashboard')}/>*/ }

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import CardView from 'react-native-cardview';
 import Icon from 'react-native-vector-icons/FontAwesome5';
-import { StyleSheet, ScrollView, TouchableOpacity, View, Text, Dimensions, Alert } from 'react-native';
+import { StyleSheet, ScrollView, TouchableOpacity, View, Text, TextInput, Dimensions, Alert } from 'react-native';
 import {
   Header,
   LearnMoreLinks,
@@ -9,11 +9,18 @@ import {
   DebugInstructions,
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
+import ButtonSpinner from 'react-native-button-spinner';
 import LinearGradient from 'react-native-linear-gradient';
 import NavbarDashboard from '../../navbar/navbar-dashboard';
-import MyFooter from '../footers/Footer';
+import MyFooter_v2 from '../footers/MyFooter_v2';
 import PreparationButton from '../dashbord-screens/assets/PreparationButton';
 import SettingsManager from '../../Database/SettingsManager';
+import OrderManager from '../../Database/OrderManager';
+import Statut from '../../utilities/Statut';
+import moment from "moment";
+import OrderFilter from './assets/OrderFilter';
+
+const _statut_ = new Statut();
 
 class Preparation extends Component {
   constructor(props) {
@@ -36,6 +43,10 @@ class Preparation extends Component {
     };
 
     this.state = {
+      isLoading: true,
+      isFilter: false,
+      filterConfig: null,
+      data: [],
       settings: {},
       orientation: isPortrait() ? 'portrait' : 'landscape'
     };
@@ -50,24 +61,21 @@ class Preparation extends Component {
 
   async  componentDidMount(){
     await this._settings();
+    await this._getPickingData();
 
     this.listener = await this.props.navigation.addListener('focus', async () => {
       // Prevent default action
       await this._settings();
       await console.log('Done settings update!');
-        console.log('new settings : ', this.state.settings);
+      console.log('new settings : ', this.state.settings);
+      await this._getPickingData();
       return;
     });
   }
 
-  orderDetails = (value) => {
-    alert('Obj: \n' + JSON.stringify(value));
-    this.props.navigation.navigate("CommandeDetails", { order: value });
-  }
-
   _Showcommande = (value) => {
     console.log(value);
-    // alert('Obj: \n' + JSON.stringify(value));
+    alert('Obj: \n' + JSON.stringify(value));
     this.props.navigation.navigate("CommandeDetails", { order: value });
   }
 
@@ -81,40 +89,47 @@ class Preparation extends Component {
     this.setState({settings: settings});
   }
 
+  async _getPickingData(){
+    this.setState({isLoading: true});
+    let data = [];
+    
+    if(this.state.filterConfig == null){
+      const om = new OrderManager();
+      await om.initDB();
+      data = await om.GET_ORDER_LIST_BETWEEN_v2(0, 30).then(async (val) => {
+        console.log("Order data : ", val);
+        return await val;
+      });
+
+    }else{
+      const om = new OrderManager();
+      await om.initDB();
+      data = await om.GET_ORDER_LIST_BETWEEN_v2(0, 30, this.state.filterConfig).then(async (val) => {
+        console.log("Order data filtered : ", val);
+        return await val;
+      });
+    }
+
+    this.setState({ data: data, isLoading: false});
+  }
+
+  _onFilterPressed(data){
+    console.log("_onFilterPressed : ", data);
+    this.setState({isFilter: data.isFilter});
+  }
+
+  _onUpdateFilterData(data){
+    console.log("_onUpdateFilterData : ", data);
+  }
+
+  _onDataToFilter(data){
+    console.log("Filter config data : ", data); 
+    this.setState({filterConfig: data});
+    this._getPickingData();
+  }
+
+
   render() {
-    const test_cmd_list = [
-      {
-        id: 1, name: "Commande 1", prixTotalTTC: 154, user: "JL", client: "Client A", ref: "PROV-00000001", creationDate: "10-05-2020", etat: 0, lines: [
-          { img: "../../../img/no_image.jpeg", ref: "0299431", name: "Article 1", qte: 3, prixHT: 50, prixTTC: 51.3, remise: "0%" },
-          { img: "../../../img/no_image.jpeg", ref: "0299431", name: "Article 2", qte: 3, prixHT: 50, prixTTC: 51.3, remise: "0%" },
-          { img: "../../../img/no_image.jpeg", ref: "0299431", name: "Article 3", qte: 3, prixHT: 50, prixTTC: 51.3, remise: "0%" }
-        ]
-      },
-      {
-        id: 2, name: "Commande 2", prixTotalTTC: 241, user: "Amine", client: "Client B", ref: "CMD-00000003", creationDate: "05-05-2020", etat: 1, lines: [
-          { img: "../../../img/no_image.jpeg", ref: "0299431", name: "Article 1", qte: 3, prixHT: 50, prixTTC: 51.3, remise: "0%" },
-          { img: "../../../img/no_image.jpeg", ref: "0299431", name: "Article 2", qte: 3, prixHT: 50, prixTTC: 51.3, remise: "0%" },
-          { img: "../../../img/no_image.jpeg", ref: "0299431", name: "Article 3", qte: 3, prixHT: 50, prixTTC: 51.3, remise: "0%" },
-          { img: "../../../img/no_image.jpeg", ref: "0299431", name: "Article 4", qte: 3, prixHT: 50, prixTTC: 51.3, remise: "0%" }
-        ]
-      },
-      {
-        id: 3, name: "Commande 3", prixTotalTTC: 114, user: "Ilias", client: "Client C", ref: "PROV-00009142", creationDate: "11-05-2020", etat: 0, lines: [
-          { img: "../../../img/no_image.jpeg", ref: "0299431", name: "Article 1", qte: 3, prixHT: 50, prixTTC: 51.3, remise: "0%" },
-        ]
-      },
-      {
-        id: 4, name: "Commande 4", prixTotalTTC: 325, user: "Fahd", client: "Client D", ref: "CMD-09999999", creationDate: "01-04-2020", etat: 1, lines: [
-          { img: "../../../img/no_image.jpeg", ref: "0299431", name: "Article 1", qte: 3, prixHT: 50, prixTTC: 51.3, remise: "0%" },
-          { img: "../../../img/no_image.jpeg", ref: "0299431", name: "Article 2", qte: 3, prixHT: 50, prixTTC: 51.3, remise: "0%" },
-        ]
-      },
-      {
-        id: 5, name: "Commande 5", prixTotalTTC: 999, user: "Admin", client: "Client E", ref: "PROV-12345678", creationDate: "9-07-2020", etat: 0, lines: [
-          { img: "../../../img/no_image.jpeg", ref: "0299431", name: "Article 1", qte: 3, prixHT: 50, prixTTC: 51.3, remise: "0%" },
-        ]
-      }
-    ];
 
     if (this.state.orientation === 'portrait') {
       console.log('orientation : ', this.state.orientation);
@@ -141,8 +156,8 @@ class Preparation extends Component {
       },
       cardViewStyle: {
         width: '95%',
-        height: 220,
-        margin: 20,
+        // height: 320,
+        margin: 10,
         // marginBottom: 20,
       },
       cardViewStyle1: {
@@ -168,7 +183,7 @@ class Preparation extends Component {
         justifyContent: "center",
         alignContent: "center",
         alignItems: "center",
-        margin: 20,
+        margin: 10,
         marginBottom: 70,
       },
       lastCard_text: {
@@ -178,7 +193,7 @@ class Preparation extends Component {
         margin: 20
       },
       cardViewStyle1: {
-        paddingTop: 20,
+        //paddingTop: 10,
         alignItems: 'center',
         flexDirection: 'row',
         width: '95%',
@@ -227,13 +242,18 @@ class Preparation extends Component {
         width: '100%',
       },
       ref: {
-        width: '40%',
+        fontWeight: "bold",
+        width: '100%',
       },
       price: {
         width: '75%',
       },
       billedstate: {
-        width: '25%',
+        width: 60,
+        alignItems: "center", 
+        alignContent: "center", 
+        justifyContent: "center",
+        padding: 2
       },
       billedtext_ok: {
         color: '#00BFA6',
@@ -249,9 +269,10 @@ class Preparation extends Component {
       },
       butons_commande: {
         flexDirection: 'row',
-        alignItems: 'center',
+        // alignItems: 'center',
+        justifyContent: "flex-end",
         width: '100%',
-        marginTop: 30,
+        // marginTop: 30,
       },
     });
 
@@ -265,13 +286,15 @@ class Preparation extends Component {
 
         <NavbarDashboard navigation={this.props} textTittleValue={"Préparation"} />
         <View style={styles.mainBody}>
+          
+          <OrderFilter onDataToFilter={this._onDataToFilter.bind(this)} settings={{isFilter: this.state.isFilter}}/>
+
           <ScrollView style={{ flex: 1 }}>
             {
-              test_cmd_list.map((item, index) => (
+              this.state.data.map((item, index) => (
                 <View>
-                  {item.etat === 0 ?
-                    <TouchableOpacity onPress={() => this.orderDetails(item)}>
-      
+                  {/* {item.statut === 1 ? */}
+    
                     {this.state.settings.isUseDetailedCMD ? 
                      
                       <CardView key={index} cardElevation={10} cornerRadius={5} style={styles.cardViewStyle}>
@@ -280,41 +303,41 @@ class Preparation extends Component {
                             <TouchableOpacity onPress={() => this._Showcommande(item)}>
                               <View style={styles.ic_and_details}>
                                 <View style={styles.cname}>
-                                  <Text style={styles.entreprisename}>{item.client}</Text>
+                                  <Text style={styles.entreprisename}>{item.client_name}</Text>
                                 </View>
                                 <View style={styles.cdate}>
-                                  <Text style={styles.date}>18 Juin 2020</Text>
-                                  {/* {item.id == 0 ? (<Text style={styles.ref_null}>Nouvelle commande</Text>) : (<Text style={styles.ref}>{item.ref}</Text>)} */}
+                                  {item.id == 0 ? (<Text>Nouvelle commande</Text>) : (<Text style={styles.ref}>{item.ref_commande}</Text>)}
                                 </View>
                               </View>
                               <View style={styles.ic_and_details}>
                                 <Icon name="boxes" size={15} style={styles.iconDetails} />
-                                <Text>{item.lines.length} Produit(s)</Text>
+                                <Text>{item.lines_nb} Produit(s)</Text>
                               </View>
                               <View style={styles.ic_and_details}>
-                                <Icon name="calendar-alt" size={15} style={styles.iconDetails} />
-                                <Text>Faite le : {item.creationDate}</Text>
-                              </View>
-                              <View style={styles.ic_and_details}>
-                                <Icon name="user" size={15} style={styles.iconDetails} />
-                                <Text style={{ marginBottom: 10 }}>Vendu par : {item.user}</Text>
+                                <View style={{flexDirection: "row", width: "80%"}}>
+                                  <Icon name="calendar-alt" size={15} style={styles.iconDetails} />
+                                  <Text>Faite le : {moment(new Date(new Number(item.date_commande+"000"))).format('DD-MM-YYYY')}</Text>
+                                </View>
+                                <View style={styles.cdate}>
+                                  <Text style={styles.date}>Livré Le {moment(new Date(new Number(item.date_livraison+"000"))).format('DD-MM-YYYY')}</Text>
+                                </View>
                               </View>
                               <View style={{ borderBottomColor: '#00AAFF', borderBottomWidth: 1, marginRight: 10 }} />
                               <View style={styles.pricedetails}>
                                 <View style={styles.price}>
-                                  <Text>Total TTC : {item.prixTotalTTC > 0 ? (parseFloat(item.prixTotalTTC)).toFixed(2) : '0'} €</Text>
+                                  <Text>Total TTC : {item.total_ttc > 0 ? (parseFloat(item.total_ttc)).toFixed(2) : '0'} €</Text>
                                 </View>
-                                <View style={styles.billedstate}>
-                                  {item.etat === 0 ? (<Text style={styles.billedtext_no}>Brouillon</Text>) : (<Text style={styles.billedtext_ok}>Validé</Text>)}
+                                <View style={[styles.billedstate, {backgroundColor: _statut_.getOrderStatutColorStyles(item.statut)}]}>
+                                  <Text style={{color: "#000"}}>{_statut_.getOrderStatut(item.statut)}</Text>
                                 </View>
                               </View>
                             </TouchableOpacity>
                             <View style={styles.butons_commande}>
-                              {/*(<ButtonSpinner style={styles.submit_on} positionSpinner={'centered-without-text'} onPress={() => this._relance_commande(rowData.ref_commande)} styleSpinner={{ color: '#FFFFFF' }}>
-                              <Icon name="sync" size={20} style={styles.iconValiderpanier} />
-                              <Text style={styles.iconPanier}>Relancer la commande</Text>
-                              </ButtonSpinner> -->)*/}
-                              {1 === 0 ? (<Text style={styles.notif}><Icon name="cloud-upload-alt" size={20} style={styles.notif_icon} /></Text>) : (<Text style={styles.notif}></Text>)}
+                              {/* <ButtonSpinner style={styles.submit_on} positionSpinner={'right'} onPress={() => this._relance_commande(item.ref_commande)} styleSpinner={{ color: '#FFFFFF' }}>
+                                <Icon name="sync" size={20} style={styles.iconValiderpanier} />
+                                <Text style={styles.iconPanier}> Relancer la commande</Text>
+                              </ButtonSpinner> */}
+                              {/* {0 === 0 ? (<Text style={styles.notif}><Icon name="cloud-upload-alt" size={20} style={styles.notif_icon} /></Text>) : (<Text style={styles.notif}></Text>)} */}
                             </View>
                           </View>
                         </View>
@@ -326,46 +349,56 @@ class Preparation extends Component {
                                 <TouchableOpacity onPress={() => this._Showcommande(item)}>
                                 <View style={styles.ic_and_details}>
                                     <View style={styles.cname}>
-                                      <Text style={styles.entreprisename}>{item.client}</Text>
+                                      <Text style={styles.entreprisename}>{item.client_name}</Text>
                                     </View>
+                                    {/* <View style={styles.cdate}>
+                                      {item.id == 0 ? (<Text>Nouvelle commande</Text>) : (<Text style={styles.ref}>{item.ref_commande}</Text>)}
+                                    </View> */}
                                     <View style={styles.cdate}>
-                                      <Text style={styles.date}>18 Juin 2020</Text>
+                                      <Text style={styles.date}>Livré Le {moment(new Date(new Number(item.date_livraison+"000"))).format('DD-MM-YYYY')}</Text>
                                     </View>
                                 </View>
                                 <View style={styles.ic_and_details}>
-                                    <Icon name="boxes" size={15} style={styles.iconDetails} />
-                                    <Text>{item.lines.length} Produit(s)</Text>
+                                  <Icon name="boxes" size={15} style={styles.iconDetails} />
+                                  <Text>{item.lines_nb} Produit(s)</Text>
                                 </View>
                                 <View style={styles.refDetails}>
-                                    <View style={styles.ref}>
-                                      <Text>CMD200500-100200</Text>
-                                    </View>
+                                  {/* <View style={styles.cdate}> */}
+                                    {item.id == 0 ? (<Text>Nouvelle commande</Text>) : (<Text style={styles.ref}>{item.ref_commande}</Text>)}
+                                  {/* </View> */}
                                 </View>
                                   <View style={{ borderBottomColor: '#00AAFF', borderBottomWidth: 1, marginRight: 10 }} />
                                 </TouchableOpacity>
                                 <View style={styles.butons_commande}>
-                                  {1 === 0 ? (<Text style={styles.notif}><Icon name="cloud-upload-alt" size={20} style={styles.notif_icon} /></Text>) : (<Text style={styles.notif}></Text>)}
+                                  {/* {1 === 0 ? (<Text style={styles.notif}><Icon name="cloud-upload-alt" size={20} style={styles.notif_icon} /></Text>) : (<Text style={styles.notif}></Text>)} */}
                                 </View>
                             </View>
                         </View>
                       </CardView>
                     }
 
-                  </TouchableOpacity>
-                : 
+                {/* : 
                   null
-                }
+                } */}
               </View>
             ))
           }
 
 
-
+            {this.state.isLoading ? 
+              <CardView cardElevation={7} cornerRadius={10} style={styles.lastCard}>
+                <View>
+                  <Text style={styles.lastCard_text}>Loading Data...</Text>
+                </View>
+              </CardView>
+            : 
             <CardView cardElevation={7} cornerRadius={10} style={styles.lastCard}>
               <View>
-                <Text style={styles.lastCard_text}>No More Data</Text>
+                <Text style={styles.lastCard_text}>No More Data...</Text>
               </View>
             </CardView>
+            }
+            
 
           </ScrollView>
 
@@ -373,11 +406,11 @@ class Preparation extends Component {
 
 
           {/* Main twist button */}
-          <PreparationButton navigation={this.props.navigation} />
+          <PreparationButton navigation={this.props.navigation} isFilterPressed={this._onFilterPressed.bind(this)}/>
           {/* END Main twist button */}
 
         </View>
-        <MyFooter />
+        <MyFooter_v2 />
       </LinearGradient>
     );
   }

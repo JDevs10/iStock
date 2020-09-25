@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { StyleSheet, View, StatusBar, Text, ImageBackground, Image, AsyncStorage } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import MyFooter from '../footers/Footer';
+import MyFooter from '../footers/MyFooter';
 import {
   Header,
   LearnMoreLinks,

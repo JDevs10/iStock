@@ -6,10 +6,11 @@ import { StyleSheet, ScrollView, TouchableOpacity, View, Text, FlatList, Image, 
 import { Card, Button } from 'react-native-elements'
 import LinearGradient from 'react-native-linear-gradient';
 import NavbarDashboard from '../../navbar/navbar-dashboard';
-import MyFooter from '../footers/Footer';
+import MyFooter_v2 from '../footers/MyFooter_v2';
 import DeviceInfo from 'react-native-device-info';
 import OrderDetailButton from './assets/OrderDetailButton';
 import SettingsManager from '../../Database/SettingsManager';
+import OrderLinesManager from '../../Database/OrderLinesManager';
 
 
 // create a component
@@ -35,6 +36,8 @@ class CommandeDetails extends Component {
         };
     
         this.state = {
+          orderId: this.props.route.params.order.commande_id,
+          data: [],
           settings: {},
           orientation: isPortrait() ? 'portrait' : 'landscape'
         };
@@ -49,12 +52,14 @@ class CommandeDetails extends Component {
 
     async  componentDidMount(){
       await this._settings();
+      await this._orderLinesData();
 
       this.listener = await this.props.navigation.addListener('focus', async () => {
         // Prevent default action
         await this._settings();
         await console.log('Done settings update!');
-          console.log('new settings : ', this.state.settings);
+        console.log('new settings : ', this.state.settings);
+        await this._orderLinesData();
         return;
       });
     }
@@ -74,13 +79,22 @@ class CommandeDetails extends Component {
       this.setState({settings: settings});
     }
 
+    async _orderLinesData(){
+      const olm = new OrderLinesManager();
+      const data = await olm.GET_LINES_BY_ORDER_ID(this.state.orderId).then(async (val) => {
+        return await val;
+      });
+      this.setState({data: data});
+    }
+
 
     render() {
         // console.log('this.props.navigation : ', this.props.route.params);
         
-        const params = this.props.route.params;
-        const order = params ? params.order : null;
-        console.log('order : ', order);
+        const orderId = this.state.orderId;
+        // const order = params ? params.order : null;
+        console.log('order : ', this.props.route.params.order);
+        console.log('orderId : ', orderId);
 
 
         if (this.state.orientation === 'portrait') {
@@ -162,6 +176,21 @@ class CommandeDetails extends Component {
       price: {
         width: '75%',
       },
+      lastCard: {
+        height: 70,
+        width: '95%',
+        justifyContent: "center",
+        alignContent: "center",
+        alignItems: "center",
+        margin: 20,
+        marginBottom: 70,
+      },
+      lastCard_text: {
+        flex: 1,
+        fontSize: 20,
+        fontWeight: "bold",
+        margin: 20
+      },
     });
       
 
@@ -171,12 +200,12 @@ class CommandeDetails extends Component {
                 colors={['#00AAFF', '#706FD3']}
                 style={styles.container}>
 
-                <NavbarDashboard navigation={ this.props } textTittleValue={"Commande " + order.ref}/>
+                <NavbarDashboard navigation={ this.props } textTittleValue={"" + this.props.route.params.order.ref_commande}/>
                 <View style={styles.mainBody}>
 
                 <ScrollView style={{flex: 1}}>
                 {
-                    order.lines.map((item, index) => (
+                    this.state.data.map((item, index) => (
                       <TouchableOpacity onPress={() => this.productDetails(item)}>
 
                         {this.state.settings.isUseDetailedCMDLines ? 
@@ -189,7 +218,7 @@ class CommandeDetails extends Component {
                                 <View style={{ flex: 1, marginLeft: 10 }}>
                                   <View style={styles.ic_and_details}>
                                     <View style={styles.aname}>
-                                      <Text style={styles.articlename}>{item.name}</Text>
+                                      <Text style={styles.articlename}>{item.label}</Text>
                                     </View>
                                     <View style={styles.aref}>
                                       <Text style={styles.ref}>{item.ref}</Text>
@@ -197,18 +226,15 @@ class CommandeDetails extends Component {
                                   </View>
                                   <View style={styles.ic_and_details}>
                                     <Icon name="boxes" size={15} style={styles.iconDetails} />
-                                    <Text> XXX Produit(s)</Text>
+                                    <Text> XXX en Stock</Text>
                                   </View>
 
                                   <View style={{ borderBottomColor: '#00AAFF', borderBottomWidth: 1, marginRight: 10 }} />
 
                                   <View style={styles.pricedetails}>
                                     <View style={styles.price}>
-                                      <Text>Total TTC : {item.prixTotalTTC > 0 ? (parseFloat(item.prixTotalTTC)).toFixed(2) : '0'} €</Text>
+                                      <Text>Total TTC : {item.total_ttc > 0 ? (parseFloat(item.total_ttc)).toFixed(2) : '0'} €</Text>
                                     </View>
-                                    {/* <View style={styles.billedstate}>
-                                          {item.etat === 0 ? (<Text style={styles.billedtext_no}>Non Validé</Text>) : (<Text style={styles.billedtext_ok}>Validé</Text>)}
-                                        </View> */}
                                   </View>
                                 </View>
                                 
@@ -222,7 +248,7 @@ class CommandeDetails extends Component {
                                 <View style={{flex: 1, marginLeft: 10}}>
                                 <View style={styles.ic_and_details}>
                                   <View style={styles.aname}>
-                                  <Text style={styles.articlename}>{item.name}</Text>
+                                  <Text style={styles.articlename}>{item.label}</Text>
                                   </View>
                                   <View style={styles.aref}>
                                     <Text style={styles.ref}>{item.ref}</Text>
@@ -230,7 +256,7 @@ class CommandeDetails extends Component {
                                 </View>
                                 <View style={styles.ic_and_details}>
                                   <Icon name="boxes" size={15} style={styles.iconDetails} />
-                                  <Text> XXX Produit(s)</Text>
+                                  <Text> XXX en Stock</Text>
                                 </View>
 
                                 <View style={{ borderBottomColor: '#00AAFF', borderBottomWidth: 1, marginRight: 10 }} />
@@ -241,17 +267,18 @@ class CommandeDetails extends Component {
                           </CardView>
                         }
 
-                      </View>
-                    </View>
-                  </CardView>
-
-                </TouchableOpacity>
+                      </TouchableOpacity>
               ))
             }
 
+            <CardView cardElevation={7} cornerRadius={10} style={styles.lastCard}>
+              <View>
+                <Text style={styles.lastCard_text}>No More Data...</Text>
+              </View>
+            </CardView>
           </ScrollView>
 
-
+          
 
 
           {/* Main twist button */}
@@ -259,7 +286,7 @@ class CommandeDetails extends Component {
           {/* END Main twist button */}
 
         </View>
-        <MyFooter />
+        <MyFooter_v2 />
       </LinearGradient>
     );
   }
