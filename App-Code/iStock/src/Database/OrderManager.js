@@ -285,6 +285,44 @@ class OrderManager extends Component {
         });
     }
 
+    // filtered sql
+    async GET_ORDER_LIST_BETWEEN_v2(from, to, filteredCnfig){
+        console.log("##### GET_ORDER_LIST_BETWEEN_v2 #########################");
+        console.log("Fom => "+from+" | To => "+to);
+        console.log("filteredCnfig => ", filteredCnfig);
+        const thirdPartiesManager = new ThirdPartiesManager();
+
+        return await new Promise(async (resolve) => {
+            const orders = [];
+            await db.transaction(async (tx) => {
+                await tx.executeSql("SELECT p." + COLUMN_ID + ", p."+COLUMN_COMMANDE_ID+", p." + COLUMN_IS_SYNC + ", p." + COLUMN_STATUT + ", p." +COLUMN_SOCID + ", p." +COLUMN_USER_AUTHOR_ID + ", p." +COLUMN_REF_COMMANDE + ", p." +COLUMN_DATE_CREATION + ", p." +COLUMN_DATE_COMMANDE + ", p." +COLUMN_DATE_LIVRAISON + ", p." +COLUMN_NOTE_PUBLIC + ", p." +COLUMN_NOTE_PRIVEE + ", p." +COLUMN_TOTAL_HT + ", p." +COLUMN_TOTAL_TVA + ", p." +COLUMN_TOTAL_TTC + ", p." +COLUMN_BROUILLION + ", p." +COLUMN_REMISE_ABSOLUE + ", p." +COLUMN_REMISE_PERCENT + ", p." +COLUMN_REMISE +", t."+thirdPartiesManager._COLUMN_NAME_+" as client_name FROM " + TABLE_NAME + " as p, "+thirdPartiesManager._TABLE_NAME_+" as t WHERE p."+COLUMN_SOCID+" = t."+thirdPartiesManager._COLUMN_REF_+" AND p."+COLUMN_ID+" BETWEEN " + from + " AND " + to, []).then(async ([tx,results]) => {
+                    console.log("Query completed");
+
+                    var len = results.rows.length;
+                    for (let i = 0; i < len; i++) {
+                        const olm = new OrderLinesManager();
+                        await olm.initDB();
+                        const lines = await olm.GET_LINES_BY_ORDER_ID(results.rows.item(i).commande_id).then(async (val) => {
+                            return await val;
+                        });
+
+                        let row = results.rows.item(i);
+                        const { id, commande_id, is_sync, statut, ref_client, client_name, socId, user_author_id, ref_commande, date_creation, date_commande, date_livraison, note_public, note_privee, total_ht, total_tva, total_ttc, brouillon, remise_absolue, remise_percent, remise } = row;
+                        orders.push({ id, commande_id, is_sync, statut, ref_client, client_name, socId, user_author_id, ref_commande, date_creation, date_commande, date_livraison, note_public, note_privee, total_ht, total_tva, total_ttc, brouillon, remise_absolue, remise_percent, remise, lines_nb: lines.length });
+                    }
+                    console.log("SELECT p." + COLUMN_ID + ", p."+COLUMN_COMMANDE_ID+", p." + COLUMN_IS_SYNC + ", p." + COLUMN_STATUT + ", p." +COLUMN_SOCID + ", p." +COLUMN_USER_AUTHOR_ID + ", p." +COLUMN_REF_COMMANDE + ", p." +COLUMN_DATE_CREATION + ", p." +COLUMN_DATE_COMMANDE + ", p." +COLUMN_DATE_LIVRAISON + ", p." +COLUMN_NOTE_PUBLIC + ", p." +COLUMN_NOTE_PRIVEE + ", p." +COLUMN_TOTAL_HT + ", p." +COLUMN_TOTAL_TVA + ", p." +COLUMN_TOTAL_TTC + ", p." +COLUMN_BROUILLION + ", p." +COLUMN_REMISE_ABSOLUE + ", p." +COLUMN_REMISE_PERCENT + ", p." +COLUMN_REMISE +", t."+thirdPartiesManager._COLUMN_NAME_+" as client_name FROM " + TABLE_NAME + " as p, "+thirdPartiesManager._TABLE_NAME_+" as t WHERE p."+COLUMN_SOCID+" = t."+thirdPartiesManager._COLUMN_REF_+" AND p."+COLUMN_STATUT+" = 1 AND p."+COLUMN_ID+" BETWEEN " + from + " AND " + to);
+                    console.log("orders : ", orders);
+                    await resolve(orders);
+                });
+            }).then(async (result) => {
+                //await this.closeDatabase(db);
+            }).catch(async (err) => {
+                console.log('err: ', err);
+                await resolve([]);
+            });
+        });
+    }
+
     //Delete
     async DELETE_ORDER_LIST(){
         console.log("##### DELETE_ORDER_LIST #########################");

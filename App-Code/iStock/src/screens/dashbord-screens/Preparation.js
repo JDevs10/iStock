@@ -45,6 +45,7 @@ class Preparation extends Component {
     this.state = {
       isLoading: true,
       isFilter: false,
+      filterConfig: null,
       data: [],
       settings: {},
       orientation: isPortrait() ? 'portrait' : 'landscape'
@@ -90,13 +91,24 @@ class Preparation extends Component {
 
   async _getPickingData(){
     this.setState({isLoading: true});
+    let data = [];
+    
+    if(this.state.filterConfig == null){
+      const om = new OrderManager();
+      await om.initDB();
+      data = await om.GET_ORDER_LIST_BETWEEN_v2(0, 30).then(async (val) => {
+        console.log("Order data : ", val);
+        return await val;
+      });
 
-    const om = new OrderManager();
-    await om.initDB();
-    const data = await om.GET_ORDER_LIST_BETWEEN_v2(0, 20).then(async (val) => {
-      console.log("Order data : ", val);
-      return await val;
-    });
+    }else{
+      const om = new OrderManager();
+      await om.initDB();
+      data = await om.GET_ORDER_LIST_BETWEEN_v2(0, 30, this.state.filterConfig).then(async (val) => {
+        console.log("Order data filtered : ", val);
+        return await val;
+      });
+    }
 
     this.setState({ data: data, isLoading: false});
   }
@@ -112,6 +124,8 @@ class Preparation extends Component {
 
   _onDataToFilter(data){
     console.log("Filter config data : ", data); 
+    this.setState({filterConfig: data});
+    this._getPickingData();
   }
 
 
