@@ -125,6 +125,14 @@ class Preparation extends Component {
 
   async _onDataToFilter(data){
     console.log("Filter config data : ", data);
+
+
+    // const filteredData = this.state.data.filter(async (item) => {
+    //   return await item.state == "Hello";
+    // }).map(async ({id, name, state}) => {
+    //   return await {id, name, state};
+    // });
+
     await this.setState({filterConfig: data});
     this._getPickingData();
   }

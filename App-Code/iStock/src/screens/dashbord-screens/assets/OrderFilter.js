@@ -13,6 +13,7 @@ class OrderFilter extends Component {
         super(props);
         this.state = {
             filterName: "",
+            filterRepresentant: "",
             startDate: 0,
             endDate: 0,
         }
@@ -22,6 +23,7 @@ class OrderFilter extends Component {
     cleanSearch(){
         this.setState({
             filterName: "",
+            filterRepresentant: "",
             startDate: 0,
             endDate: 0,
         });
@@ -30,12 +32,17 @@ class OrderFilter extends Component {
     search(){
         const filterData = {
             filterName: this.state.filterName,
+            filterRepresentant: this.state.filterRepresentant,
             startDate: this.state.startDate,
             endDate: this.state.endDate,
         }
 
         if(filterData.filterName.length < 1){
             filterData.filterName = null;
+        }
+
+        if(filterData.filterRepresentant.length < 1){
+            filterData.filterRepresentant = null;
         }
 
         if(filterData.startDate == 0){
@@ -46,12 +53,11 @@ class OrderFilter extends Component {
             filterData.endDate = null;
         }
 
-        if(filterData.filterName == null && filterData.startDate == null && filterData.endDate == null){
+        if(filterData.filterName == null && filterData.filterRepresentant == null && filterData.startDate == null && filterData.endDate == null){
             return;
         }
 
         this.props.onDataToFilter(filterData);
-        
     }
 
 
@@ -102,19 +108,30 @@ class OrderFilter extends Component {
 
 
                     <View style={{width: "100%", flexDirection: "row", justifyContent: "space-between", alignItems: 'center', padding: 5}}>
-                        <TextInput style={{width: "50%", borderWidth: 2, borderColor: "#00AAFF", borderRadius: 25, paddingLeft: 20}} placeholder="Filter par ref client / CMD..." placeholderTextColor="#646464" onChangeText={(val) => textInputChanged(val)} value={this.state.filterName} />
+                        <View style={{width: "50%", flexDirection: "row", justifyContent: "flex-start", alignItems: 'center'}}>
+                            <Icon name="users" size={20} style={{color: "#00AAFF"}}/>
+                            <TextInput style={{width: "80%", height: 35, borderWidth: 2, borderColor: "#00AAFF", borderRadius: 25, paddingLeft: 20, marginRight: 10, marginLeft: 10}} placeholder="Filter par ref client / CMD..." placeholderTextColor="#646464" onChangeText={(val) => textInputChanged(val)} value={this.state.filterName} />
+                        </View>
+                        <View style={{width: "50%", flexDirection: "row", justifyContent: "flex-end", alignItems: 'center', marginRight: 10, marginLeft: 10}}>
+                            <Icon name="user" size={20} style={{color: "#00AAFF"}}/>
+                            <TextInput style={{width: "80%", height: 35, borderWidth: 2, borderColor: "#00AAFF", borderRadius: 25, paddingLeft: 20, marginRight: 10, marginLeft: 10}} placeholder="Filtrer par représentant..." placeholderTextColor="#646464" onChangeText={(val) => textInputChanged(val)} value={this.state.filterName} />
+                        </View>
+                        
+                    </View>
+
+                    <View style={{width: "100%", flexDirection: "row", justifyContent: "flex-end", alignItems: 'center', padding: 5}}>
                         <TouchableOpacity>
-                            <View style={{backgroundColor: "#D7D7D7", padding: 5, borderRadius: 25, width: 60, alignItems: "center"}}>
+                            <View style={{backgroundColor: "#D7D7D7", padding: 5, marginLeft: 20, marginRight: 5, borderRadius: 25, width: 60, alignItems: "center"}}>
                                 <Icon name="users" size={DeviceInfo.isTablet() ? 20 : 20} style={{color: "#00AAFF"}}/>
                             </View>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={() => {this.cleanSearch()}}>
-                            <View style={{backgroundColor: "#D7D7D7", padding: 5, borderRadius: 25, width: 60, alignItems: "center"}}>
+                            <View style={{backgroundColor: "#D7D7D7", padding: 5, marginLeft: 20, marginRight: 5, borderRadius: 25, width: 60, alignItems: "center"}}>
                                 <Icon name="trash" size={DeviceInfo.isTablet() ? 20 : 20} style={{color: "#00AAFF"}}/>
                             </View>    
                         </TouchableOpacity>
                         <TouchableOpacity onPress={() => {this.search()}}>
-                            <View style={{backgroundColor: "#00AAFF", padding: 5, borderRadius: 25, width: 60, alignItems: "center"}}>
+                            <View style={{backgroundColor: "#00AAFF", padding: 5, marginLeft: 20, marginRight: 5, borderRadius: 25, width: 60, alignItems: "center"}}>
                                 <Icon name="search" size={DeviceInfo.isTablet() ? 20 : 20} style={{color: "#fff"}}/>
                             </View>
                         </TouchableOpacity>

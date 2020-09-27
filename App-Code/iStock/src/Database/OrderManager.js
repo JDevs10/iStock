@@ -314,31 +314,29 @@ class OrderManager extends Component {
         }
 
 
+        // make 16 (4^2 = 16) ifs with their own sqls.... so 16 unique sqls
+        // OR make 4 sqls with simple if conditions
 
+        if(filteredCnfig.startDate == null && filteredCnfig.endDate == null){
 
-
-        /*
-        if(filteredCnfig.filterName != null && filteredCnfig.startDate != null && filteredCnfig.endDate == null){
-            sql += "AND c." + COLUMN_DATE_LIVRAISON + " < "+ (Date.parse(filteredCnfig.startDate) / 1000)+ " ";
-
-        }else if(filteredCnfig.filterName == null && filteredCnfig.startDate != null && filteredCnfig.endDate == null){
-            sql += "c." + COLUMN_DATE_LIVRAISON + " < "+ (Date.parse(filteredCnfig.startDate) / 1000)+ " ";
-        
-        }else if(filteredCnfig.filterName == null && filteredCnfig.startDate == null && filteredCnfig.endDate != null){
-            sql += "c." + COLUMN_DATE_LIVRAISON + " < "+ (Date.parse(filteredCnfig.startDate) / 1000)+ " ";
         }
 
+        if(filteredCnfig.startDate != null && filteredCnfig.endDate == null){
+            sql += "SELECT c." + COLUMN_ID + ", c."+COLUMN_COMMANDE_ID+", c." + COLUMN_IS_SYNC + ", c." + COLUMN_STATUT + ", c." +COLUMN_SOCID + ", c." +COLUMN_USER_AUTHOR_ID + ", c." +COLUMN_REF_COMMANDE + ", c." +COLUMN_DATE_CREATION + ", c." +COLUMN_DATE_COMMANDE + ", c." +COLUMN_DATE_LIVRAISON + ", c." +COLUMN_NOTE_PUBLIC + ", c." +COLUMN_NOTE_PRIVEE + ", c." +COLUMN_TOTAL_HT + ", c." +COLUMN_TOTAL_TVA + ", c." +COLUMN_TOTAL_TTC + ", c." +COLUMN_BROUILLION + ", c." +COLUMN_REMISE_ABSOLUE + ", c." +COLUMN_REMISE_PERCENT + ", c." +COLUMN_REMISE +", t."+thirdPartiesManager._COLUMN_NAME_+" as client_name "+
+            "FROM " + TABLE_NAME + " as c, "+thirdPartiesManager._TABLE_NAME_+" as t "+
+            "WHERE "+(filteredCnfig.filterName == null ? "" : (filteredCnfig.filterName.toUpperCase().includes("CMD") ? "c." + COLUMN_REF_COMMANDE + " LIKE '" + filteredCnfig.filterName.toUpperCase() + "%' AND" : "t."+thirdPartiesManager._COLUMN_NAME_ + " LIKE '%" + filteredCnfig.filterName.toUpperCase() + "%' AND"))+" c." + COLUMN_DATE_LIVRAISON + " < "+ (Date.parse(filteredCnfig.startDate) / 1000)+ " ";
+        }
 
-        if(filteredCnfig.filterName != null && filteredCnfig.startDate != null && filteredCnfig.endDate != null){
-            sql += "AND c." + COLUMN_DATE_LIVRAISON + " > "+ (Date.parse(filteredCnfig.endDate) / 1000)+ " ";
+        if(filteredCnfig.startDate == null && filteredCnfig.endDate != null){
+            sql += "SELECT c." + COLUMN_ID + ", c."+COLUMN_COMMANDE_ID+", c." + COLUMN_IS_SYNC + ", c." + COLUMN_STATUT + ", c." +COLUMN_SOCID + ", c." +COLUMN_USER_AUTHOR_ID + ", c." +COLUMN_REF_COMMANDE + ", c." +COLUMN_DATE_CREATION + ", c." +COLUMN_DATE_COMMANDE + ", c." +COLUMN_DATE_LIVRAISON + ", c." +COLUMN_NOTE_PUBLIC + ", c." +COLUMN_NOTE_PRIVEE + ", c." +COLUMN_TOTAL_HT + ", c." +COLUMN_TOTAL_TVA + ", c." +COLUMN_TOTAL_TTC + ", c." +COLUMN_BROUILLION + ", c." +COLUMN_REMISE_ABSOLUE + ", c." +COLUMN_REMISE_PERCENT + ", c." +COLUMN_REMISE +", t."+thirdPartiesManager._COLUMN_NAME_+" as client_name "+
+            "FROM " + TABLE_NAME + " as c, "+thirdPartiesManager._TABLE_NAME_+" as t "+
+            "WHERE "+(filteredCnfig.filterName == null ? "" : (filteredCnfig.filterName.toUpperCase().includes("CMD") ? "c." + COLUMN_REF_COMMANDE + " LIKE '" + filteredCnfig.filterName.toUpperCase() + "%' AND" : "t."+thirdPartiesManager._COLUMN_NAME_ + " LIKE '%" + filteredCnfig.filterName.toUpperCase() + "%' AND"))+" c." + COLUMN_DATE_LIVRAISON + " > "+ (Date.parse(filteredCnfig.startDate) / 1000)+ " ";
         }
-        else if(filteredCnfig.filterName == null && filteredCnfig.startDate != null && filteredCnfig.endDate != null){
-            sql += "c." + COLUMN_DATE_LIVRAISON + " < "+ (Date.parse(filteredCnfig.startDate) / 1000)+ " AND c." + COLUMN_DATE_LIVRAISON + " > "+ (Date.parse(filteredCnfig.endDate) / 1000)+ " ";
+
+        if(filteredCnfig.startDate != null && filteredCnfig.endDate != null){
+
         }
-        else if(filteredCnfig.filterName == null && filteredCnfig.startDate == null && filteredCnfig.endDate != null){
-            sql += "c." + COLUMN_DATE_LIVRAISON + " > "+ (Date.parse(filteredCnfig.endDate) / 1000)+ " ";
-        }
-        */
+
 
         console.log("Builed SQL => ", sql);
 
