@@ -30,6 +30,7 @@ const iconStyle = {
 };
 
 export function DrawerContent(props) {
+
     componentWillMount = () => {
         BackHandler.addEventListener('hardwareBackPress', disconnection);
     }

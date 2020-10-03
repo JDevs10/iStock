@@ -17,7 +17,7 @@ const DATABASE_SIZE = DatabaseInfo.DATABASE_SIZE;
 const TABLE_NAME = "orders_lines";
 const COLUMN_ID = "id"; //INTEGER PRIMARY KEY AUTOINCREMENT
 const COLUMN_ORDER_ID = "fk_commande"; //VARCHAR(255)
-const COLUMN_LABEL = "label"; //VARCHAR(255)
+const COLUMN_LABEL = "libelle"; //VARCHAR(255)
 const COLUMN_REF = "ref"; //VARCHAR(255)
 const COLUMN_QTE = "qty"; //VARCHAR(255)
 const COLUMN_PRICE = "price"; //VARCHAR(255)
@@ -119,7 +119,7 @@ class OrderLinesManager extends Component {
             try{
                 for(let x = 0; x < data_.length; x++){
                     await db.transaction(async (tx) => {
-                        const insert = "INSERT INTO " + TABLE_NAME + " (" + COLUMN_ID + ", " + COLUMN_ORDER_ID + ", " + COLUMN_LABEL + ", " + COLUMN_REF + ", " +COLUMN_QTE + ", " +COLUMN_PRICE + ", " +COLUMN_TVA_TX + ", " +COLUMN_TOTAL_HT + ", " +COLUMN_TOTAL_TVA + ", " +COLUMN_TOTAL_TTC + ") VALUES (null, '"+data_[x].fk_commande+"', '"+(data_[x].label != null ? data_[x].label.replace(/'/g, "''") : "null")+"', '"+data_[x].ref+"', '"+data_[x].qty+"', '"+data_[x].price+"', '"+data_[x].tva_tx+"', '"+data_[x].total_ht+"', '"+data_[x].total_tva+"', '"+data_[x].total_ttc+"')";
+                        const insert = "INSERT INTO " + TABLE_NAME + " (" + COLUMN_ID + ", " + COLUMN_ORDER_ID + ", " + COLUMN_LABEL + ", " + COLUMN_REF + ", " +COLUMN_QTE + ", " +COLUMN_PRICE + ", " +COLUMN_TVA_TX + ", " +COLUMN_TOTAL_HT + ", " +COLUMN_TOTAL_TVA + ", " +COLUMN_TOTAL_TTC + ") VALUES (null, '"+data_[x].fk_commande+"', '"+(data_[x].libelle != null ? data_[x].label.replace(/'/g, "''") : "null")+"', '"+data_[x].ref+"', '"+data_[x].qty+"', '"+data_[x].price+"', '"+data_[x].tva_tx+"', '"+data_[x].total_ht+"', '"+data_[x].total_tva+"', '"+data_[x].total_ttc+"')";
                         await tx.executeSql(insert, []);
                     });
                 }
@@ -193,7 +193,7 @@ class OrderLinesManager extends Component {
                             let row = results.rows.item(i);
                             lines.push(row);
                         }
-                        // console.log(products);
+                        console.log(lines);
                         await resolve(lines);
                     });
                 });

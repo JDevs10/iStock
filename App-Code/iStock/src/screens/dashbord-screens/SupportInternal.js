@@ -21,7 +21,7 @@ class SupportInternal extends React.Component {
   send_ticket() {
     if ((this.state.subject != '') && (this.state.srv != '') && (this.state.message != '')) {
       let current_date = moment().format('YYYY-MM-DD hh:mm:ss a');
-      const data = { fk_project: 22, type_code: "ISSUE", category_code: "DEV", severity_code: "NORMAL", type_label: "Probléme", category_label: "Développeur", severity_label: "Normal", fk_user_assign: 32, subject: `${this.state.subject}`, message: `Client : ${this.state.srv}  - Message :  ${this.state.message}`, date_creation: current_date };
+      const data = { fk_project: 22, type_code: "ISSUE", category_code: "DEV", severity_code: "NORMAL", type_label: "Probléme", category_label: "Développeur", severity_label: "Normal", fk_user_assign: 32, subject: `${this.state.subject}`, message: `Client : ${this.state.srv}\nMessage : ${this.state.message}`, date_creation: current_date };
       console.log('########################################');
       console.log('Ajouter Envoie du ticket :');
       axios(

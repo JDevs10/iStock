@@ -5,13 +5,13 @@ import Icon from 'react-native-vector-icons/FontAwesome5';
 import { StyleSheet, ScrollView, TouchableOpacity, View, Text, FlatList, Image, Dimensions, Alert, ImageBackground } from 'react-native';
 import { Card, Button } from 'react-native-elements'
 import LinearGradient from 'react-native-linear-gradient';
-import NavbarDashboard from '../../navbar/navbar-dashboard';
+import NavbarOrdersLines from '../../navbar/navbar-orders-lines';
 import MyFooter_v2 from '../footers/MyFooter_v2';
 import DeviceInfo from 'react-native-device-info';
 import OrderDetailButton from './assets/OrderDetailButton';
 import SettingsManager from '../../Database/SettingsManager';
 import OrderLinesManager from '../../Database/OrderLinesManager';
-
+import OrderLinesFilter from './assets/OrderLinesFilter';
 
 // create a component
 class CommandeDetails extends Component {
@@ -39,6 +39,7 @@ class CommandeDetails extends Component {
           orderId: this.props.route.params.order.commande_id,
           data: [],
           settings: {},
+          filterConfig: {},
           orientation: isPortrait() ? 'portrait' : 'landscape'
         };
         
@@ -59,6 +60,7 @@ class CommandeDetails extends Component {
         await this._settings();
         await console.log('Done settings update!');
         console.log('new settings : ', this.state.settings);
+        await this.setState({orderId: this.props.route.params.order.commande_id});
         await this._orderLinesData();
         return;
       });
@@ -87,6 +89,17 @@ class CommandeDetails extends Component {
       this.setState({data: data});
     }
 
+    _onFilterPressed(data){
+      console.log("_onFilterPressed : ", data);
+      this.setState({isFilter: data.isFilter});
+    }
+
+    async _onDataToFilter(data){
+      console.log("Filter config data : ", data);
+  
+      await this.setState({filterConfig: data});
+      //await this._getPickingData();
+    }
 
     render() {
         // console.log('this.props.navigation : ', this.props.route.params);
@@ -200,8 +213,10 @@ class CommandeDetails extends Component {
                 colors={['#00AAFF', '#706FD3']}
                 style={styles.container}>
 
-                <NavbarDashboard navigation={ this.props } textTittleValue={"" + this.props.route.params.order.ref_commande}/>
+                <NavbarOrdersLines navigation={ this.props } textTittleValue={"" + this.props.route.params.order.ref_commande}/>
                 <View style={styles.mainBody}>
+
+                  <OrderLinesFilter onDataToFilter={this._onDataToFilter.bind(this)} settings={{isFilter: this.state.isFilter}}/>
 
                 <ScrollView style={{flex: 1}}>
                 {
@@ -218,7 +233,7 @@ class CommandeDetails extends Component {
                                 <View style={{ flex: 1, marginLeft: 10 }}>
                                   <View style={styles.ic_and_details}>
                                     <View style={styles.aname}>
-                                      <Text style={styles.articlename}>{item.label}</Text>
+                                      <Text style={styles.articlename}>{item.libelle}</Text>
                                     </View>
                                     <View style={styles.aref}>
                                       <Text style={styles.ref}>{item.ref}</Text>
@@ -226,7 +241,7 @@ class CommandeDetails extends Component {
                                   </View>
                                   <View style={styles.ic_and_details}>
                                     <Icon name="boxes" size={15} style={styles.iconDetails} />
-                                    <Text> XXX en Stock</Text>
+                                    <Text> {item.qty} en Stock</Text>
                                   </View>
 
                                   <View style={{ borderBottomColor: '#00AAFF', borderBottomWidth: 1, marginRight: 10 }} />
@@ -248,7 +263,7 @@ class CommandeDetails extends Component {
                                 <View style={{flex: 1, marginLeft: 10}}>
                                 <View style={styles.ic_and_details}>
                                   <View style={styles.aname}>
-                                  <Text style={styles.articlename}>{item.label}</Text>
+                                  <Text style={styles.articlename}>{item.libelle}</Text>
                                   </View>
                                   <View style={styles.aref}>
                                     <Text style={styles.ref}>{item.ref}</Text>
@@ -282,7 +297,7 @@ class CommandeDetails extends Component {
 
 
           {/* Main twist button */}
-          <OrderDetailButton navigation={this.props.navigation} />
+          <OrderDetailButton navigation={this.props.navigation} isFilterPressed={this._onFilterPressed.bind(this)}/>
           {/* END Main twist button */}
 
         </View>

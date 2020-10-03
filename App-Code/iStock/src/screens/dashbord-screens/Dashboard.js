@@ -79,7 +79,10 @@ export default class Dashboard extends Component {
         style={styles.container}>
 
         <NavbarHome _navigation={this.props} />
+        
         <View style={styles.mainBody}>
+
+
           <ScrollView style={{ flex: 1 }}>
 
 

@@ -12,7 +12,7 @@ import Icon from 'react-native-vector-icons/FontAwesome5';
 const IMG_SRC = require('../../img/banner.png');
 
 
-export default class NavbarPreparation extends Component {
+export default class NavbarOrdersLines extends Component {
   constructor(props) {
     super(props);
 
@@ -44,13 +44,8 @@ export default class NavbarPreparation extends Component {
     });
   }
 
-  // sync all orders from server
-  async syncOrders(){
-    this.props._navigation.navigation.navigate('OrdersSync');
-  }
-
   async support(){
-    this.props._navigation.navigation.navigate('Support');
+    this.props.navigation.navigation.navigate('Support');
   }
 
   render() {
@@ -115,7 +110,7 @@ export default class NavbarPreparation extends Component {
       <View style={styles.body}>
         <ImageBackground source={IMG_SRC} resizeMode='cover' style={styles.backdrop}>
 
-            <Icon name="cloud" size={25} style={styles.icon1} onPress={() => this.syncOrders()}/>
+            {/* <Icon name="cloud" size={25} style={styles.icon1} onPress={() => this.syncOrders()}/> */}
 
             <View style={styles.text_layout}>
               <Text style={styles.text}>{this.props.textTittleValue}</Text>

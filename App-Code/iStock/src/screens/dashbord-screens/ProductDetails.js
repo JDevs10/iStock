@@ -9,6 +9,8 @@ import NavbarDashboard from '../../navbar/navbar-dashboard';
 import MyFooter_v2 from '../footers/MyFooter_v2';
 import DeviceInfo from 'react-native-device-info';
 import ProductDetailButton from './assets/ProductDetailButton';
+import ProductsManager from '../../Database/ProductsManager';
+import SettingsManager from '../../Database/SettingsManager';
 
 // create a component
 class ProductDetails extends Component {
@@ -32,6 +34,9 @@ class ProductDetails extends Component {
     };
 
     this.state = {
+      productId: this.props.route.params.product.ref,
+      data: [],
+      settings: {},
       orientation: isPortrait() ? 'portrait' : 'landscape',
       qte_cmd: 1,
       remise: 0,
@@ -49,6 +54,39 @@ class ProductDetails extends Component {
       });
     });
   }
+
+  async componentDidMount(){
+    await this._settings();
+    await this._productData();
+
+    this.listener = await this.props.navigation.addListener('focus', async () => {
+      // Prevent default action
+      await this._settings();
+      await console.log('Done settings update!');
+      console.log('new settings : ', this.state.settings);
+      await this._productData();
+      return;
+    });
+  }
+
+  async _settings(){
+    const sm = new SettingsManager();
+    await sm.initDB();
+    const settings = await sm.GET_SETTINGS_BY_ID(1).then(async (val) => {
+      return await val;
+    });
+    console.log('settings: ', settings);
+    this.setState({settings: settings});
+  }
+
+  async _productData(){
+    const pm = new ProductsManager();
+    const data = await pm.GET_PRODUCT_BY_ID(this.state.productId).then(async (val) => {
+      return await val;
+    });
+    this.setState({data: data});
+  }
+
 
   pttcSelected = (value) => {
     this.setState(
@@ -69,6 +107,8 @@ class ProductDetails extends Component {
       }
     )
   }
+
+
 
   render() {
     const params = this.props.route.params;
@@ -244,7 +284,7 @@ class ProductDetails extends Component {
               <View style={styles.cardViewStyle1}>
                 <View style={[styles.article, { flexDirection: "row" }]}>
                   <View>
-                    {product.image.length > 0 ? 
+                    {this.state.settings.isUseImages ? 
                       <Image style={{ width: DeviceInfo.isTablet() ? 400 : 50, height: DeviceInfo.isTablet() ? 400 : 50 }} source={{uri: product.image}} />
                     : 
                       <Image style={{ width: DeviceInfo.isTablet() ? 400 : 50, height: DeviceInfo.isTablet() ? 400 : 50 }} source={require('../../../img/no_image.jpeg')} />

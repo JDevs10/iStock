@@ -129,13 +129,13 @@ class ProductsManager extends Component {
 
 
     //Get by id
-    async GET_PRODUCT_BY_ID(id){
+    async GET_PRODUCT_BY_ID(ref){
         console.log("##### GET_PRODUCT_BY_ID #########################");
 
         return await new Promise(async (resolve) => {
             let product = {};
             await db.transaction(async (tx) => {
-                await tx.executeSql('SELECT p.'+COLUMN_ID+', p.'+COLUMN_REF+', p.'+COLUMN_LABEL+', p.'+COLUMN_CODEBARRE+', p.'+COLUMN_DESCRIPTION+', p.'+COLUMN_LOT+', p.'+COLUMN_DLC+', p.'+COLUMN_DLUO+', p.'+COLUMN_IMAGE+' FROM '+TABLE_NAME+' p WHERE p.'+COLUMN_ID+' = '+id, []).then(async ([tx,results]) => {
+                await tx.executeSql('SELECT p.'+COLUMN_ID+', p.'+COLUMN_REF+', p.'+COLUMN_LABEL+', p.'+COLUMN_CODEBARRE+', p.'+COLUMN_DESCRIPTION+', p.'+COLUMN_LOT+', p.'+COLUMN_DLC+', p.'+COLUMN_DLUO+', p.'+COLUMN_IMAGE+' FROM '+TABLE_NAME+' p WHERE p.'+COLUMN_REF+' = '+ref, []).then(async ([tx,results]) => {
                     console.log("Query completed");
                     var len = results.rows.length;
                     for (let i = 0; i < len; i++) {

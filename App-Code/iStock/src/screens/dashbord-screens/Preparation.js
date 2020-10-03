@@ -55,7 +55,7 @@ class Preparation extends Component {
       filterConfig: {},
       data: [],
       settings: {},
-      limit: {from: 0, to: 50},
+      limit: {from: 0, to: 20},
       orientation: isPortrait() ? 'portrait' : 'landscape'
     };
 
@@ -76,7 +76,7 @@ class Preparation extends Component {
       await this._settings();
       await console.log('Done settings update!');
       console.log('new settings : ', this.state.settings);
-      await this._getPickingData();
+      // await this._getPickingData();
       return;
     });
   }
