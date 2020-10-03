@@ -13,35 +13,36 @@ const DATABASE_VERSION = DatabaseInfo.DATABASE_VERSION;
 const DATABASE_DISPLAY_NAME = DatabaseInfo.DATABASE_DISPLAY_NAME;
 const DATABASE_SIZE = DatabaseInfo.DATABASE_SIZE;
 
-
-const TABLE_NAME = "products";
+const TABLE_NAME = "user";
 const COLUMN_ID = "id";
 const COLUMN_REF = "ref";
-const COLUMN_LABEL = "label";
-const COLUMN_CODEBARRE = "codebarre";
-const COLUMN_DESCRIPTION = "description";
-const COLUMN_LOT = "lot";
-const COLUMN_DLC = "dlc";
-const COLUMN_DLUO = "dluo";
-const COLUMN_EMPLACEMENT = "emplacement";
-const COLUMN_IMAGE = "image";
+const COLUMN_FIRSTNAME = "firstname";
+const COLUMN_LASTNAME = "lastname";
+const COLUMN_ADMIN = "admin";
+const COLUMN_EMAIL = "email";
+const COLUMN_JOB = "job";
 
 const create = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "(" +
     COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
     COLUMN_REF + " VARCHAR(255)," +
-    COLUMN_LABEL + " VARCHAR(255)," +
-    COLUMN_CODEBARRE + " VARCHAR(255)," +
-    COLUMN_DESCRIPTION + " VARCHAR(255)," +
-    COLUMN_LOT + " VARCHAR(255)," +
-    COLUMN_DLC + " VARCHAR(255)," +
-    COLUMN_DLUO + " VARCHAR(255)," +
-    COLUMN_EMPLACEMENT + " VARCHAR(255)," +
-    COLUMN_IMAGE + " VARCHAR(255)" +
+    COLUMN_FIRSTNAME + " VARCHAR(255)," +
+    COLUMN_LASTNAME + " VARCHAR(255)," +
+    COLUMN_ADMIN + " VARCHAR(255)," +
+    COLUMN_EMAIL + " VARCHAR(255)," +
+    COLUMN_JOB + " VARCHAR(255)" +
 ")";
 
 
 // create a component
-class ProductsManager extends Component {
+class UserManager extends Component {
+    //public variables
+    _TABLE_NAME_ = "user";
+    _COLUMN_REF_ = "ref";
+    _COLUMN_FIRSTNAME_ = "firstname";
+    _COLUMN_LASTNAME_ = "lastname";
+    _COLUMN_ADMIN_ = "admin";
+
+
     //Init database
     async initDB() {
         return await new Promise(async (resolve) => {
@@ -88,8 +89,8 @@ class ProductsManager extends Component {
 
 
     //Create
-    async CREATE_PRODUCT_TABLE(){
-        console.log("##### CREATE_PRODUCT_TABLE #########################");
+    async CREATE_USER_TABLE(){
+        console.log("##### CREATE_USER_TABLE #########################");
         return await new Promise(async (resolve) => {
             try{
                 await db.transaction(async function (txn) {
@@ -107,75 +108,72 @@ class ProductsManager extends Component {
         });
     }
 
-    //Insert a list
-    async INSERT_PRODUCT_L(data_){
-        console.log("##### INSERT_PRODUCT - List #########################");
 
-        console.log("inserting.... ", data_.length);
+    //Insert
+    async INSERT_USER(data_){
+        console.log("##### INSERT_USER #########################");
+        console.log("inserting.... ", data_);
         return await new Promise(async (resolve) => {
             try{
                 for(let x = 0; x < data_.length; x++){
-                    data_[x].image = "";
                     await db.transaction(async (tx) => {
-                        await tx.executeSql("INSERT INTO " + TABLE_NAME + " ("+COLUMN_ID+", "+COLUMN_REF+", "+COLUMN_LABEL+", "+COLUMN_CODEBARRE+", "+COLUMN_DESCRIPTION+", "+COLUMN_LOT+", "+COLUMN_DLC+", "+COLUMN_DLUO+", "+COLUMN_IMAGE+") VALUES (NULL, '"+data_[x].ref+"', '"+data_[x].label.replace(/'/g, "''")+"', '"+data_[x].codebarre+"', "+(data_[x].description == null ? null : "'"+data_[x].description.replace(/'/g, "''")+"'" )+", '"+data_[x].lot+"', '"+data_[x].dlc+"', '"+data_[x].dluo+"', '"+data_[x].image+"')", []);
+                        await tx.executeSql("INSERT INTO " + TABLE_NAME + " ("+COLUMN_ID+", "+COLUMN_REF+", "+COLUMN_FIRSTNAME+", "+COLUMN_LASTNAME+", "+COLUMN_ADMIN+", "+COLUMN_EMAIL+", "+COLUMN_JOB+") VALUES (null, '"+data_[x].ref+"', "+(data_[x].firstname == null ? null : "'"+data_[x].firstname.replace(/'/g, "''")+"'")+", '"+data_[x].lastname.replace(/'/g, "''")+"', '"+data_[x].admin+"', '"+data_[x].email+"', '"+data_[x].job+"')", []);
                     });
                 }
                 return await resolve(true);
             } catch(error){
-                return resolve(false);
+                return await resolve(false);
             }
         });
     }
 
 
-    //Get by id
-    async GET_PRODUCT_BY_ID(id){
-        console.log("##### GET_PRODUCT_BY_ID #########################");
+    //Get by ref
+    async GET_USER_BY_REF(ref){
+        console.log("##### GET_USER_BY_REF #########################");
 
         return await new Promise(async (resolve) => {
-            let product = {};
+            let user = null;
             await db.transaction(async (tx) => {
-                await tx.executeSql('SELECT p.'+COLUMN_ID+', p.'+COLUMN_REF+', p.'+COLUMN_LABEL+', p.'+COLUMN_CODEBARRE+', p.'+COLUMN_DESCRIPTION+', p.'+COLUMN_LOT+', p.'+COLUMN_DLC+', p.'+COLUMN_DLUO+', p.'+COLUMN_IMAGE+' FROM '+TABLE_NAME+' p WHERE p.'+COLUMN_ID+' = '+id, []).then(async ([tx,results]) => {
+                await tx.executeSql("SELECT u."+COLUMN_ID+", u."+COLUMN_REF+", u."+COLUMN_FIRSTNAME+", u."+COLUMN_LASTNAME+", u."+COLUMN_ADMIN+ ", u."+COLUMN_EMAIL+ ", u."+COLUMN_JOB+ " FROM "+TABLE_NAME+" u WHERE u."+COLUMN_REF+" = "+ref, []).then(async ([tx,results]) => {
                     console.log("Query completed");
                     var len = results.rows.length;
                     for (let i = 0; i < len; i++) {
                         let row = results.rows.item(i);
-                        console.log(`ID: ${row.id}, name: ${row.name}`)
-                        product = row;
+                        user = row;
                     }
-                    console.log(product);
-                    await resolve(product);
                 });
             }).then(async (result) => {
-                //await this.closeDatabase(db);
+                // await this.closeDatabase(db);
+                // console.log('token: ', token);
+                await resolve(user);
             }).catch(async (err) => {
                 console.log(err);
+                await resolve(null);
             });
         });
     }
 
-    // get all
-    async GET_PRODUCT_LIST(){
-        console.log("##### GET_PRODUCT_LIST #########################");
+
+    //Get list
+    async GET_USER_LIST(){
+        console.log("##### GET_USER_LIST #########################");
 
         return await new Promise(async (resolve) => {
-            const products = [];
+            let user = [];
             await db.transaction(async (tx) => {
-                await tx.executeSql('SELECT p.'+COLUMN_ID+', p.'+COLUMN_REF+', p.'+COLUMN_LABEL+', p.'+COLUMN_CODEBARRE+', p.'+COLUMN_DESCRIPTION+', p.'+COLUMN_LOT+', p.'+COLUMN_DLC+', p.'+COLUMN_DLUO+', p.'+COLUMN_IMAGE+' FROM '+TABLE_NAME+' p', []).then(async ([tx,results]) => {
+                await tx.executeSql("SELECT u."+COLUMN_ID+", u."+COLUMN_REF+", u."+COLUMN_FIRSTNAME+", u."+COLUMN_LASTNAME+", u."+COLUMN_ADMIN+ ", u."+COLUMN_EMAIL+ ", u."+COLUMN_JOB+ " FROM "+TABLE_NAME+" u", []).then(async ([tx,results]) => {
                     console.log("Query completed");
                     var len = results.rows.length;
                     for (let i = 0; i < len; i++) {
                         let row = results.rows.item(i);
-                        const { id, ref, label, codebarre, description, lot, dlc, dluo, image } = row;
-                        products.push({
-                            id, ref, label, codebarre, description, lot, dlc, dluo, image
-                        });
+                        user.push(row);
                     }
-                    //console.log(products);
-                    await resolve(products);
                 });
             }).then(async (result) => {
-                //await this.closeDatabase(db);
+                // await this.closeDatabase(db);
+                // console.log('token: ', token);
+                await resolve(user);
             }).catch(async (err) => {
                 console.log(err);
                 await resolve([]);
@@ -183,60 +181,46 @@ class ProductsManager extends Component {
         });
     }
 
-
-    //Update
-    async UPDATE_PRODUCT_BY_ID(data_){
-        console.log("##### UPDATE_PRODUCT_BY_ID #########################");
-
-        return await new Promise(async (resolve) => {
-            await db.transaction(async (tx) => {
-                await tx.executeSql("UPDATE " + TABLE_NAME + " SET " + COLUMN_REF + " = "+data_.ref+", "+COLUMN_LABEL+" = "+data_.label.replace(/'/g, "''")+", "+COLUMN_CODEBARRE+" = "+data_.codebarre+", "+COLUMN_DESCRIPTION+" = "+data_.description.replace(/'/g, "''")+", "+COLUMN_LOT+" = "+data_.lot+", "+COLUMN_DLC+" = "+data_.dlc+", "+COLUMN_DLUO+" = "+data_.dluo+", "+COLUMN_EMPLACEMENT+" = "+data_.emplacement+", "+COLUMN_IMAGE+" = "+data_.image+" WHERE " + COLUMN_ID + " = " + data_.id, []);
-                resolve(true);
-
-            }).then(async (result) => {
-                console.error('result : ', result);
-                resolve(false);
-            });
-        });
-    }
-
-    // Update image path
-    async UPDATE_IMAGE(data){
-        console.log("##### UPDATE_IMAGE #########################");
+    // get all
+    async GET_REPRESENTANT_BY_LASTNAME(lastname){
+        console.log("##### GET_REPRESENTANT_BY_LASTNAME #########################");
 
         return await new Promise(async (resolve) => {
+            const client = [];
             await db.transaction(async (tx) => {
-                console.log("UPDATE "+TABLE_NAME+" SET "+COLUMN_IMAGE+" = '"+data.image+"' WHERE "+COLUMN_REF+" = '" +data.ref +"'")
-                await tx.executeSql("UPDATE "+TABLE_NAME+" SET "+COLUMN_IMAGE+" = '"+data.image+"' WHERE "+COLUMN_REF+" = '" +data.ref +"'", []);
-
+                await tx.executeSql("SELECT u."+COLUMN_ID+", u."+COLUMN_REF+", u."+COLUMN_FIRSTNAME+", u."+COLUMN_LASTNAME+", u."+COLUMN_ADMIN+ ", u."+COLUMN_EMAIL+ ", u."+COLUMN_JOB+ " FROM "+TABLE_NAME+" u WHERE u."+COLUMN_LASTNAME+" LIKE '%"+lastname+"%'", []).then(async ([tx,results]) => {
+                    console.log("Query completed");
+                    var len = results.rows.length;
+                    for (let i = 0; i < len; i++) {
+                        let row = results.rows.item(i);
+                        client.push(row);
+                    }
+                });
             }).then(async (result) => {
-                await resolve(true);
+                //await this.closeDatabase(db);
+                await resolve(client);
             }).catch(async (err) => {
                 console.log('err: ', err);
-                await resolve(false);
+                await resolve([]);
             });
         });
     }
 
     //Delete
-    async DELETE_PRODUCT_LIST(){
-        console.log("##### DELETE_PRODUCT_LIST #########################");
+    async DELETE_USER_LIST(){
+        console.log("##### DELETE_USER_LIST #########################");
 
         return await new Promise(async (resolve) => {
             await db.transaction(async (tx) => {
                 await tx.executeSql("DELETE FROM " + TABLE_NAME, []);
-                resolve(true);
-
-            }).then(async (result) => {
-                console.error('result : ', result);
-                resolve(false);
             });
+            return await resolve(true);
         });
     }
 
     //Delete
-    async DROP_PRODUCT(){
-        console.log("##### DROP_PRODUCT #########################");
+    async DROP_USER(){
+        console.log("##### DROP_USER #########################");
 
         return await new Promise(async (resolve) => {
             await db.transaction(async function (txn) {
@@ -246,6 +230,9 @@ class ProductsManager extends Component {
             return await resolve(true);
         });
     }
+
+
 }
+
 //make this component available to the app
-export default ProductsManager;
+export default UserManager;

@@ -11,7 +11,7 @@ import {
 } from 'react-native/Libraries/NewAppScreen';
 import ButtonSpinner from 'react-native-button-spinner';
 import LinearGradient from 'react-native-linear-gradient';
-import NavbarDashboard from '../../navbar/navbar-dashboard';
+import NavbarPreparation from '../../navbar/navbar-preparation';
 import MyFooter_v2 from '../footers/MyFooter_v2';
 import PreparationButton from '../dashbord-screens/assets/PreparationButton';
 import SettingsManager from '../../Database/SettingsManager';
@@ -21,8 +21,14 @@ import moment from "moment";
 import OrderFilter from './assets/OrderFilter';
 
 const _statut_ = new Statut();
+const isAtToBottom = ({layoutMeasurement, contentOffset, contentSize}) => {
+  const paddingToBottom = 0;
+  return (layoutMeasurement.height + contentOffset.y) >= (contentSize.height - paddingToBottom);
+};
 
 class Preparation extends Component {
+  scrollRef = React.createRef();
+
   constructor(props) {
     super(props);
 
@@ -44,10 +50,12 @@ class Preparation extends Component {
 
     this.state = {
       isLoading: true,
+      isLoadingMoreData: false,
       isFilter: false,
       filterConfig: {},
       data: [],
       settings: {},
+      limit: {from: 0, to: 50},
       orientation: isPortrait() ? 'portrait' : 'landscape'
     };
 
@@ -90,14 +98,14 @@ class Preparation extends Component {
   }
 
   async _getPickingData(){
-    this.setState({isLoading: true});
-    let data = [];
+    await this.setState({isLoading: true});
+    let data_ = [];
 
-    console.log("this.state.filterConfig : ", Object.keys(this.state.filterConfig).length);
-    if(Object.keys(this.state.filterConfig).length == 0){
+    console.log("this.state.filterConfig : ", await Object.keys(this.state.filterConfig).length);
+    if(await Object.keys(this.state.filterConfig).length == 0){
       const om = new OrderManager();
       await om.initDB();
-      data = await om.GET_ORDER_LIST_BETWEEN_v2(0, 30).then(async (val) => {
+      data_ = await om.GET_ORDER_LIST_BETWEEN_v2(this.state.limit.from, this.state.limit.to).then(async (val) => {
         //console.log("Order data : ", val);
         return await val;
       });
@@ -105,13 +113,13 @@ class Preparation extends Component {
     }else{
       const om = new OrderManager();
       await om.initDB();
-      data = await om.GET_ORDER_LIST_BETWEEN_FILTER_v2(0, 30, this.state.filterConfig).then(async (val) => {
-        console.log("Order data filtered : ", val);
+      data_ = await om.GET_ORDER_LIST_BETWEEN_FILTER_v2(this.state.limit.from, this.state.limit.to, this.state.filterConfig).then(async (val) => {
+        //console.log("Order data filtered : ", val);
         return await val;
       });
     }
 
-    this.setState({ data: data, isLoading: false});
+    await this.setState({ data: data_, isLoading: false});
   }
 
   _onFilterPressed(data){
@@ -126,15 +134,40 @@ class Preparation extends Component {
   async _onDataToFilter(data){
     console.log("Filter config data : ", data);
 
-
-    // const filteredData = this.state.data.filter(async (item) => {
-    //   return await item.state == "Hello";
-    // }).map(async ({id, name, state}) => {
-    //   return await {id, name, state};
-    // });
-
     await this.setState({filterConfig: data});
-    this._getPickingData();
+    await this._getPickingData();
+  }
+
+  async loadMoreData(){
+    this.setState({isLoadingMoreData: true});
+    const newData = this.state.data;
+    console.log("before : ", this.state.data.length);
+    let data_ = [];
+
+    if(await Object.keys(this.state.filterConfig).length == 0){
+      const om = new OrderManager();
+      await om.initDB();
+      data_ = await om.GET_ORDER_LIST_BETWEEN_v2(this.state.limit.from, this.state.limit.to).then(async (val) => {
+        //console.log("Order data : ", val);
+        return await val;
+      });
+
+    }else{
+      const om = new OrderManager();
+      await om.initDB();
+      data_ = await om.GET_ORDER_LIST_BETWEEN_FILTER_v2(this.state.limit.from, this.state.limit.to, this.state.filterConfig).then(async (val) => {
+        //console.log("Order data filtered : ", val);
+        return await val;
+      });
+    }
+
+    for(let x = 0; x < data_.length; x++){
+      newData.push(data_[x]);
+    }
+    console.log("after : ", newData.length);
+
+    this.setState({isLoadingMoreData: false});
+    await this.setState({data: newData});
   }
 
 
@@ -293,108 +326,152 @@ class Preparation extends Component {
         colors={['#00AAFF', '#706FD3']}
         style={styles.container}>
 
-        <NavbarDashboard navigation={this.props} textTittleValue={"Préparation"} />
+        <NavbarPreparation _navigation={this.props} textTittleValue={"Préparation"} />
         <View style={styles.mainBody}>
           
           <OrderFilter onDataToFilter={this._onDataToFilter.bind(this)} settings={{isFilter: this.state.isFilter}}/>
 
-          <ScrollView style={{ flex: 1 }}>
+          <ScrollView 
+            ref={this.scrollRef} 
+            onScroll={({nativeEvent}) => {
+              if (isAtToBottom(nativeEvent)) {
+                console.log("Reach at the end!");
+                this.loadMoreData();
+              }
+            }}
+            scrollEventThrottle={400}
+            style={{ flex: 1 }}>
             {
               this.state.data.map((item, index) => (
                 <View>
                   {/* {item.statut === 1 ? */}
-    
-                    {this.state.settings.isUseDetailedCMD ? 
-                     
-                      <CardView key={index} cardElevation={10} cornerRadius={5} style={styles.cardViewStyle}>
-                        <View style={styles.cardViewStyle1}>
-                          <View style={styles.order}>
-                            <TouchableOpacity onPress={() => this._Showcommande(item)}>
-                              <View style={styles.ic_and_details}>
-                                <View style={styles.cname}>
-                                  <Text style={styles.entreprisename}>{item.client_name}</Text>
-                                </View>
-                                <View style={styles.cdate}>
-                                  {item.id == 0 ? (<Text>Nouvelle commande</Text>) : (<Text style={styles.ref}>{item.ref_commande}</Text>)}
-                                </View>
-                              </View>
-                              <View style={styles.ic_and_details}>
-                                <Icon name="boxes" size={15} style={styles.iconDetails} />
-                                <Text>{item.lines_nb} Produit(s)</Text>
-                              </View>
-                              <View style={styles.ic_and_details}>
-                                <View style={{flexDirection: "row", width: "80%"}}>
-                                  <Icon name="calendar-alt" size={15} style={styles.iconDetails} />
-                                  <Text>Faite le : {moment(new Date(new Number(item.date_commande+"000"))).format('DD-MM-YYYY')}</Text>
-                                </View>
-                                <View style={styles.cdate}>
-                                  <Text style={styles.date}>Livré Le {moment(new Date(new Number(item.date_livraison+"000"))).format('DD-MM-YYYY')}</Text>
-                                </View>
-                              </View>
-                              <View style={{ borderBottomColor: '#00AAFF', borderBottomWidth: 1, marginRight: 10 }} />
-                              <View style={styles.pricedetails}>
-                                <View style={styles.price}>
-                                  <Text>Total TTC : {item.total_ttc > 0 ? (parseFloat(item.total_ttc)).toFixed(2) : '0'} €</Text>
-                                </View>
-                                <View style={[styles.billedstate, {backgroundColor: _statut_.getOrderStatutColorStyles(item.statut)}]}>
-                                  <Text style={{color: "#000"}}>{_statut_.getOrderStatut(item.statut)}</Text>
-                                </View>
-                              </View>
-                            </TouchableOpacity>
-                            <View style={styles.butons_commande}>
-                              {/* <ButtonSpinner style={styles.submit_on} positionSpinner={'right'} onPress={() => this._relance_commande(item.ref_commande)} styleSpinner={{ color: '#FFFFFF' }}>
-                                <Icon name="sync" size={20} style={styles.iconValiderpanier} />
-                                <Text style={styles.iconPanier}> Relancer la commande</Text>
-                              </ButtonSpinner> */}
-                              {/* {0 === 0 ? (<Text style={styles.notif}><Icon name="cloud-upload-alt" size={20} style={styles.notif_icon} /></Text>) : (<Text style={styles.notif}></Text>)} */}
-                            </View>
-                          </View>
-                        </View>
-                      </CardView>
-                    : 
-                      <CardView key={index} cardElevation={5} cornerRadius={5} style={[styles.cardViewStyle, {height: 120}]}>
-                        <View style={[styles.cardViewStyle1, {paddingTop: 0}]}>
-                            <View style={styles.order}>
+                    {!this.state.isLoading ? 
+                      <View>
+                        {this.state.settings.isUseDetailedCMD ? 
+
+                          <CardView key={index} cardElevation={10} cornerRadius={5} style={styles.cardViewStyle}>
+                            <View style={styles.cardViewStyle1}>
+                              <View style={styles.order}>
                                 <TouchableOpacity onPress={() => this._Showcommande(item)}>
-                                <View style={styles.ic_and_details}>
+                                  <View style={styles.ic_and_details}>
                                     <View style={styles.cname}>
                                       <Text style={styles.entreprisename}>{item.client_name}</Text>
                                     </View>
-                                    {/* <View style={styles.cdate}>
+                                    <View style={styles.cdate}>
                                       {item.id == 0 ? (<Text>Nouvelle commande</Text>) : (<Text style={styles.ref}>{item.ref_commande}</Text>)}
-                                    </View> */}
+                                    </View>
+                                  </View>
+                                  <View style={styles.ic_and_details}>
+                                    <Icon name="user" size={15} style={styles.iconDetails} />
+                                    <Text>Créé par : {item.user}</Text>
+                                  </View>
+                                  <View style={styles.ic_and_details}>
+                                    <Icon name="boxes" size={15} style={styles.iconDetails} />
+                                    <Text>{item.lines_nb} Produit(s)</Text>
+                                  </View>
+                                  <View style={styles.ic_and_details}>
+                                    <View style={{flexDirection: "row", width: "80%"}}>
+                                      <Icon name="calendar-alt" size={15} style={styles.iconDetails} />
+                                      <Text>Faite le : {moment(new Date(new Number(item.date_commande+"000"))).format('DD-MM-YYYY')}</Text>
+                                    </View>
                                     <View style={styles.cdate}>
                                       <Text style={styles.date}>Livré Le {moment(new Date(new Number(item.date_livraison+"000"))).format('DD-MM-YYYY')}</Text>
                                     </View>
-                                </View>
-                                <View style={styles.ic_and_details}>
-                                  <Icon name="boxes" size={15} style={styles.iconDetails} />
-                                  <Text>{item.lines_nb} Produit(s)</Text>
-                                </View>
-                                <View style={styles.refDetails}>
-                                  {/* <View style={styles.cdate}> */}
-                                    {item.id == 0 ? (<Text>Nouvelle commande</Text>) : (<Text style={styles.ref}>{item.ref_commande}</Text>)}
-                                  {/* </View> */}
-                                </View>
+                                  </View>
                                   <View style={{ borderBottomColor: '#00AAFF', borderBottomWidth: 1, marginRight: 10 }} />
+                                  <View style={styles.pricedetails}>
+                                    <View style={styles.price}>
+                                      <Text>Total TTC : {item.total_ttc > 0 ? (parseFloat(item.total_ttc)).toFixed(2) : '0'} €</Text>
+                                    </View>
+                                    <View style={[styles.billedstate, {backgroundColor: _statut_.getOrderStatutColorStyles(item.statut)}]}>
+                                      <Text style={{color: "#000"}}>{_statut_.getOrderStatut(item.statut)}</Text>
+                                    </View>
+                                  </View>
                                 </TouchableOpacity>
                                 <View style={styles.butons_commande}>
-                                  {/* {1 === 0 ? (<Text style={styles.notif}><Icon name="cloud-upload-alt" size={20} style={styles.notif_icon} /></Text>) : (<Text style={styles.notif}></Text>)} */}
+                                  {/* <ButtonSpinner style={styles.submit_on} positionSpinner={'right'} onPress={() => this._relance_commande(item.ref_commande)} styleSpinner={{ color: '#FFFFFF' }}>
+                                    <Icon name="sync" size={20} style={styles.iconValiderpanier} />
+                                    <Text style={styles.iconPanier}> Relancer la commande</Text>
+                                  </ButtonSpinner> */}
+                                  {/* {0 === 0 ? (<Text style={styles.notif}><Icon name="cloud-upload-alt" size={20} style={styles.notif_icon} /></Text>) : (<Text style={styles.notif}></Text>)} */}
+                                </View>
+                              </View>
+                            </View>
+                          </CardView>
+                        : 
+                          <CardView key={index} cardElevation={5} cornerRadius={5} style={[styles.cardViewStyle, {height: 120}]}>
+                            <View style={[styles.cardViewStyle1, {paddingTop: 0}]}>
+                                <View style={styles.order}>
+                                    <TouchableOpacity onPress={() => this._Showcommande(item)}>
+                                    <View style={styles.ic_and_details}>
+                                        <View style={styles.cname}>
+                                          <Text style={styles.entreprisename}>{item.client_name}</Text>
+                                        </View>
+                                        {/* <View style={styles.cdate}>
+                                          {item.id == 0 ? (<Text>Nouvelle commande</Text>) : (<Text style={styles.ref}>{item.ref_commande}</Text>)}
+                                        </View> */}
+                                        <View style={styles.cdate}>
+                                          <Text style={styles.date}>Livré Le {moment(new Date(new Number(item.date_livraison+"000"))).format('DD-MM-YYYY')}</Text>
+                                        </View>
+                                    </View>
+                                    <View style={styles.ic_and_details}>
+                                      <Icon name="boxes" size={15} style={styles.iconDetails} />
+                                      <Text>{item.lines_nb} Produit(s)</Text>
+                                    </View>
+                                    <View style={styles.refDetails}>
+                                      {/* <View style={styles.cdate}> */}
+                                        {item.id == 0 ? (<Text>Nouvelle commande</Text>) : (<Text style={styles.ref}>{item.ref_commande}</Text>)}
+                                      {/* </View> */}
+                                    </View>
+                                      <View style={{ borderBottomColor: '#00AAFF', borderBottomWidth: 1, marginRight: 10 }} />
+                                    </TouchableOpacity>
+                                    <View style={styles.butons_commande}>
+                                      {/* {1 === 0 ? (<Text style={styles.notif}><Icon name="cloud-upload-alt" size={20} style={styles.notif_icon} /></Text>) : (<Text style={styles.notif}></Text>)} */}
+                                    </View>
                                 </View>
                             </View>
-                        </View>
-                      </CardView>
-                    }
-
-                {/* : 
-                  null
-                } */}
+                          </CardView>
+                        }
+                      </View>
+                    : 
+                       null
+                     }
+                    
               </View>
             ))
           }
 
-
             {this.state.isLoading ? 
+              <CardView cardElevation={7} cornerRadius={10} style={styles.lastCard}>
+                <View>
+                  <Text style={styles.lastCard_text}>Loading Data...</Text>
+                </View>
+              </CardView>
+            : 
+              null
+            }
+
+            {this.state.isLoadingMoreData ? 
+              <CardView cardElevation={7} cornerRadius={10} style={styles.lastCard}>
+                <View>
+                  <Text style={styles.lastCard_text}>Loading More Data...</Text>
+                </View>
+              </CardView>
+            : 
+              null
+            }
+
+            {!this.state.isLoading && !this.state.isLoadingMoreData ? 
+              <CardView cardElevation={7} cornerRadius={10} style={styles.lastCard}>
+                <View>
+                  <Text style={styles.lastCard_text}>No More Data...</Text>
+                </View>
+              </CardView>
+            : 
+              null
+            }
+
+            {/* {this.state.isLoading && !this.state.isLoadingMoreData ? 
               <CardView cardElevation={7} cornerRadius={10} style={styles.lastCard}>
                 <View>
                   <Text style={styles.lastCard_text}>Loading Data...</Text>
@@ -406,8 +483,8 @@ class Preparation extends Component {
                 <Text style={styles.lastCard_text}>No More Data...</Text>
               </View>
             </CardView>
-            }
-            
+            } */}
+
 
           </ScrollView>
 

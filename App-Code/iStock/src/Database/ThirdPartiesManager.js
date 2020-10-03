@@ -16,7 +16,7 @@ const DATABASE_SIZE = DatabaseInfo.DATABASE_SIZE;
 const TABLE_NAME = "thirdparties";
 const COLUMN_ID = "id"; //INTEGER PRIMARY KEY AUTOINCREMENT
 const COLUMN_REF = "ref"; //VARCHAR(255)
-const COLUMN_NAME = "mane"; //VARCHAR(255)
+const COLUMN_NAME = "name"; //VARCHAR(255)
 const COLUMN_ADDRESS = "address"; //VARCHAR(255)
 const COLUMN_TOWN = "town"; //VARCHAR(255)
 const COLUMN_ZIP = "zip"; //VARCHAR(255)
@@ -55,7 +55,7 @@ class ThirdPartiesManager extends Component {
     //public variables
     _TABLE_NAME_ = "thirdparties";
     _COLUMN_REF_ = "ref";
-    _COLUMN_NAME_ = "mane";
+    _COLUMN_NAME_ = "name";
 
     //Init database
     async initDB() {
@@ -130,7 +130,7 @@ class ThirdPartiesManager extends Component {
             try{
                 for(let x = 0; x < data_.length; x++){
                     await db.transaction(async (tx) => {
-                        const insert = "INSERT INTO " + TABLE_NAME + " ("+COLUMN_ID+", "+COLUMN_REF+", "+COLUMN_NAME+", "+COLUMN_ADDRESS+", "+COLUMN_TOWN+", "+COLUMN_ZIP+", "+COLUMN_COUNTRY+", "+COLUMN_COUNTRY_ID+", "+COLUMN_COUNTRY_CODE+", "+COLUMN_STATUT+", "+COLUMN_PHONE+", "+COLUMN_CLIENT+", "+COLUMN_FOURNISSEUR+", "+COLUMN_CODE_CLIENT+", "+COLUMN_CODE_FOURNISSEUR+") VALUES (NULL, '"+data_[x].ref+"', '"+data_[x].name.replace(/'/g, "''")+"', '"+data_[x].address.replace(/'/g, "''")+"', '"+data_[x].town.replace(/'/g, "''")+"', '"+data_[x].zip+"', '"+data_[x].country+"', '"+data_[x].country_id+"', '"+data_[x].country_code+"', '"+data_[x].statut+"', '"+data_[x].phone+"', '"+data_[x].client+"', '"+data_[x].date_livraison+"', '"+data_[x].note_public+"', '"+data_[x].note_privee+"')";
+                        const insert = "INSERT INTO " + TABLE_NAME + " ("+COLUMN_ID+", "+COLUMN_REF+", "+COLUMN_NAME+", "+COLUMN_ADDRESS+", "+COLUMN_TOWN+", "+COLUMN_ZIP+", "+COLUMN_COUNTRY+", "+COLUMN_COUNTRY_ID+", "+COLUMN_COUNTRY_CODE+", "+COLUMN_STATUT+", "+COLUMN_PHONE+", "+COLUMN_CLIENT+", "+COLUMN_FOURNISSEUR+", "+COLUMN_CODE_CLIENT+", "+COLUMN_CODE_FOURNISSEUR+") VALUES (NULL, '"+data_[x].ref+"', '"+data_[x].name.replace(/'/g, "''")+"', '"+data_[x].address.replace(/'/g, "''")+"', "+(data_[x].town == null ? null : "'"+data_[x].town.replace(/'/g, "''")+"'")+", '"+data_[x].zip+"', '"+data_[x].country+"', '"+data_[x].country_id+"', '"+data_[x].country_code+"', '"+data_[x].statut+"', '"+data_[x].phone+"', '"+data_[x].client+"', '"+data_[x].date_livraison+"', '"+data_[x].note_public+"', '"+data_[x].note_privee+"')";
                         await tx.executeSql(insert, []);
                     });
                 }
@@ -202,10 +202,35 @@ class ThirdPartiesManager extends Component {
                         let row = results.rows.item(i);
                         client.push(row);
                     }
-                    await resolve(client);
                 });
             }).then(async (result) => {
                 //await this.closeDatabase(db);
+                await resolve(client);
+            }).catch(async (err) => {
+                console.log('err: ', err);
+                await resolve([]);
+            });
+        });
+    }
+
+    // get all
+    async GET_CLIENT_BY_NAME(name){
+        console.log("##### GET_CLIENT_BY_NAME #########################");
+
+        return await new Promise(async (resolve) => {
+            const client = [];
+            await db.transaction(async (tx) => {
+                await tx.executeSql("SELECT c."+COLUMN_ID+", c."+COLUMN_REF+", c."+COLUMN_NAME+", c."+COLUMN_ADDRESS+", c."+COLUMN_TOWN+", c."+COLUMN_ZIP+", c."+COLUMN_COUNTRY+", c."+COLUMN_COUNTRY_ID+", c."+COLUMN_COUNTRY_CODE+", c."+COLUMN_STATUT+", c."+COLUMN_PHONE+", c."+COLUMN_CLIENT+", c."+COLUMN_FOURNISSEUR+", c."+COLUMN_CODE_CLIENT+", c."+COLUMN_CODE_FOURNISSEUR+" FROM " + TABLE_NAME + " c WHERE c."+COLUMN_CLIENT+" = 1 AND c."+COLUMN_NAME+" LIKE '%"+name+"%'", []).then(async ([tx,results]) => {
+                    console.log("Query completed");
+                    var len = results.rows.length;
+                    for (let i = 0; i < len; i++) {
+                        let row = results.rows.item(i);
+                        client.push(row);
+                    }
+                });
+            }).then(async (result) => {
+                //await this.closeDatabase(db);
+                await resolve(client);
             }).catch(async (err) => {
                 console.log('err: ', err);
                 await resolve([]);

@@ -43,6 +43,9 @@ const create = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "(" +
 
 // create a component
 class OrderLinesManager extends Component {
+    _TABLE_NAME_ = "orders_lines";
+    _COLUMN_ORDER_ID_ = "fk_commande";
+
     //Init database
     async initDB() {
         return await new Promise(async (resolve) => {
@@ -116,7 +119,7 @@ class OrderLinesManager extends Component {
             try{
                 for(let x = 0; x < data_.length; x++){
                     await db.transaction(async (tx) => {
-                        const insert = "INSERT INTO " + TABLE_NAME + " (" + COLUMN_ID + ", " + COLUMN_ORDER_ID + ", " + COLUMN_LABEL + ", " + COLUMN_REF + ", " +COLUMN_QTE + ", " +COLUMN_PRICE + ", " +COLUMN_TVA_TX + ", " +COLUMN_TOTAL_HT + ", " +COLUMN_TOTAL_TVA + ", " +COLUMN_TOTAL_TTC + ") VALUES (null, '"+data_[x].fk_commande+"', '"+(data_[x] != null ? data_[x].label.replace(/'/g, "''") : "null")+"', '"+data_[x].ref+"', '"+data_[x].qty+"', '"+data_[x].price+"', '"+data_[x].tva_tx+"', '"+data_[x].total_ht+"', '"+data_[x].total_tva+"', '"+data_[x].total_ttc+"')";
+                        const insert = "INSERT INTO " + TABLE_NAME + " (" + COLUMN_ID + ", " + COLUMN_ORDER_ID + ", " + COLUMN_LABEL + ", " + COLUMN_REF + ", " +COLUMN_QTE + ", " +COLUMN_PRICE + ", " +COLUMN_TVA_TX + ", " +COLUMN_TOTAL_HT + ", " +COLUMN_TOTAL_TVA + ", " +COLUMN_TOTAL_TTC + ") VALUES (null, '"+data_[x].fk_commande+"', '"+(data_[x].label != null ? data_[x].label.replace(/'/g, "''") : "null")+"', '"+data_[x].ref+"', '"+data_[x].qty+"', '"+data_[x].price+"', '"+data_[x].tva_tx+"', '"+data_[x].total_ht+"', '"+data_[x].total_tva+"', '"+data_[x].total_ttc+"')";
                         await tx.executeSql(insert, []);
                     });
                 }
@@ -178,6 +181,7 @@ class OrderLinesManager extends Component {
 
     async GET_LINES_BY_ORDER_ID(id){
         console.log("##### GET_LINES_BY_ORDER_ID #########################");
+        console.log("Order id Lines SQL => : SELECT l." + COLUMN_ID + ", l." + COLUMN_ORDER_ID + ", l." + COLUMN_LABEL + ", l." + COLUMN_REF + ", l." +COLUMN_QTE + ", l." +COLUMN_PRICE + ", l." +COLUMN_TVA_TX + ", l." +COLUMN_TOTAL_HT + ", l." +COLUMN_TOTAL_TVA + ", l." +COLUMN_TOTAL_TTC + " FROM " + TABLE_NAME + " as l WHERE l." + COLUMN_ORDER_ID + " = " + id);
 
         return await new Promise(async (resolve) => {
             try{

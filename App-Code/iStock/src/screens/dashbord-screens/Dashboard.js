@@ -78,7 +78,7 @@ export default class Dashboard extends Component {
         colors={['#00AAFF', '#706FD3']}
         style={styles.container}>
 
-        <NavbarHome navigation={this.props} />
+        <NavbarHome _navigation={this.props} />
         <View style={styles.mainBody}>
           <ScrollView style={{ flex: 1 }}>
 

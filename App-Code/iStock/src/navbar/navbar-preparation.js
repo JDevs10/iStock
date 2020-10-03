@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { StyleSheet, View, Text, Image, TouchableOpacity, BackHandler, Alert, Dimensions, AsyncStorage } from 'react-native';
+import {StyleSheet, View, Text, Image, ImageBackground, TouchableOpacity, Dimensions, Alert} from  'react-native';
 import {
   Header,
   LearnMoreLinks,
@@ -9,9 +9,11 @@ import {
 } from 'react-native/Libraries/NewAppScreen';
 import DeviceInfo from 'react-native-device-info';
 import Icon from 'react-native-vector-icons/FontAwesome5';
+import DialogAndroid from 'react-native-dialogs';
 const IMG_SRC = require('../../img/banner.png');
 
-export default class NavbarHome extends Component {
+
+export default class NavbarPreparation extends Component {
   constructor(props) {
     super(props);
 
@@ -43,33 +45,13 @@ export default class NavbarHome extends Component {
     });
   }
 
-  componentWillMount() {
-    BackHandler.addEventListener('hardwareBackPress', this.existPressed);
+  // sync all orders from server
+  async syncOrders(){
+    this.props._navigation.navigation.navigate('OrdersSync');
   }
 
-  componentWillUnmount() {
-    BackHandler.removeEventListener('hardwareBackPress', this.existPressed);
-  }
-
-  existPressed = () => {
-    Alert.alert(
-      'Exit App',
-      'Do you want to exit?',
-      [
-        { text: 'No', onPress: () => this.leaving(false) },
-        { text: 'Yes', onPress: () => this.leaving(true) },
-      ],
-      { cancelable: false });
-    return true;
-  }
-
-  async leaving(isLeaving) {
-    if (isLeaving == true) {
-      await AsyncStorage.removeItem('token');
-      BackHandler.exitApp();
-    } else {
-      console.log('Cancel Pressed');
-    }
+  async support(){
+    this.props._navigation.navigation.navigate('Support');
   }
 
   render() {
@@ -80,22 +62,12 @@ export default class NavbarHome extends Component {
       console.log('orientation : ', this.state.orientation);
     }
 
-    const disconnect = () => {
-      this.existPressed();
-    }
-
 
     const styles = StyleSheet.create({
       body: {
-
-        // backgroundColor: 'black'
-
         height: 250,
         width: '100%',
-        //flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-
+        flexDirection: 'row',
       },
       backdrop: {
         flex: 1,
@@ -110,12 +82,18 @@ export default class NavbarHome extends Component {
         alignItems: "center",
         // backgroundColor: 'black'
       },
+      text_layout:{
+        width: "100%",
+        justifyContent: "center",
+        alignItems: "center",
+      },
       text: {
-        flex: 1,
+        // flex: 1,
         color: "#fff",
         fontSize: 20,
         fontWeight: "bold",
-        marginTop: 20
+        marginTop: 20,
+        textAlign: "center"
       },
       icon1: {
         color: '#ffffff',
@@ -136,12 +114,17 @@ export default class NavbarHome extends Component {
 
     return (
       <View style={styles.body}>
-        <Image source={IMG_SRC} resizeMode='cover' style={styles.backdrop} />
+        <ImageBackground source={IMG_SRC} resizeMode='cover' style={styles.backdrop}>
 
-        <Icon name="power-off" size={25} style={styles.icon1} onPress={() => disconnect()} />
-        <Icon name="headset" size={25} style={styles.icon2} onPress={() => {this.props._navigation.navigation.navigate('Support');}}/>
+            <Icon name="cloud" size={25} style={styles.icon1} onPress={() => this.syncOrders()}/>
 
+            <View style={styles.text_layout}>
+              <Text style={styles.text}>{this.props.textTittleValue}</Text>
+            </View>
 
+            <Icon name="headset" size={25} style={styles.icon2} onPress={() => this.support()}/>
+
+        </ImageBackground>
 
       </View>
     );

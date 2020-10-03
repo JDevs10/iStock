@@ -115,11 +115,7 @@ export default class FindImages extends Component {
                 .then(async (statResult) => {
                     console.log('GOT statResult : ', statResult.length);
                     
-                    if(statResult.length > 0){
-                        await resolve(true);
-                    }else{
-                        await resolve(false);
-                    }
+                    await resolve(statResult.length);
                 })
                 .then(async (contents) => {
                     // log the file contents

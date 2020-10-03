@@ -66,6 +66,12 @@ class FindCommandesLines extends Component {
                     });
                 }
 
+                if(i_ >= list_cmd_ids.length){
+                    return await resolve(true);
+                }
+                else{
+                    return await resolve(false);
+                }
             }else{
                 await resolve(false);
             }

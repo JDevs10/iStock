@@ -7,6 +7,8 @@ import FindImages from '../../services/FindImages';
 import FindThirdParties from '../../services/FindThirdParties';
 import FindCommandes from '../../services/FindCommandes';
 import FindCommandesLines from '../../services/FindCommandesLines';
+import FindUsers from '../../services/FindUsers';
+import FindWarehouses from '../../services/FindWarehouses';
 import SettingsManager from '../../Database/SettingsManager';
 import TokenManager from '../../Database/TokenManager';
 import CheckData from '../../services/CheckData';
@@ -87,10 +89,29 @@ class Download extends Component {
 
     
     let currentStep = 1;
-    let allSteps = 4;
+    let allSteps = 7;
     const res = [];
 
-    // // Get all client info from server
+    
+    // 1 // Get all users info from server
+    setTimeout(() => {
+      this.setState({
+        ...this.state,
+        loadingNotify: 'Téléchargement des Utilisateurs...'+currentStep+'/'+allSteps
+      });
+    }, 3000);
+
+    const findUsers = new FindUsers();
+    const res1 = await findUsers.getAllUsersFromServer(token).then(async (val) => {
+      console.log('findUsers.getAllUsersFromServer : ');
+      console.log(val);
+      return val;
+    });
+    res.push(res1);
+    currentStep++;
+
+
+    // 2 // Get all clients info from server
     setTimeout(() => {
       this.setState({
         ...this.state,
@@ -99,16 +120,16 @@ class Download extends Component {
     }, 3000);
 
     const findThirdParties = new FindThirdParties();
-    const res1 = await findThirdParties.getAllThirdPartiesFromServer(token).then(async (val) => {
+    const res2 = await findThirdParties.getAllThirdPartiesFromServer(token).then(async (val) => {
       console.log('findThirdParties.getAllThirdPartiesFromServer : ');
       console.log(val);
       return val;
     });
-    res.push(res1);
+    res.push(res2);
     currentStep++;
 
 
-    // Get all products from server
+    // 3 // Get all products from server
     setTimeout(() => {
       this.setState({
         ...this.state,
@@ -117,16 +138,16 @@ class Download extends Component {
     }, 3000);
 
     const findProduits = new FindProduits();
-    const res2 = await findProduits.getAllProductsFromServer(token).then(async (val) => {
+    const res3 = await findProduits.getAllProductsFromServer(token).then(async (val) => {
       console.log('findProduits.getAllProductsFromServer : ');
       console.log(val);
       return val;
     });
-    res.push(res2);
+    res.push(res3);
     currentStep++;
 
 
-    // Get all product images from server
+    // 4 // Get all product images from server
     if(settings.isUseImages){
       setTimeout(() => {
         this.setState({
@@ -136,51 +157,72 @@ class Download extends Component {
       }, 3000);
   
       const findImages = new FindImages();
-      const res3 = await findImages.getAllProduitsImagesFromServer(token).then(async (val) => {
+      const res4 = await findImages.getAllProduitsImagesFromServer(token).then(async (val) => {
         console.log('findImages.getAllProduitsImagesFromServer : ');
         console.log(val);
         return val;
       });
-      res.push(res3);
+      res.push(res4);
     }else{
       console.log('findImages.getAllProduitsImagesFromServer : no images downloaded.');
     }
     currentStep++;
 
 
-    // Get all orders from server
+    // 5 // Get all orders from server
     setTimeout(() => {
       this.setState({
         ...this.state,
-        loadingNotify: 'Téléchargement des Commandes associer à ' + token.name + '...'+currentStep+'/'+allSteps
+        loadingNotify: 'Téléchargement des Commandes...'+currentStep+'/'+allSteps
       });
     }, 3000);
 
     const findCommandes = new FindCommandes();
-    const res4 = await findCommandes.getAllOrdersFromServer(token).then(async (val) => {
+    const res5 = await findCommandes.getAllOrdersFromServer(token).then(async (val) => {
       console.log('findCommandes.getAllOrdersFromServer : ');
       console.log(val);
       return val;
     });
-    res.push(res4);
+    res.push(res5);
+    currentStep++;
 
 
-    // Get all orders lines from server
+    // 6 // Get all orders lines from server
     setTimeout(() => {
       this.setState({
         ...this.state,
-        loadingNotify: 'Téléchargement des Commandes associer à ' + token.name + '...'+currentStep+'/'+allSteps
+        loadingNotify: 'Téléchargement des lines Commande...'+currentStep+'/'+allSteps
       });
     }, 3000);
 
+    
     const findCommandesLines = new FindCommandesLines();
-    const res5 = await findCommandesLines.getCommandesLines(token).then(async (val) => {
+    const res6 = await findCommandesLines.getCommandesLines(token).then(async (val) => {
       console.log('findCommandesLines.getCommandesLines : ');
       console.log(val);
       return val;
     });
-    res.push(res5);
-    
+    res.push(res6);
+    currentStep++;
+
+
+    // 7 // Get all orders lines from server
+    setTimeout(() => {
+      this.setState({
+        ...this.state,
+        loadingNotify: 'Téléchargement des Entrepots...'+currentStep+'/'+allSteps
+      });
+    }, 3000);
+
+    const findWarehouses = new FindWarehouses();
+    const res7 = await findWarehouses.getAllWarehousesFromServer(token).then(async (val) => {
+      console.log('findWarehouses.getAllWarehousesFromServer : ');
+      console.log(val);
+      return val;
+    });
+    res.push(res7);
+    currentStep++;
+
 
     let res_ = true;
     for(let x = 0; x<res.length; x++){
@@ -200,10 +242,6 @@ class Download extends Component {
       alert("Le serveur Big Data Consulting n'est pas joignable...\n");
     }
     
-   setTimeout(() => {
-      this.props.navigation.navigate('dashboard');
-      return;
-    }, 2500);
   }
 
   render() {

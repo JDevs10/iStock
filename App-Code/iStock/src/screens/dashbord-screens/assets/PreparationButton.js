@@ -4,6 +4,8 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import DeviceInfo from 'react-native-device-info';
+import Strings from '../../../utilities/Strings';
+const STRINGS = new Strings();
 
 export default class PreparationButton extends Component {
   constructor(props) {
@@ -62,8 +64,8 @@ export default class PreparationButton extends Component {
         //this.default__();
 
         Alert.alert(
-            "Information sur la préparation",
-            "Le lorem ipsum est, en imprimerie, une suite de mots sans signification utilisée à titre provisoire pour calibrer une mise en page, le texte définitif venant remplacer le faux-texte dès qu'il est prêt ou que la mise en page est achevée. Généralement, on utilise un texte en faux latin, le Lorem ipsum ou Lipsum",
+            STRINGS._INFO_PREPARATION_LIST_TITLE,
+            STRINGS._INFO_PREPARATION_LIST_TEXT,
             [
               {text: 'Ok', onPress: () => true},
             ],

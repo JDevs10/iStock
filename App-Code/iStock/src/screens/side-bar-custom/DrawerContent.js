@@ -11,6 +11,7 @@ import {
     TouchableRipple,
     Switch
 } from 'react-native-paper'
+import Icon from 'react-native-vector-icons/FontAwesome5';
 import OrderLinesManager from '../../Database/OrderLinesManager';
 import OrderManager from '../../Database/OrderManager';
 import ProductsManager from '../../Database/ProductsManager';
@@ -22,6 +23,11 @@ import FindImages from '../../services/FindImages';
 import FindThirdParties from '../../services/FindThirdParties';
 import FindCommandes from '../../services/FindCommandes';
 
+
+const iconStyle = {
+    color: "#706FD3",
+    size: 25
+};
 
 export function DrawerContent(props) {
     componentWillMount = () => {
@@ -146,59 +152,59 @@ export function DrawerContent(props) {
                     <Drawer.Section style={{marginTop: 30}}></Drawer.Section>
                     <Drawer.Section style={styles.drawerSection}>
                         <DrawerItem 
-                            // icon={({color, size}) => (
-                            //     <Icon 
-                            //     name="home-outline" 
-                            //     color={color}
-                            //     size={size}
-                            //     />
-                            // )}
-                            label="Dashboard"
+                            icon={() => (
+                                <Icon 
+                                name="home" 
+                                color={iconStyle.color}
+                                size={iconStyle.size}
+                                />
+                            )}
+                            label="Accueil"
                             onPress={() => {props.navigation.navigate('Dashboard')}}
                         />
                         <DrawerItem 
-                            // icon={({color, size}) => (
-                            //     <Icon 
-                            //     name="settings-outline" 
-                            //     color={color}
-                            //     size={size}
-                            //     />
-                            // )}
-                            label="Settings"
+                            icon={() => (
+                                <Icon 
+                                name="cogs" 
+                                color={iconStyle.color}
+                                size={iconStyle.size}
+                                />
+                            )}
+                            label="Configuration"
                             onPress={() => {props.navigation.navigate('Settings')}}
                         />
                         <DrawerItem 
-                            // icon={({color, size}) => (
-                            //     <Icon 
-                            //     name="settings-outline" 
-                            //     color={color}
-                            //     size={size}
-                            //     />
-                            // )}
-                            label="Download Thiers"
+                            icon={() => (
+                                <Icon 
+                                name="sync" 
+                                color={iconStyle.color}
+                                size={iconStyle.size}
+                                />
+                            )}
+                            label="Synchronisation Client"
                             onPress={() => {download_tiers();}}
                         />
                         <DrawerItem 
-                            // icon={({color, size}) => (
-                            //     <Icon 
-                            //     name="settings-outline" 
-                            //     color={color}
-                            //     size={size}
-                            //     />
-                            // )}
-                            label="Download Orders"
+                            icon={() => (
+                                <Icon 
+                                name="sync" 
+                                color={iconStyle.color}
+                                size={iconStyle.size}
+                                />
+                            )}
+                            label="Synchronisation Commande"
                             onPress={() => {download_orders();}}
                         />
                         <DrawerItem 
-                            // icon={({color, size}) => (
-                            //     <Icon 
-                            //     name="account-check-outline" 
-                            //     color={color}
-                            //     size={size}
-                            //     />
-                            // )}
+                            icon={() => (
+                                <Icon 
+                                name="headset" 
+                                color={iconStyle.color}
+                                size={iconStyle.size}
+                                />
+                            )}
                             label="Support"
-                            onPress={() => {Alert.alert("Maintenance", "Les développeur travailes sur cette fonctionnalitée actuelement.");}}
+                            onPress={() => {props.navigation.navigate('Support')}}
                         />
                     </Drawer.Section>
                     {/* <Drawer.Section title="Preferences">
@@ -213,13 +219,13 @@ export function DrawerContent(props) {
 
             <Drawer.Section style={styles.bottomDrawerSection}>
                 <DrawerItem 
-                    // icon={({color, size}) => (
-                    //     <Icon 
-                    //     name="exit-to-app" 
-                    //     color={color}
-                    //     size={size}
-                    //     />
-                    // )}
+                    icon={() => (
+                        <Icon 
+                        name="power-off" 
+                        color={iconStyle.color}
+                        size={iconStyle.size}
+                        />
+                    )}
                     label="Sign Out"
                     onPress={() => { 
                         Alert.alert(
