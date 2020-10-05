@@ -22,8 +22,8 @@ import OrderFilter from './assets/OrderFilter';
 
 const _statut_ = new Statut();
 const isAtToBottom = ({layoutMeasurement, contentOffset, contentSize}) => {
-  const paddingToBottom = 0;
-  return (layoutMeasurement.height + contentOffset.y) >= (contentSize.height - paddingToBottom);
+  const paddingToBottom = 0.5;
+  return layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom;
 };
 
 class Preparation extends Component {
@@ -55,7 +55,7 @@ class Preparation extends Component {
       filterConfig: {},
       data: [],
       settings: {},
-      limit: {from: 0, to: 20},
+      limit: {from: 0, to: 10},
       orientation: isPortrait() ? 'portrait' : 'landscape'
     };
 
@@ -83,7 +83,7 @@ class Preparation extends Component {
 
   _Showcommande = (value) => {
     console.log(value);
-    alert('Obj: \n' + JSON.stringify(value));
+    //alert('Obj: \n' + JSON.stringify(value));
     this.props.navigation.navigate("CommandeDetails", { order: value });
   }
 

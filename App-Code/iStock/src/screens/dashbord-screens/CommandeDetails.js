@@ -2,7 +2,7 @@
 import React, { Component } from 'react';
 import CardView from 'react-native-cardview';
 import Icon from 'react-native-vector-icons/FontAwesome5';
-import { StyleSheet, ScrollView, TouchableOpacity, View, Text, FlatList, Image, Dimensions, Alert, ImageBackground } from 'react-native';
+import { StyleSheet, ScrollView, TouchableOpacity, View, Text, TextInput, FlatList, Image, Dimensions, Alert, ImageBackground } from 'react-native';
 import { Card, Button } from 'react-native-elements'
 import LinearGradient from 'react-native-linear-gradient';
 import NavbarOrdersLines from '../../navbar/navbar-orders-lines';
@@ -12,6 +12,9 @@ import OrderDetailButton from './assets/OrderDetailButton';
 import SettingsManager from '../../Database/SettingsManager';
 import OrderLinesManager from '../../Database/OrderLinesManager';
 import OrderLinesFilter from './assets/OrderLinesFilter';
+import moment from "moment";
+import DialogAndroid from 'react-native-dialogs';
+
 
 // create a component
 class CommandeDetails extends Component {
@@ -36,10 +39,12 @@ class CommandeDetails extends Component {
         };
     
         this.state = {
+          isLoading: true,
           orderId: this.props.route.params.order.commande_id,
           data: [],
           settings: {},
           filterConfig: {},
+          pickingDataOptions: [{label: "Ajouter", value: 1}, {label: "Retour", value: 0}, {label: "Annuler", value: -1}],
           orientation: isPortrait() ? 'portrait' : 'landscape'
         };
         
@@ -52,6 +57,8 @@ class CommandeDetails extends Component {
     }
 
     async  componentDidMount(){
+      this.setState({addRemoveNothing: 1});
+
       await this._settings();
       await this._orderLinesData();
 
@@ -67,8 +74,11 @@ class CommandeDetails extends Component {
     }
 
     productDetails = (value) => {
-      // alert('Obj: \n' + JSON.stringify(value));
       this.props.navigation.navigate("ProductDetails", {product: value});
+    }
+
+    prepareProduct(product){
+      console.log('prepareProduct: ', product);
     }
 
     async _settings(){
@@ -82,11 +92,13 @@ class CommandeDetails extends Component {
     }
 
     async _orderLinesData(){
+      await this.setState({isLoading: true});
+
       const olm = new OrderLinesManager();
       const data = await olm.GET_LINES_BY_ORDER_ID(this.state.orderId).then(async (val) => {
         return await val;
       });
-      this.setState({data: data});
+      this.setState({data: data, isLoading: false});
     }
 
     _onFilterPressed(data){
@@ -116,95 +128,152 @@ class CommandeDetails extends Component {
         else {
             console.log('orientation : ', this.state.orientation);
         }
+
+        const add_50_ToTextInput = () => {
+          this.setState({
+            addRemoveNothing: this.state.addRemoveNothing + 50,
+          });
+        }
+        const add_10_ToTextInput = () => {
+          this.setState({
+            addRemoveNothing: this.state.addRemoveNothing + 10,
+          });
+        }
+        const add_1_ToTextInput = () => {
+          this.setState({
+            addRemoveNothing: this.state.addRemoveNothing + 1,
+          });
+          console.log("add :=> "+this.state.addRemoveNothing);
+        }
+
+        const textInputChanged = (val) => {
+          this.setState({
+            addRemoveNothing: val,
+          });
+        }
+
+        const remove_1_ToTextInput = () => {
+          this.setState({
+            addRemoveNothing: this.state.addRemoveNothing - 1,
+          });
+        }
+        const remove_10_ToTextInput = () => {
+          this.setState({
+            addRemoveNothing: this.state.addRemoveNothing - 10,
+          });
+        }
+        const remove_50_ToTextInput = () => {
+          this.setState({
+            addRemoveNothing: this.state.addRemoveNothing - 50,
+          });
+        }
       
         const styles = StyleSheet.create({
-      container: {
-        flex: 1,
-      },
-      mainBody: {
-        backgroundColor: '#ffffff',
-        borderTopLeftRadius: 30,
-        borderTopRightRadius: 30,
-        borderBottomLeftRadius: 30,
-        borderBottomRightRadius: 30,
-        paddingHorizontal: 20,
-        paddingVertical: 30,
-        height: this.state.orientation === 'portrait' ? '84%' : '74%',
-        width: '100%',
-        position: "absolute",
-        bottom: this.state.orientation === 'portrait' ? "10%" : "15%",
-      },
-      cardViewStyle: {
-        width: '95%',
-        height: 150,
-        margin: 10,
-        // marginBottom: 20,
-      },
-      cardViewStyle1: {
-        paddingTop: 10,
-        alignItems: 'center',
-        flexDirection: 'row',
-        width: '95%',
-        //height: 150,
-      },
-      article: {
-        //alignItems: 'center',
-        margin: 20,
-        width: '100%'
-      },
-      ic_and_details: {
-        flexDirection: 'row',
-        margin: 3,
-        //alignItems: 'center',
-      },
-      aname: {
-        width: '80%',
-      },
-      articlename: {
-        color: '#00AAFF',
-        fontSize: 20,
-        //marginBottom: 15,
-      },
-      aref: {
-        width: '20%',
-      },
-      ref: {
-        backgroundColor: '#dbdbdb',
-        height: 30,
-        width: '100%',
-        textAlign: 'center',
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderRadius: 10,
-        textAlignVertical: 'center'
-      },
-      iconDetails: {
-        marginRight: 10,
-        color: '#00AAFF',
-      },
-      pricedetails: {
-        flexDirection: 'row',
-        width: '100%',
-      },
-      price: {
-        width: '75%',
-      },
-      lastCard: {
-        height: 70,
-        width: '95%',
-        justifyContent: "center",
-        alignContent: "center",
-        alignItems: "center",
-        margin: 20,
-        marginBottom: 70,
-      },
-      lastCard_text: {
-        flex: 1,
-        fontSize: 20,
-        fontWeight: "bold",
-        margin: 20
-      },
-    });
+          container: {
+            flex: 1,
+          },
+          mainBody: {
+            backgroundColor: '#ffffff',
+            borderTopLeftRadius: 30,
+            borderTopRightRadius: 30,
+            borderBottomLeftRadius: 30,
+            borderBottomRightRadius: 30,
+            paddingHorizontal: 20,
+            paddingVertical: 30,
+            height: this.state.orientation === 'portrait' ? '84%' : '74%',
+            width: '100%',
+            position: "absolute",
+            bottom: this.state.orientation === 'portrait' ? "10%" : "15%",
+          },
+          cardViewStyle: {
+            width: '95%',
+            margin: 10,
+            // marginBottom: 20,
+          },
+          cardViewStyle1: {
+            paddingTop: 10,
+            alignItems: 'center',
+            flexDirection: 'row',
+            width: '95%',
+            //height: 150,
+          },
+          article: {
+            //alignItems: 'center',
+            margin: 20,
+            width: '100%'
+          },
+          ic_and_details: {
+            flexDirection: 'row',
+            margin: 3,
+            //alignItems: 'center',
+          },
+          aname: {
+            width: '80%',
+          },
+          articlename: {
+            color: '#00AAFF',
+            fontSize: 20,
+            //marginBottom: 15,
+          },
+          aref: {
+            width: '20%',
+          },
+          ref: {
+            backgroundColor: '#dbdbdb',
+            height: 30,
+            width: '100%',
+            textAlign: 'center',
+            justifyContent: 'center',
+            alignItems: 'center',
+            borderRadius: 10,
+            textAlignVertical: 'center'
+          },
+          iconDetails: {
+            marginRight: 10,
+            color: '#00AAFF',
+          },
+          pricedetails: {
+            flexDirection: 'row',
+            width: '100%',
+          },
+          price: {
+            width: '75%',
+          },
+          addPopUpCard : {
+            height: 600,
+            width: '95%',
+            // justifyContent: "center",
+            alignContent: "center",
+            alignItems: "center",
+            margin: 20,
+            marginBottom: 70,
+          },
+          addPopUpCard_body : {
+            // height: 600,
+            width: '100%',
+          },
+          addPopUpCard_title : {
+            color: "#000",
+            fontSize: 30,
+            fontWeight: "bold",
+            margin: 20
+          },
+          lastCard: {
+            height: 70,
+            width: '95%',
+            justifyContent: "center",
+            alignContent: "center",
+            alignItems: "center",
+            margin: 20,
+            marginBottom: 70,
+          },
+          lastCard_text: {
+            flex: 1,
+            fontSize: 20,
+            fontWeight: "bold",
+            margin: 20
+          },
+        });
       
 
         return (
@@ -218,17 +287,84 @@ class CommandeDetails extends Component {
 
                   <OrderLinesFilter onDataToFilter={this._onDataToFilter.bind(this)} settings={{isFilter: this.state.isFilter}}/>
 
+                  <CardView cardElevation={25} cornerRadius={5} style={styles.addPopUpCard}>
+                    <View style={styles.addPopUpCard_body}>
+                      <Text style={styles.addPopUpCard_title}>Préparation</Text>
+                      <View style={{width: "100%", alignItems: "center"}}>
+                        <View style={{backgroundColor: "#dbdbdb", borderRadius: 5, height: 80, width: 150}}>
+                          <ScrollView 
+                            style={{flex: 1}} 
+                            horizontal= {true}
+                            decelerationRate={0}
+                            snapToInterval={150} //your element width
+                            snapToAlignment={"center"}>
+                              {this.state.pickingDataOptions.map((item, index) => (
+                                <View style={{width: 150, alignItems: "center"}}>
+                                  <Text style={{color: "#00AAFF", fontSize: 25, fontWeight: "bold", margin: 20}}>{item.label}</Text>
+                                </View>
+                              ))}
+                          </ScrollView>
+                        </View>
+                        
+                        <View style={{width: "100%"}}>
+                          <View style={{flexDirection: "row", justifyContent: "center", alignItems: "center"}}>
+                            <TouchableOpacity
+                            style={{backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 15, borderRadius: 100, borderWidth: 1, borderColor: "#00AAFF"}}
+                              onPress={() => remove_50_ToTextInput()}>
+                              <Icon name="minus" size={40} style={{color: "#00AAFF"}}/>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                            style={{backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, borderRadius: 100, borderWidth: 1, borderColor: "#00AAFF"}}
+                              onPress={() => remove_10_ToTextInput()}>
+                              <Icon name="minus" size={30} style={{color: "#00AAFF"}}/>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                            style={{backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 15, borderRadius: 100, borderWidth: 1, borderColor: "#00AAFF"}}
+                              onPress={() => remove_1_ToTextInput()}>
+                              <Icon name="minus" size={20} style={{color: "#00AAFF"}}/>
+                            </TouchableOpacity>
+
+                            <TextInput
+                              style={{color: "#000", margin: 15, width: 50}}
+                              keyboardType={"numeric"}
+                              value={this.state.addRemoveNothing}
+                              onChangeText={(val) => textInputChanged(val)} />
+
+                              <Text style={{color: "#000", fontSize: 20}}>{this.state.addRemoveNothing}</Text>
+
+                            <TouchableOpacity
+                            style={{backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 15, borderRadius: 100, borderWidth: 1, borderColor: "#00AAFF"}}
+                              onPress={() => add_1_ToTextInput()}>
+                              <Icon name="plus" size={20} style={{color: "#00AAFF"}}/>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                            style={{backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 15, borderRadius: 100, borderWidth: 1, borderColor: "#00AAFF"}}
+                              onPress={() => {add_10_ToTextInput()}}>
+                              <Icon name="plus" size={30} style={{color: "#00AAFF"}}/>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                            style={{backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 15, borderRadius: 100, borderWidth: 1, borderColor: "#00AAFF"}}
+                              onPress={() => add_50_ToTextInput()}>
+                              <Icon name="plus" size={40} style={{color: "#00AAFF"}}/>
+                            </TouchableOpacity>
+
+                          </View>
+                        </View>
+                      </View>
+                    </View>
+                  </CardView>
+
                 <ScrollView style={{flex: 1}}>
                 {
                     this.state.data.map((item, index) => (
-                      <TouchableOpacity onPress={() => this.productDetails(item)}>
+                      <TouchableOpacity onPress={() => this.prepareProduct(item)} onLongPress={() => this.productDetails(item)}>
 
                         {this.state.settings.isUseDetailedCMDLines ? 
-                          <CardView key={index} cardElevation={10} cornerRadius={5} style={styles.cardViewStyle}>
+                          <CardView key={index} cardElevation={10} cornerRadius={5} style={[styles.cardViewStyle, {height: 230}]}>
                             <View style={styles.cardViewStyle1}>
                               <View style={[styles.article, { flexDirection: "row" }]}>
                                 <View>
-                                  <Image style={{ width: DeviceInfo.isTablet() ? 100 : 50, height: DeviceInfo.isTablet() ? 100 : 50 }} source={require('../../../img/no_image.jpeg')} />
+                                  <Image style={{ width: DeviceInfo.isTablet() ? 125 : 50, height: DeviceInfo.isTablet() ? 125 : 50 }} source={require('../../../img/no_image.jpeg')} />
                                 </View>
                                 <View style={{ flex: 1, marginLeft: 10 }}>
                                   <View style={styles.ic_and_details}>
@@ -240,8 +376,34 @@ class CommandeDetails extends Component {
                                     </View>
                                   </View>
                                   <View style={styles.ic_and_details}>
-                                    <Icon name="boxes" size={15} style={styles.iconDetails} />
-                                    <Text> {item.qty} en Stock</Text>
+                                    <Icon name="tag" size={15} style={styles.iconDetails} />
+                                    <Text>Lot : xxxxxxxxxx</Text>
+                                  </View>
+                                  <View style={styles.ic_and_details}>
+                                    <Icon name="calendar-alt" size={15} style={styles.iconDetails} />
+                                    <Text>DLC : {moment(new Date(new Number("1601892911000"))).format('DD-MM-YYYY')}</Text>
+                                  </View>
+                                  <View style={styles.ic_and_details}>
+                                    <Icon name="calendar-alt" size={15} style={styles.iconDetails} />
+                                    <Text>DLUO : {moment(new Date(new Number("1601892911000"))).format('DD-MM-YYYY')}</Text>
+                                  </View>
+                                  <View style={styles.ic_and_details}>
+                                    <Icon name="warehouse" size={15} style={styles.iconDetails} />
+                                    <Text>Enplacement : xxxxxxxxxx</Text>
+                                  </View>
+                                  <View style={[styles.ic_and_details, {width: "100%", justifyContent: "space-between"}]}>
+                                    <View style={{width: "30%", flexDirection: "row", justifyContent: "flex-start"}}>
+                                      <Icon name="boxes" size={15} style={styles.iconDetails} />
+                                      <Text>{item.qty} en Stock</Text>
+                                    </View>
+                                    <View style={{width: "30%", flexDirection: "row", justifyContent: "center", marginRight: 20}}>
+                                      <Icon name="boxes" size={15} style={styles.iconDetails} />
+                                      <Text>{item.qty} Commandé</Text>
+                                    </View>
+                                    <View style={{width: "30%", flexDirection: "row", justifyContent: "flex-end", marginRight: 20}}>
+                                      <Icon name="truck-loading" size={15} style={styles.iconDetails} />
+                                      <Text>{item.qty} Préparé</Text>
+                                    </View>
                                   </View>
 
                                   <View style={{ borderBottomColor: '#00AAFF', borderBottomWidth: 1, marginRight: 10 }} />
@@ -257,7 +419,7 @@ class CommandeDetails extends Component {
                             </View>
                           </CardView>
                         : 
-                          <CardView key={index} cardElevation={10} cornerRadius={5} style={styles.cardViewStyle}>
+                          <CardView key={index} cardElevation={10} cornerRadius={5} style={[styles.cardViewStyle, {height: 120}]}>
                             <View style={styles.cardViewStyle1}>
                               <View style={[styles.article, {flexDirection: "row"}]}>
                                 <View style={{flex: 1, marginLeft: 10}}>
@@ -269,10 +431,20 @@ class CommandeDetails extends Component {
                                     <Text style={styles.ref}>{item.ref}</Text>
                                   </View>
                                 </View>
-                                <View style={styles.ic_and_details}>
-                                  <Icon name="boxes" size={15} style={styles.iconDetails} />
-                                  <Text> XXX en Stock</Text>
-                                </View>
+                                <View style={[styles.ic_and_details, {width: "100%", justifyContent: "space-between"}]}>
+                                    <View style={{width: "30%", flexDirection: "row", justifyContent: "flex-start"}}>
+                                      <Icon name="boxes" size={15} style={styles.iconDetails} />
+                                      <Text>{item.qty} en Stock</Text>
+                                    </View>
+                                    <View style={{width: "30%", flexDirection: "row", justifyContent: "center", marginRight: 20}}>
+                                      <Icon name="boxes" size={15} style={styles.iconDetails} />
+                                      <Text>{item.qty} Commandé</Text>
+                                    </View>
+                                    <View style={{width: "30%", flexDirection: "row", justifyContent: "flex-end", marginRight: 20}}>
+                                      <Icon name="truck-loading" size={15} style={styles.iconDetails} />
+                                      <Text>{item.qty} Préparé</Text>
+                                    </View>
+                                  </View>
 
                                 <View style={{ borderBottomColor: '#00AAFF', borderBottomWidth: 1, marginRight: 10 }} />
                                 </View>
@@ -286,11 +458,19 @@ class CommandeDetails extends Component {
               ))
             }
 
-            <CardView cardElevation={7} cornerRadius={10} style={styles.lastCard}>
-              <View>
-                <Text style={styles.lastCard_text}>No More Data...</Text>
-              </View>
-            </CardView>
+            {this.state.isLoading ? 
+              <CardView cardElevation={7} cornerRadius={10} style={styles.lastCard}>
+                <View>
+                  <Text style={styles.lastCard_text}>Loading Data...</Text>
+                </View>
+              </CardView>
+            : 
+              <CardView cardElevation={7} cornerRadius={10} style={styles.lastCard}>
+                <View>
+                  <Text style={styles.lastCard_text}>No More Data...</Text>
+                </View>
+              </CardView>
+            }
           </ScrollView>
 
           
