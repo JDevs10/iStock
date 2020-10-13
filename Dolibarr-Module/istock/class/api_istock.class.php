@@ -875,6 +875,69 @@ class IStockApi extends DolibarrApi
 	
 	
 	/*##########################################################################################################################*/
+	/*############################################  Gestion Api Order_Contact  #####################################################*/
+	
+	
+	/**
+     * Liste des contact orders
+     *
+     * @param string	       $sortfield	        Sort field
+     * @param string	       $sortorder	        Sort order
+     * @param int		       $limit		        Limit for list
+     * @param int		       $page		        Page number
+     * @return  array 
+     *
+     * @url	GET order/contacts/list
+     */
+	public function orderIndex($sortfield = "t.rowid", $sortorder = 'ASC', $limit = 100, $page = 0){
+		
+		$obj_ret = array();
+		
+		$sql = "SELECT * FROM llx_element_contact as t WHERE 1 = 1";
+		$sql.= $this->db->order($sortfield, $sortorder);
+		
+        if ($limit)	{
+            if ($page < 0) {
+                $page = 0;
+            }
+            $offset = $limit * $page;
+
+            $sql.= $this->db->plimit($limit, $offset);
+        }
+		//print "SQL => $sql\n\n";
+
+        $result = $this->db->query($sql);
+		
+		if ($result)
+        {
+			//print("<pre>".print_r($result,true)."</pre>");
+			
+            $num = $this->db->num_rows($result);
+            while ($i < $num)
+            {
+                $obj = $this->db->fetch_object($result);
+				$obj_ret[] = $obj;
+                $i++;
+            }
+        }
+        else {
+            throw new RestException(503, 'Error when Order Contact list: '.$this->db->lasterror());
+        }
+        if( ! count($obj_ret)) {
+            throw new RestException(404, 'No Order Contact found');
+        }
+		
+		return array(
+            'success' => array(
+                'code' => 200,
+                'message' => "Data between $offset and ".($page == 0 ? $limit : ($offset + $limit)),
+				'data' => $obj_ret
+            )
+        );
+	}
+	
+	
+	/*##########################################################################################################################*/
 
 
     // phpcs:disable PEAR.NamingConventions.ValidFunctionName.PublicUnderscore

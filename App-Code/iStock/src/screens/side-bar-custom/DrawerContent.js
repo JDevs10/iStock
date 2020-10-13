@@ -78,7 +78,7 @@ export function DrawerContent(props) {
 
         const orderLinesManager = new OrderLinesManager();
         await orderLinesManager.initDB();
-        const res_1 = await orderLinesManager.DROP_ORDER().then(async (val) => {
+        const res_1 = await orderLinesManager.DROP_ORDER_LINES().then(async (val) => {
             return await val;
         });
 

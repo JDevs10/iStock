@@ -144,6 +144,16 @@ class Preparation extends Component {
     console.log("before : ", this.state.data.length);
     let data_ = [];
 
+    const newFrom = this.state.limit.from + this.state.limit.to;
+    const newTo = newFrom + this.state.limit.to;
+
+    this.setState({
+      limit: {
+        from: newFrom,
+        to: newTo
+      }
+    });
+
     if(await Object.keys(this.state.filterConfig).length == 0){
       const om = new OrderManager();
       await om.initDB();

@@ -2,9 +2,9 @@ import React, { Component } from 'react';
 import { View, Text, AsyncStorage } from 'react-native';
 import axios from 'axios';
 import OrderManager from '../Database/OrderManager';
-import OrderLinesManager from '../Database/OrderLinesManager';
+import FindCommandeContacts from '../services/FindCommandeContacts';
 
-const LIMIT = "1"; //Limite of orders in each page
+const LIMIT = "50"; //Limite of orders in each page
 
 class FindCommandes extends Component {
   constructor(props) {
@@ -14,11 +14,8 @@ class FindCommandes extends Component {
 
   async getAllOrdersFromServer(token){
     const orderManager = new OrderManager();
-    // const orderLinesManager = new OrderLinesManager();
     await orderManager.initDB();
     await orderManager.CREATE_ORDER_TABLE();
-    // await orderLinesManager.initDB();
-    // await orderLinesManager.CREATE_ORDER_LINES_TABLE();
 
     console.log('orderManager', 'getAllOrdersFromServer()');
     console.log('token', token);
@@ -26,22 +23,16 @@ class FindCommandes extends Component {
     let i_ = 0;
     let ind = 0;
 
-    return await new Promise(async (resolve)=> {
+    const ORDER_PROMISE = await new Promise(async (resolve)=> {
       while(i_ < 600){
         console.log(`${token.server}/api/index.php/orders?sortfield=t.rowid&sortorder=ASC&limit=${LIMIT}&page=${i_}&DOLAPIKEY=${token.token}`);
         await axios.get(`${token.server}/api/index.php/orders?sortfield=t.rowid&sortorder=ASC&limit=${LIMIT}&page=${i_}`, 
             { headers: { 'DOLAPIKEY': token.token, 'Accept': 'application/json' } })
         .then(async (response) => {
             if(response.status == 200){
-                //console.log('Status == 200');
-                console.log(response.data);
 
                 const res_1 = await orderManager.INSERT_ORDERS(response.data);
-                // const res_2 = await orderLinesManager.INSERT_ORDER_LINES(response.data);
-                // if(res_1 && res_2){
-                //   i_++;
-                //   console.log('next request....');
-                // }
+
                 if(res_1){
                   i_++;
                   console.log('next request....');
@@ -68,6 +59,21 @@ class FindCommandes extends Component {
         });
       }
     });
+
+
+    if(ORDER_PROMISE){
+      const findCommandeContacts = new FindCommandeContacts();
+      const res = await findCommandeContacts.getAllContactsFromServer(token).then(async (val) => {
+        return val;
+      });
+
+      if(res){
+        return true;
+      }else{
+        return false;
+      }
+    }
+    
   }
 
 }

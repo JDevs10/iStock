@@ -13,25 +13,30 @@ const DATABASE_VERSION = DatabaseInfo.DATABASE_VERSION;
 const DATABASE_DISPLAY_NAME = DatabaseInfo.DATABASE_DISPLAY_NAME;
 const DATABASE_SIZE = DatabaseInfo.DATABASE_SIZE;
 
-const TABLE_NAME = "token";
-const COLUMN_ID = "id";
-const COLUMN_USER_ID = "userId";
-const COLUMN_NAME = "name";
-const COLUMN_SERVER = "server";
-const COLUMN_TOKEN = "token";
-const COLUMN_COMPANY = "company";
+
+const TABLE_NAME = "orders_contact";
+const COLUMN_ID = "id"; //INTEGER PRIMARY KEY AUTOINCREMENT
+const COLUMN_DATECREATE = "datecreate"; //VARCHAR(255)
+const COLUMN_STATUT = "statut"; //VARCHAR(255)
+const COLUMN_ELEMENT_ID = "element_id"; //VARCHAR(255)
+const COLUMN_FK_C_TYPE_CONTACT = "fk_c_tyoe_contact"; //VARCHAR(255)
+const COLUMN_FK_SOPEOPLE = "fk_socpeople"; //VARCHAR(255)
+
 
 const create = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "(" +
     COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-    COLUMN_USER_ID + " VARCHAR(255)," +
-    COLUMN_NAME + " VARCHAR(255)," +
-    COLUMN_SERVER + " VARCHAR(255)," +
-    COLUMN_TOKEN + " VARCHAR(255)," +
-    COLUMN_COMPANY + " VARCHAR(255)" +
+    COLUMN_DATECREATE + " VARCHAR(255)," +
+    COLUMN_STATUT + " VARCHAR(255)," +
+    COLUMN_ELEMENT_ID + " VARCHAR(255)," +
+    COLUMN_FK_C_TYPE_CONTACT + " VARCHAR(255)," +
+    COLUMN_FK_SOPEOPLE + " VARCHAR(255)" +
 ")";
 
 // create a component
-class TokenManager extends Component {
+class OrderContactManager extends Component {
+    _TABLE_NAME_ = "orders_contact";
+    _COLUMN_FK_SOPEOPLE_ = "fk_socpeople";
+
     //Init database
     async initDB() {
         return await new Promise(async (resolve) => {
@@ -75,11 +80,11 @@ class TokenManager extends Component {
           console.log("Database was not OPENED");
         }
     };
-
+    
 
     //Create
-    async CREATE_TOKEN_TABLE(){
-        console.log("##### CREATE_TOKEN_TABLE #########################");
+    async CREATE_ORDER_CONTACT_TABLE(){
+        console.log("##### CREATE_ORDER_CONTACT_TABLE #########################");
         return await new Promise(async (resolve) => {
             try{
                 await db.transaction(async function (txn) {
@@ -97,70 +102,46 @@ class TokenManager extends Component {
         });
     }
 
-
     //Insert
-    async INSERT_TOKEN(data_){
-        console.log("##### INSERT_TOKEN #########################");
-        console.log("inserting.... ", data_);
+    async INSERT_ORDER_CONTACT(data_){
+        console.log("##### INSERT_OORDER_CONTACT #########################");
+        console.log("inserting.... ", data_.length);
         return await new Promise(async (resolve) => {
             try{
-                await db.transaction(async (tx) => {
-                    await tx.executeSql("INSERT INTO " + TABLE_NAME + " ("+COLUMN_ID+", "+COLUMN_USER_ID+", "+COLUMN_NAME+", "+COLUMN_SERVER+", "+COLUMN_TOKEN+", "+COLUMN_COMPANY+") VALUES (1, '"+data_.userId+"', '"+data_.name.replace(/'/g, "''")+"', '"+data_.server.replace(/'/g, "''")+"', '"+data_.token.replace(/'/g, "''")+"', '"+data_.company.replace(/'/g, "''")+"')", []);
-                });
+                for(let x = 0; x < data_.length; x++){
+                    await db.transaction(async (tx) => {
+                        const insert = "INSERT INTO " + TABLE_NAME + " ("+COLUMN_ID+", "+COLUMN_DATECREATE+", "+COLUMN_STATUT+", "+COLUMN_ELEMENT_ID+", "+COLUMN_FK_C_TYPE_CONTACT+", "+COLUMN_FK_SOPEOPLE+") VALUES (null, '"+data_[x].datecreate+"', '"+data_[x].statut +"', '"+data_[x].element_id+"', '"+data_[x].fk_c_type_contact+"', '"+data_[x].fk_socpeople+"')";
+                        await tx.executeSql(insert, []);
+                    });
+                }
                 return await resolve(true);
             } catch(error){
+                console.log("error: ", error);
                 return await resolve(false);
             }
         });
     }
 
-    //Get by id
-    async GET_TOKEN_BY_ID(id){
-        console.log("##### GET_TOKEN_BY_ID #########################");
-
-        return await new Promise(async (resolve) => {
-            let token = null;
-            await db.transaction(async (tx) => {
-                await tx.executeSql("SELECT t."+COLUMN_ID+", t."+COLUMN_USER_ID+", t."+COLUMN_NAME+", t."+COLUMN_SERVER+", t."+COLUMN_TOKEN+", t."+COLUMN_COMPANY+ " FROM "+TABLE_NAME+" t WHERE t."+COLUMN_ID+" = "+id, []).then(async ([tx,results]) => {
-                    console.log("Query completed");
-                    var len = results.rows.length;
-                    for (let i = 0; i < len; i++) {
-                        let row = results.rows.item(i);
-                        console.log('token => row: ', row);
-                        token = {
-                            name: row.name, 
-                            server: row.server, 
-                            token: row.token, 
-                            company: row.company
-                        };
-                    }
-                });
-            }).then(async (result) => {
-                // await this.closeDatabase(db);
-                // console.log('token: ', token);
-                await resolve(token);
-            }).catch(async (err) => {
-                console.log(err);
-                await resolve(null);
-            });
-        });
-    }
 
     //Delete
-    async DELETE_TOKEN_LIST(){
-        console.log("##### DELETE_TOKEN_LIST #########################");
+    async DELETE_ORDER_CONTACT(){
+        console.log("##### DELETE_ORDER_CONTACT #########################");
 
         return await new Promise(async (resolve) => {
             await db.transaction(async (tx) => {
                 await tx.executeSql("DELETE FROM " + TABLE_NAME, []);
+                resolve(true);
+
+            }).then(async (result) => {
+                console.error('result : ', result);
+                resolve(false);
             });
-            return await resolve(true);
         });
     }
 
     //Delete
-    async DROP_TOKEN(){
-        console.log("##### DROP_TOKEN #########################");
+    async DROP_ORDER(){
+        console.log("##### DROP_ORDER #########################");
 
         return await new Promise(async (resolve) => {
             await db.transaction(async function (txn) {
@@ -170,8 +151,8 @@ class TokenManager extends Component {
             return await resolve(true);
         });
     }
-
 }
 
+
 //make this component available to the app
-export default TokenManager;
+export default OrderContactManager;

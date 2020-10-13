@@ -62,6 +62,7 @@ class UserServices extends Component {
 
                         //navigate to download
                         const token_ = {
+                            userId: response.data.success.id,
                             name: response.data.success.identifiant,
                             server: account.serverUrl,
                             token: account.key,

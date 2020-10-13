@@ -54,12 +54,12 @@ export default class NavbarPreparation extends Component {
   }
 
   render() {
-    if (this.state.orientation === 'portrait') {
-      console.log('orientation : ', this.state.orientation);
-    }
-    else {
-      console.log('orientation : ', this.state.orientation);
-    }
+    // if (this.state.orientation === 'portrait') {
+    //   console.log('orientation : ', this.state.orientation);
+    // }
+    // else {
+    //   console.log('orientation : ', this.state.orientation);
+    // }
 
 
     const styles = StyleSheet.create({

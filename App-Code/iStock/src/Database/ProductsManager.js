@@ -117,7 +117,7 @@ class ProductsManager extends Component {
                 for(let x = 0; x < data_.length; x++){
                     data_[x].image = "";
                     await db.transaction(async (tx) => {
-                        await tx.executeSql("INSERT INTO " + TABLE_NAME + " ("+COLUMN_ID+", "+COLUMN_REF+", "+COLUMN_LABEL+", "+COLUMN_CODEBARRE+", "+COLUMN_DESCRIPTION+", "+COLUMN_LOT+", "+COLUMN_DLC+", "+COLUMN_DLUO+", "+COLUMN_IMAGE+") VALUES (NULL, '"+data_[x].ref+"', '"+data_[x].label.replace(/'/g, "''")+"', '"+data_[x].codebarre+"', "+(data_[x].description == null ? null : "'"+data_[x].description.replace(/'/g, "''")+"'" )+", '"+data_[x].lot+"', '"+data_[x].dlc+"', '"+data_[x].dluo+"', '"+data_[x].image+"')", []);
+                        await tx.executeSql("INSERT INTO " + TABLE_NAME + " ("+COLUMN_ID+", "+COLUMN_REF+", "+COLUMN_LABEL+", "+COLUMN_CODEBARRE+", "+COLUMN_DESCRIPTION+", "+COLUMN_LOT+", "+COLUMN_DLC+", "+COLUMN_DLUO+", "+COLUMN_IMAGE+") VALUES (NULL, '"+data_[x].ref+"', '"+data_[x].libelle.replace(/'/g, "''")+"', '"+data_[x].codebarre+"', "+(data_[x].description == null ? null : "'"+data_[x].description.replace(/'/g, "''")+"'" )+", '"+data_[x].lot+"', '"+data_[x].dlc+"', '"+data_[x].dluo+"', '"+data_[x].image+"')", []);
                     });
                 }
                 return await resolve(true);

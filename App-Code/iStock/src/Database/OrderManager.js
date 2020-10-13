@@ -260,8 +260,10 @@ class OrderManager extends Component {
 
         return await new Promise(async (resolve) => {
             const orders = [];
+            const sql = "SELECT c." + COLUMN_ID + ", c."+COLUMN_COMMANDE_ID+", c." + COLUMN_IS_SYNC + ", c." + COLUMN_STATUT + ", c." +COLUMN_SOCID + ", c." +COLUMN_USER_AUTHOR_ID + ", c." +COLUMN_REF_COMMANDE + ", c." +COLUMN_DATE_CREATION + ", c." +COLUMN_DATE_COMMANDE + ", c." +COLUMN_DATE_LIVRAISON + ", c." +COLUMN_NOTE_PUBLIC + ", c." +COLUMN_NOTE_PRIVEE + ", c." +COLUMN_TOTAL_HT + ", c." +COLUMN_TOTAL_TVA + ", c." +COLUMN_TOTAL_TTC + ", c." +COLUMN_BROUILLION + ", c." +COLUMN_REMISE_ABSOLUE + ", c." +COLUMN_REMISE_PERCENT + ", c." +COLUMN_REMISE +", t."+thirdPartiesManager._COLUMN_NAME_+" as client_name, (u."+userManager._COLUMN_FIRSTNAME_+" || ' ' || u."+userManager._COLUMN_LASTNAME_+") as user, (SELECT COUNT(*) FROM "+olm._TABLE_NAME_+" as l WHERE l."+olm._COLUMN_ORDER_ID_+" = c."+COLUMN_COMMANDE_ID+" ) as lines_nb FROM " + TABLE_NAME + " as c, "+thirdPartiesManager._TABLE_NAME_+" as t, "+userManager._TABLE_NAME_+" as u WHERE c."+COLUMN_SOCID+" = t."+thirdPartiesManager._COLUMN_REF_+" AND c."+COLUMN_USER_AUTHOR_ID+" = u."+userManager._COLUMN_REF_+" AND c."+COLUMN_ID+" BETWEEN " + from + " AND " + to;
+            //const sql = "SELECT c.id, c.commande_id, c.is_sync, c.statut, c.socId, c.user_author_id, c.ref_commande, c.date_creation, c.date_commande, c.date_livraison, c.note_public, c.note_privee, c.total_ht, c.total_tva, c.total_ttc, c.brouillon, c.remise_absolue, c.remise_percent, c.remise, t.name as client_name, (u.firstname || ' ' || u.lastname) as user, (SELECT COUNT(*) FROM orders_lines as l WHERE l.fk_commande = c.commande_id ) as lines_nb FROM orders as c, thirdparties as t, user as u, orders_contact as oc, token as tk WHERE c.socId = t.ref AND c.ref_commande = oc.element_id AND oc.fk_socpeople = tk.userID AND c.id BETWEEN 0 AND 10";
             await db.transaction(async (tx) => {
-                await tx.executeSql("SELECT c." + COLUMN_ID + ", c."+COLUMN_COMMANDE_ID+", c." + COLUMN_IS_SYNC + ", c." + COLUMN_STATUT + ", c." +COLUMN_SOCID + ", c." +COLUMN_USER_AUTHOR_ID + ", c." +COLUMN_REF_COMMANDE + ", c." +COLUMN_DATE_CREATION + ", c." +COLUMN_DATE_COMMANDE + ", c." +COLUMN_DATE_LIVRAISON + ", c." +COLUMN_NOTE_PUBLIC + ", c." +COLUMN_NOTE_PRIVEE + ", c." +COLUMN_TOTAL_HT + ", c." +COLUMN_TOTAL_TVA + ", c." +COLUMN_TOTAL_TTC + ", c." +COLUMN_BROUILLION + ", c." +COLUMN_REMISE_ABSOLUE + ", c." +COLUMN_REMISE_PERCENT + ", c." +COLUMN_REMISE +", t."+thirdPartiesManager._COLUMN_NAME_+" as client_name, (u."+userManager._COLUMN_FIRSTNAME_+" || ' ' || u."+userManager._COLUMN_LASTNAME_+") as user, (SELECT COUNT(*) FROM "+olm._TABLE_NAME_+" as l WHERE l."+olm._COLUMN_ORDER_ID_+" = c."+COLUMN_COMMANDE_ID+" ) as lines_nb FROM " + TABLE_NAME + " as c, "+thirdPartiesManager._TABLE_NAME_+" as t, "+userManager._TABLE_NAME_+" as u WHERE c."+COLUMN_SOCID+" = t."+thirdPartiesManager._COLUMN_REF_+" AND c."+COLUMN_USER_AUTHOR_ID+" = u."+userManager._COLUMN_REF_+" AND c."+COLUMN_ID+" BETWEEN " + from + " AND " + to, []).then(async ([tx,results]) => {
+                await tx.executeSql(sql, []).then(async ([tx,results]) => {
                     console.log("Query completed");
 
                     var len = results.rows.length;
@@ -274,6 +276,7 @@ class OrderManager extends Component {
                 });
             }).then(async (result) => {
                 //await this.closeDatabase(db);
+                console.log("SQL => "+sql);
                 // console.log("orders - 1 ", orders[0]);
                 await resolve(orders);
             }).catch(async (err) => {
@@ -310,7 +313,7 @@ class OrderManager extends Component {
             sql += "WHERE c."+COLUMN_SOCID+" = t."+thirdPartiesManager._COLUMN_REF_+" AND c."+COLUMN_USER_AUTHOR_ID+" = u."+userManager._COLUMN_REF_+" "+(filteredConfig.filterCMD == null ? "" : "AND c." + COLUMN_REF_COMMANDE + " LIKE '" + filteredConfig.filterCMD.toUpperCase() + "%'") + (filteredConfig.filterClient_id == null ? "" : (filteredConfig.filterCMD == null ? " AND t."+thirdPartiesManager._COLUMN_REF_+" = "+filteredConfig.filterClient_id+"" : " AND t."+thirdPartiesManager._COLUMN_REF_+" = "+filteredConfig.filterClient_id+"")) + (filteredConfig.filterRepresentant_id == null ? "" : (filteredConfig.filterCMD == null && filteredConfig.filterClient_id == null ? " AND u."+userManager._COLUMN_REF_+" = "+filteredConfig.filterRepresentant_id+"" : " AND u."+userManager._COLUMN_REF_+" = "+filteredConfig.filterRepresentant_id+"")) + " AND c." + COLUMN_DATE_LIVRAISON + " != '' AND c." + COLUMN_DATE_LIVRAISON + " > "+ (Date.parse(filteredConfig.startDate) / 1000)+ " AND c." + COLUMN_DATE_LIVRAISON + " < "+ (Date.parse(filteredConfig.endDate) / 1000);
         }
 
-        // console.log("sql build => " , sql);
+        console.log("SQL build => " , sql);
 
         return await new Promise(async (resolve) => {
             const orders = [];

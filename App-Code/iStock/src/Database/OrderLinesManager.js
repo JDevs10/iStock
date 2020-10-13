@@ -205,23 +205,7 @@ class OrderLinesManager extends Component {
     }
 
     //Delete
-    async DELETE_ORDER_LIST(){
-        console.log("##### DELETE_ORDER_LIST #########################");
-
-        return await new Promise(async (resolve) => {
-            await db.transaction(async (tx) => {
-                await tx.executeSql("DELETE FROM " + TABLE_NAME, []);
-                resolve(true);
-
-            }).then(async (result) => {
-                console.error('result : ', result);
-                resolve(false);
-            });
-        });
-    }
-
-    //Delete
-    async DROP_ORDER(){
+    async DROP_ORDER_LINES(){
         console.log("##### DROP_ORDER #########################");
 
         return await new Promise(async (resolve) => {

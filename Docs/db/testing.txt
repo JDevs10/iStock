@@ -1,0 +1,13 @@
+Actually
+
+SELECT c.id, c.commande_id, c.is_sync, c.statut, c.socId, c.user_author_id, c.ref_commande, c.date_creation, c.date_commande, c.date_livraison, c.note_public, c.note_privee, c.total_ht, c.total_tva, c.total_ttc, c.brouillon, c.remise_absolue, c.remise_percent, c.remise, t.name as client_name, (u.firstname || ' ' || u.lastname) as user, (SELECT COUNT(*) FROM orders_lines as l WHERE l.fk_commande = c.commande_id ) as lines_nb 
+FROM orders as c, thirdparties as t, user as u 
+WHERE c.socId = t.ref AND c.user_author_id = u.ref AND c.id BETWEEN 0 AND 10
+
+
+
+In construction
+
+SELECT c.id, c.commande_id, c.is_sync, c.statut, c.socId, c.user_author_id, c.ref_commande, c.date_creation, c.date_commande, c.date_livraison, c.note_public, c.note_privee, c.total_ht, c.total_tva, c.total_ttc, c.brouillon, c.remise_absolue, c.remise_percent, c.remise, t.name as client_name, (u.firstname || ' ' || u.lastname) as user, (SELECT COUNT(*) FROM orders_lines as l WHERE l.fk_commande = c.commande_id ) as lines_nb 
+FROM orders as c, thirdparties as t, user as u, orders_contact as oc 
+WHERE c.socId = t.ref AND c.commande_id = oc.element_id AND oc.fk_socpeople = u.ref AND u.ref = 24 AND c.id BETWEEN 0 AND 10
