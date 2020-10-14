@@ -69,7 +69,7 @@ class Preparation extends Component {
 
   async  componentDidMount(){
     await this._settings();
-    await this._getPickingData();
+    //await this._getPickingData();
 
     this.listener = await this.props.navigation.addListener('focus', async () => {
       // Prevent default action
@@ -346,7 +346,7 @@ class Preparation extends Component {
             onScroll={({nativeEvent}) => {
               if (isAtToBottom(nativeEvent)) {
                 console.log("Reach at the end!");
-                this.loadMoreData();
+                //this.loadMoreData();
               }
             }}
             scrollEventThrottle={400}

@@ -129,6 +129,7 @@ class TokenManager extends Component {
                         console.log('token => row: ', row);
                         token = {
                             name: row.name, 
+                            userId: row.userId,
                             server: row.server, 
                             token: row.token, 
                             company: row.company

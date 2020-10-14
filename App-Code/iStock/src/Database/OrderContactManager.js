@@ -35,6 +35,7 @@ const create = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "(" +
 // create a component
 class OrderContactManager extends Component {
     _TABLE_NAME_ = "orders_contact";
+    _COLUMN_ELEMENT_ID_ = "element_id";
     _COLUMN_FK_SOPEOPLE_ = "fk_socpeople";
 
     //Init database

@@ -8,6 +8,9 @@ import DatePicker from 'react-native-datepicker';
 import DialogAndroid from 'react-native-dialogs';
 import ThirdPartiesManager from '../../../Database/ThirdPartiesManager';
 import UserManager from '../../../Database/UserManager';
+import TokenManager from '../../../Database/TokenManager';
+
+
 
 // create a component
 class OrderFilter extends Component {
@@ -24,6 +27,29 @@ class OrderFilter extends Component {
             startDate: 0,
             endDate: 0,
         }
+    }
+
+    async componentDidMount(){
+        console.log("OrderFilter :: componentDidMount() ", true);
+
+        const token_ = new TokenManager();
+        await token_.initDB();
+        const token = await token_.GET_TOKEN_BY_ID(1).then(async (val) => {
+            return val;
+        });
+
+        const um = new UserManager();
+        await um.initDB();
+        const data = await um.GET_USER_BY_REF(token.userId).then(async (val) => {
+            return await val;
+        });
+
+        this.setState({
+            filterRepresentant_id: ""+data.ref+"",
+            filterRepresentant_name: ""+data.lastname+"",
+        });
+
+        await this.search();
     }
 
 
@@ -65,8 +91,6 @@ class OrderFilter extends Component {
         const data = await tpm.GET_CLIENT_BY_NAME(this.state.filterClient_name).then(async (val) => {
             return await val;
         });
-
-        const LIST = [{id: "1", label: "Hello"}, {id: "1", label: "Hello"}, {id: "1", label: "Hello"}];
 
         const { selectedItem } = await DialogAndroid.showPicker('Veuillez selectionner un représentant', null, {
             positiveText: 'Ok', // this is what makes disables auto dismiss
