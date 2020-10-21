@@ -4,6 +4,8 @@ import { View, Text, StyleSheet } from 'react-native';
 import axios from 'axios';
 import ProductsManager from '../Database/ProductsManager';
 
+const LIMIT = "50";
+
 // create a component
 class FindProduits extends Component {
     constructor(props) {
@@ -19,13 +21,13 @@ class FindProduits extends Component {
         console.log('productsManager', 'getAllProductsFromServer()');
         console.log('token', token);
         
-        let i_ = 225;
+        let i_ = 0;
         let ind = 0;
     
         return await new Promise(async (resolve)=> {
           while(i_ < 600){
-            console.log(`${token.server}/api/index.php/products?sortfield=t.rowid&sortorder=ASC&limit=50&page=${i_}&DOLAPIKEY=${token.token}`);
-            await axios.get(`${token.server}/api/index.php/products?sortfield=t.rowid&sortorder=ASC&limit=50&page=${i_}`, 
+            console.log(`${token.server}/api/index.php/products?sortfield=t.rowid&sortorder=ASC&limit=${LIMIT}&page=${i_}&DOLAPIKEY=${token.token}`);
+            await axios.get(`${token.server}/api/index.php/products?sortfield=t.rowid&sortorder=ASC&limit=${LIMIT}&page=${i_}`, 
                 { headers: { 'DOLAPIKEY': token.token, 'Accept': 'application/json' } })
             .then(async (response) => {
                 if(response.status == 200){

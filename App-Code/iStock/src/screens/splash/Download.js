@@ -67,7 +67,7 @@ class Download extends Component {
       return await val;
     });
 
-
+    
     //find token
     const tm = new TokenManager();
     await tm.initDB();
@@ -92,7 +92,6 @@ class Download extends Component {
     let allSteps = 7;
     const res = [];
 
-    
     // 1 // Get all users info from server
     setTimeout(() => {
       this.setState({

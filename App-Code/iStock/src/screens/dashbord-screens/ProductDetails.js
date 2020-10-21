@@ -262,7 +262,22 @@ class ProductDetails extends Component {
         borderColor: "#706FD3",
         borderRadius: 50,
         borderWidth: 2
-      }
+      },
+      lastCard: {
+        height: 70,
+        width: '95%',
+        justifyContent: "center",
+        alignContent: "center",
+        alignItems: "center",
+        margin: 10,
+        marginBottom: 70,
+      },
+      lastCard_text: {
+        flex: 1,
+        fontSize: 20,
+        fontWeight: "bold",
+        margin: 20
+      },
     });
 
 
@@ -272,68 +287,80 @@ class ProductDetails extends Component {
         colors={['#00AAFF', '#706FD3']}
         style={styles.container}>
 
-        <NavbarDashboard navigation={this.props} textTittleValue={"Produit " + product.name} />
+        <NavbarDashboard navigation={this.props} textTittleValue={Object.keys(this.state.data).length == 0 ? "Aucun Produit" : "Produit " + product.name} />
         <View style={styles.mainBody}>
           <ScrollView style={{ flex: 1 }}>
 
+            {Object.keys(this.state.data).length == 0 ? 
             <View>
-              <Text>{JSON.stringify(product)}</Text>
+              <CardView cardElevation={7} cornerRadius={10} style={styles.lastCard}>
+                <View>
+                  <Text style={styles.lastCard_text}>No More Data...</Text>
+                </View>
+              </CardView>
             </View>
+            :
+            <View>
+              <Text>{JSON.stringify(this.state.data)}</Text>
 
-            <CardView cardElevation={10} cornerRadius={5} style={styles.cardViewStyle}>
-              <View style={styles.cardViewStyle1}>
-                <View style={[styles.article, { flexDirection: "row" }]}>
-                  <View>
-                    {this.state.settings.isUseImages ? 
-                      <Image style={{ width: DeviceInfo.isTablet() ? 400 : 50, height: DeviceInfo.isTablet() ? 400 : 50 }} source={{uri: product.image}} />
-                    : 
-                      <Image style={{ width: DeviceInfo.isTablet() ? 400 : 50, height: DeviceInfo.isTablet() ? 400 : 50 }} source={require('../../../img/no_image.jpeg')} />
-                    }
-                    </View>
-                  <View style={{ flex: 1, marginLeft: 40 }}>
-                    <View style={styles.ic_and_details}>
-                      <View style={styles.aname}>
-                        <Text style={styles.articlename}>{product.name}</Text>
-                        <View style={{ flexDirection: "row", marginTop: 10 }}>
-                          <Text style={styles.subtexts}>Référence : </Text>
-                          <Text style={styles.ref}>{product.ref}</Text>
-                        </View>
-                        <View style={{ flexDirection: "row", marginBottom: 50 }}>
-                          <Text style={styles.subtexts}>Code-Barre : </Text>
-                          <Text style={styles.ref}>xxxxxxxx</Text>
+              <CardView cardElevation={10} cornerRadius={5} style={styles.cardViewStyle}>
+                <View style={styles.cardViewStyle1}>
+                  <View style={[styles.article, { flexDirection: "row" }]}>
+                    <View>
+                      {this.state.settings.isUseImages ? 
+                        <Image style={{ width: DeviceInfo.isTablet() ? 400 : 50, height: DeviceInfo.isTablet() ? 400 : 50 }} source={{uri: product.image}} />
+                      : 
+                        <Image style={{ width: DeviceInfo.isTablet() ? 400 : 50, height: DeviceInfo.isTablet() ? 400 : 50 }} source={require('../../../img/no_image.jpeg')} />
+                      }
+                      </View>
+                    <View style={{ flex: 1, marginLeft: 40 }}>
+                      <View style={styles.ic_and_details}>
+                        <View style={styles.aname}>
+                          <Text style={styles.articlename}>{product.name}</Text>
+                          <View style={{ flexDirection: "row", marginTop: 10 }}>
+                            <Text style={styles.subtexts}>Référence : </Text>
+                            <Text style={styles.ref}>{product.ref}</Text>
+                          </View>
+                          <View style={{ flexDirection: "row", marginBottom: 50 }}>
+                            <Text style={styles.subtexts}>Code-Barre : </Text>
+                            <Text style={styles.ref}>xxxxxxxx</Text>
+                          </View>
                         </View>
                       </View>
-                    </View>
-                    <View style={[styles.ic_and_details]}>
-                      <View>
-                        <Text style={styles.subtexts}>Description : </Text>
-                        <Text>XXXXXXXXXXXXXXXXXXXXXXXXXX XXXXXX XXXXXXXXXXX XX XXXXX XX  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</Text>
+                      <View style={[styles.ic_and_details]}>
+                        <View>
+                          <Text style={styles.subtexts}>Description : </Text>
+                          <Text>XXXXXXXXXXXXXXXXXXXXXXXXXX XXXXXX XXXXXXXXXXX XX XXXXX XX  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</Text>
+                        </View>
                       </View>
-                    </View>
-                    <View style={[styles.ic_and_details, { marginTop: 40 }]}>
-                      <Icon name="boxes" size={15} style={styles.iconDetails} />
-                      <Text>XXX en stock</Text>
-                    </View>
-                    <View style={[styles.ic_and_details]}>
-                      <Icon name="boxes" size={15} style={styles.iconDetails} />
-                      <Text>N°Lot : XXXXXXXXXXX</Text>
-                    </View>
-                    <View style={[styles.ic_and_details]}>
-                      <Icon name="boxes" size={15} style={styles.iconDetails} />
-                      <Text>DLC : xx/xx/xxxx</Text>
-                    </View>
-                    <View style={[styles.ic_and_details]}>
-                      <Icon name="boxes" size={15} style={styles.iconDetails} />
-                      <Text>DLUO : xx/xx/xxxx</Text>
-                    </View>
-                    <View style={[styles.ic_and_details]}>
-                      <Icon name="boxes" size={15} style={styles.iconDetails} />
-                      <Text>Emplacement : xxxxx</Text>
+                      <View style={[styles.ic_and_details, { marginTop: 40 }]}>
+                        <Icon name="boxes" size={15} style={styles.iconDetails} />
+                        <Text>XXX en stock</Text>
+                      </View>
+                      <View style={[styles.ic_and_details]}>
+                        <Icon name="boxes" size={15} style={styles.iconDetails} />
+                        <Text>N°Lot : XXXXXXXXXXX</Text>
+                      </View>
+                      <View style={[styles.ic_and_details]}>
+                        <Icon name="boxes" size={15} style={styles.iconDetails} />
+                        <Text>DLC : xx/xx/xxxx</Text>
+                      </View>
+                      <View style={[styles.ic_and_details]}>
+                        <Icon name="boxes" size={15} style={styles.iconDetails} />
+                        <Text>DLUO : xx/xx/xxxx</Text>
+                      </View>
+                      <View style={[styles.ic_and_details]}>
+                        <Icon name="boxes" size={15} style={styles.iconDetails} />
+                        <Text>Emplacement : xxxxx</Text>
+                      </View>
                     </View>
                   </View>
                 </View>
-              </View>
-            </CardView>
+              </CardView>
+            </View>
+            }
+
+            
 
 
 

@@ -15,7 +15,7 @@ import OrderLinesFilter from './assets/OrderLinesFilter';
 import moment from "moment";
 // import Modal from 'react-native-modal';
 
-
+let PICKING_ACTION = 1;
 
 // create a component
 class CommandeDetails extends Component {
@@ -41,14 +41,17 @@ class CommandeDetails extends Component {
     
         this.state = {
           _opacity_: 1,
-          isPopUpVisible: true,
+          isPopUpVisible: false,
           prepareMode: {saisi: true, barecode: false},
           isLoading: true,
           orderId: this.props.route.params.order.commande_id,
           data: [],
           settings: {},
           filterConfig: {},
-          pickingDataOptions: [{label: "Ajouter", value: 1}, {label: "Retour", value: 0}, {label: "Annuler", value: -1}],
+          pickingPickOption: 1,
+          pickingMaxLimit: 0,
+          pickingMimLimit: 0,
+          pickingDataOptions: [{id: 1, label: "Ajouter", value: 1}, {id: 2, label: "Retirer", value: 0}],
           orientation: isPortrait() ? 'portrait' : 'landscape'
         };
         
@@ -61,7 +64,7 @@ class CommandeDetails extends Component {
     }
 
     async  componentDidMount(){
-      this.setState({addRemoveNothing: 1});
+      this.setState({addRemoveNothing: 0});
 
       await this._settings();
       await this._orderLinesData();
@@ -72,6 +75,7 @@ class CommandeDetails extends Component {
         await console.log('Done settings update!');
         console.log('new settings : ', this.state.settings);
         await this.setState({orderId: this.props.route.params.order.commande_id});
+        this.setState({data: []});
         await this._orderLinesData();
         return;
       });
@@ -83,7 +87,7 @@ class CommandeDetails extends Component {
 
     prepareProduct(product){
       console.log('prepareProduct: ', product);
-      this.setState({isPopUpVisible: true, _opacity_: 0});
+      this.setState({isPopUpVisible: true, _opacity_: 0, pickingMaxLimit: product.qty, pickingMimLimit: 0});
     }
 
     async _settings(){
@@ -118,6 +122,31 @@ class CommandeDetails extends Component {
       //await this._getPickingData();
     }
 
+    handlePrepareScrollOptions(event){
+      const result = (event.nativeEvent.contentOffset.x / 150) + 1;
+      //console.log(result);
+      PICKING_ACTION = result;
+    }
+
+    picking_Cancel(){
+      this.setState({isPopUpVisible: false, _opacity_: 1});
+    }
+
+    picking_OK(product){
+      const PICK = {
+        action: PICKING_ACTION,
+        product_id: product.id,
+        product_ref: product.ref,
+        product_stock: product.qty,
+        order_qty: product.qty,
+        prepare_qty: this.state.addRemoveNothing
+      }
+
+      console.log('PICK : ', PICK);
+
+      this.setState({isPopUpVisible: false, _opacity_: 1, addRemoveNothing: PICK.prepare_qty});
+    }
+
     render() {
         // console.log('this.props.navigation : ', this.props.route.params);
         
@@ -134,21 +163,53 @@ class CommandeDetails extends Component {
         //     console.log('orientation : ', this.state.orientation);
         // }
 
+        const add_50_ToTextInput = () => {
+          if(this.state.pickingMaxLimit >= (this.state.addRemoveNothing + 50)){
+            this.setState({
+              addRemoveNothing: this.state.addRemoveNothing + 50,
+            });
+            console.log("add :=> "+this.state.addRemoveNothing);
+          }
+        }
+        const add_10_ToTextInput = () => {
+          if(this.state.pickingMaxLimit >= (this.state.addRemoveNothing + 10)){
+            this.setState({
+              addRemoveNothing: this.state.addRemoveNothing + 10,
+            });
+            console.log("add :=> "+this.state.addRemoveNothing);
+          }
+        }
         const add_1_ToTextInput = () => {
-          this.setState({
-            addRemoveNothing: this.state.addRemoveNothing + 1,
-          });
-          console.log("add :=> "+this.state.addRemoveNothing);
+          if(this.state.pickingMaxLimit >= (this.state.addRemoveNothing + 1)){
+            this.setState({
+              addRemoveNothing: this.state.addRemoveNothing + 1,
+            });
+            console.log("add :=> "+this.state.addRemoveNothing);
+          }
         }
         const remove_1_ToTextInput = () => {
-          this.setState({
-            addRemoveNothing: this.state.addRemoveNothing - 1,
-          });
+          if(this.state.pickingMimLimit <= (this.state.addRemoveNothing - 1)){
+            this.setState({
+              addRemoveNothing: this.state.addRemoveNothing - 1,
+            });
+            console.log("remove :=> "+this.state.addRemoveNothing);
+          }
         }
         const remove_10_ToTextInput = () => {
-          this.setState({
-            addRemoveNothing: this.state.addRemoveNothing - 10,
-          });
+          if(this.state.pickingMimLimit <= (this.state.addRemoveNothing - 10)){
+            this.setState({
+              addRemoveNothing: this.state.addRemoveNothing - 10,
+            });
+            console.log("remove :=> "+this.state.addRemoveNothing);
+          }
+        }
+        const remove_50_ToTextInput = () => {
+          if(this.state.pickingMimLimit <= (this.state.addRemoveNothing - 50)){
+            this.setState({
+              addRemoveNothing: this.state.addRemoveNothing - 50
+            });
+            console.log("remove :=> "+this.state.addRemoveNothing);
+          }
         }
       
         const styles = StyleSheet.create({
@@ -280,181 +341,138 @@ class CommandeDetails extends Component {
 
                   <OrderLinesFilter onDataToFilter={this._onDataToFilter.bind(this)} settings={{isFilter: this.state.isFilter}}/>
 
-                  <Modal 
-                    visible={this.state.isPopUpVisible} 
-                    transparent={true} >
-                      <View style={{height: "100%", width: "100%", justifyContent: "center"}}>
-                        <CardView cardElevation={25} cornerRadius={5} style={[styles.addPopUpCard, {}]}>
-                          <View style={styles.addPopUpCard_body}>
-                          <LinearGradient
-                            start={{x: 0.0, y: 1}} end={{x: 0.5, y: 1}}
-                            colors={['#00AAFF', '#706FD3']}
-                            style={{width: "100%", flexDirection: "row", justifyContent: "flex-end", }}>
-
-                                <TouchableOpacity
-                                  style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 5, borderWidth: 1, borderColor: "#706FD3"}}
-                                  onPress={() => {this.setState({isPopUpVisible: false, _opacity_: 1})}}>
-                                  <Text style={{fontSize: 20, fontWeight: "bold", color: "#706FD3"}}>Annuler</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                  style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 5, borderWidth: 1, borderColor: "#706FD3"}}
-                                  onPress={() => remove_10_ToTextInput()}>
-                                  <Text style={{fontSize: 20, fontWeight: "bold", color: "#706FD3"}}>Ok</Text>
-                                </TouchableOpacity>
-                            </LinearGradient>
-
-                            <View style={{padding: 20,}}>
-                              <Text style={styles.addPopUpCard_title}>Préparation</Text>
-                              <View style={{width: "100%", alignItems: "center"}}>
-                                <View style={{height: 50, width: 300, flexDirection: "row", margin: 20,}}>
-                                  <TouchableOpacity
-                                    style={[styles.prepareModeStyleSaisi, {flexDirection: "row", justifyContent: "center", alignItems: "center",  borderWidth: 1, borderColor: "#00AAFF", borderTopLeftRadius: 10, borderBottomLeftRadius: 10, width: "50%", height: "100%",}]}
-                                    onPress={() => this.setState({prepareMode: {saisi: true, barecode: false}})}>
-                                    <Text style={{fontSize: 20, fontWeight: "bold", color: "#00AAFF"}}>Saisi</Text>
-                                    <Icon name="edit" size={20} style={{color: "#00AAFF", marginLeft: 10}}/>
-                                  </TouchableOpacity>
-
-                                  <TouchableOpacity
-                                    style={[styles.prepareModeStyleBarecode, {flexDirection: "row", justifyContent: "center", alignItems: "center", borderWidth: 1, borderColor: "#00AAFF", borderTopRightRadius: 10, borderBottomRightRadius: 10, width: "50%", height: "100%",}]}
-                                    onPress={() => this.setState({prepareMode: {saisi: false, barecode: true}})}>
-                                    <Text style={{fontSize: 20, fontWeight: "bold", color: "#00AAFF"}}>Code Bare</Text>
-                                    <Icon name="barcode" size={20} style={{color: "#00AAFF", marginLeft: 10}}/>
-                                  </TouchableOpacity>
-                                </View>
-                                
-                              </View>
-                              <View style={{width: "100%", alignItems: "center"}}>
-                                <View style={{backgroundColor: "#dbdbdb", borderRadius: 5, height: 80, width: 150}}>
-                                  <ScrollView 
-                                    style={{flex: 1}} 
-                                    horizontal= {true}
-                                    decelerationRate={0}
-                                    snapToInterval={150} //your element width
-                                    snapToAlignment={"center"}>
-                                      {this.state.pickingDataOptions.map((item, index) => (
-                                        <View style={{width: 150, alignItems: "center"}}>
-                                          <Text style={{color: "#00AAFF", fontSize: 25, fontWeight: "bold", margin: 20}}>{item.label}</Text>
-                                        </View>
-                                      ))}
-                                  </ScrollView>
-                                </View>
-                                
-                                <View style={{width: "100%", marginTop: "10%"}}>
-                                  <View style={{flexDirection: "row", justifyContent: "center", alignItems: "center"}}>
-                                    <TouchableOpacity
-                                      style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 100, borderWidth: 1, borderColor: "#00AAFF"}}
-                                      onPress={() => remove_1_ToTextInput()}>
-                                      <Icon name="minus" size={20} style={{color: "#00AAFF", marginRight: 10}}/>
-                                      <Text style={{fontSize: 20}}>1</Text>
-                                    </TouchableOpacity>
-
-                                    <Text style={{color: "#000", fontSize: 20, width: 50, marginLeft: 5,  marginRight: 5, textAlign: "center"}}>{this.state.addRemoveNothing}</Text>
-
-                                    <TouchableOpacity
-                                      style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 100, borderWidth: 1, borderColor: "#00AAFF"}}
-                                      onPress={() => add_1_ToTextInput()}>
-                                      <Icon name="plus" size={20} style={{color: "#00AAFF", marginRight: 10}}/>
-                                      <Text style={{fontSize: 20}}>1</Text>
-                                    </TouchableOpacity>
-
-                                  </View>
-
-                                  <Slider
-                                    step = { 10 } 
-                                    minimumValue = { 0 } 
-                                    maximumValue = { 1000 } 
-                                    minimumTrackTintColor = "#00AAFF" 
-                                    maximumTrackTintColor = "#dbdbdb"
-                                    thumbTintColor = "#706FD3"
-                                    onValueChange={(ChangedValue) => this.setState({ addRemoveNothing: ChangedValue })}
-                                    style = {{ width: '100%' }} 
-                                    />
-
-                                </View>
-                              </View>
-                            </View>
-                          </View>
-                        </CardView>
-                      </View>
-                  </Modal>
-
-                  {/* <CardView cardElevation={25} cornerRadius={5} style={[styles.addPopUpCard, {}]}>
-                    <View style={styles.addPopUpCard_body}>
-                    <LinearGradient
-                      start={{x: 0.0, y: 1}} end={{x: 0.5, y: 1}}
-                      colors={['#00AAFF', '#706FD3']}
-                      style={{width: "100%", flexDirection: "row", justifyContent: "flex-end", }}>
-
-                          <TouchableOpacity
-                            style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 5, borderWidth: 1, borderColor: "#706FD3"}}
-                            onPress={() => remove_10_ToTextInput()}>
-                            <Text style={{fontSize: 20, fontWeight: "bold", color: "#706FD3"}}>Annuler</Text>
-                          </TouchableOpacity>
-                          <TouchableOpacity
-                            style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 5, borderWidth: 1, borderColor: "#706FD3"}}
-                            onPress={() => remove_10_ToTextInput()}>
-                            <Text style={{fontSize: 20, fontWeight: "bold", color: "#706FD3"}}>Ok</Text>
-                          </TouchableOpacity>
-                      </LinearGradient>
-
-                      <View style={{padding: 20,}}>
-                        <Text style={styles.addPopUpCard_title}>Préparation</Text>
-                        <View style={{width: "100%", alignItems: "center"}}>
-                          <View style={{backgroundColor: "#dbdbdb", borderRadius: 5, height: 80, width: 150}}>
-                            <ScrollView 
-                              style={{flex: 1}} 
-                              horizontal= {true}
-                              decelerationRate={0}
-                              snapToInterval={150} //your element width
-                              snapToAlignment={"center"}>
-                                {this.state.pickingDataOptions.map((item, index) => (
-                                  <View style={{width: 150, alignItems: "center"}}>
-                                    <Text style={{color: "#00AAFF", fontSize: 25, fontWeight: "bold", margin: 20}}>{item.label}</Text>
-                                  </View>
-                                ))}
-                            </ScrollView>
-                          </View>
-                          
-                          <View style={{width: "100%", marginTop: "10%"}}>
-                            <View style={{flexDirection: "row", justifyContent: "center", alignItems: "center"}}>
-                              <TouchableOpacity
-                                style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 100, borderWidth: 1, borderColor: "#00AAFF"}}
-                                onPress={() => remove_1_ToTextInput()}>
-                                <Icon name="minus" size={20} style={{color: "#00AAFF", marginRight: 10}}/>
-                                <Text style={{fontSize: 20}}>1</Text>
-                              </TouchableOpacity>
-
-                              <Text style={{color: "#000", fontSize: 20, width: 50, marginLeft: 5,  marginRight: 5, textAlign: "center"}}>{this.state.addRemoveNothing}</Text>
-
-                              <TouchableOpacity
-                                style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 100, borderWidth: 1, borderColor: "#00AAFF"}}
-                                onPress={() => add_1_ToTextInput()}>
-                                <Icon name="plus" size={20} style={{color: "#00AAFF", marginRight: 10}}/>
-                                <Text style={{fontSize: 20}}>1</Text>
-                              </TouchableOpacity>
-
-                            </View>
-
-                            <Slider
-                              step = { 10 } 
-                              minimumValue = { 0 } 
-                              maximumValue = { 1000 } 
-                              minimumTrackTintColor = "#00AAFF" 
-                              maximumTrackTintColor = "#dbdbdb"
-                              thumbTintColor = "#706FD3"
-                              onValueChange={(ChangedValue) => this.setState({ addRemoveNothing: ChangedValue })}
-                              style = {{ width: '100%' }} 
-                              />
-
-                          </View>
-                        </View>
-                      </View>
-                    </View>
-                  </CardView> */}
-
                 <ScrollView style={{flex: 1}}>
                 {
                     this.state.data.map((item, index) => (
+                      <View>
+
+                        {/* Pop To prepare de CMD */}
+                        <Modal 
+                          visible={this.state.isPopUpVisible} 
+                          transparent={true} >
+                            <View style={{height: "100%", width: "100%", justifyContent: "center"}}>
+                              <CardView cardElevation={25} cornerRadius={5} style={[styles.addPopUpCard, {}]}>
+                                <View style={styles.addPopUpCard_body}>
+                                <LinearGradient
+                                  start={{x: 0.0, y: 1}} end={{x: 0.5, y: 1}}
+                                  colors={['#00AAFF', '#706FD3']}
+                                  style={{width: "100%", flexDirection: "row", justifyContent: "flex-end", }}>
+
+                                      <TouchableOpacity
+                                        style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 5, borderWidth: 1, borderColor: "#706FD3"}}
+                                        onPress={() => {this.picking_Cancel()}}>
+                                        <Text style={{fontSize: 20, fontWeight: "bold", color: "#706FD3"}}>Annuler</Text>
+                                      </TouchableOpacity>
+                                      <TouchableOpacity
+                                        style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 5, borderWidth: 1, borderColor: "#706FD3"}}
+                                        onPress={() => this.picking_OK(item)}>
+                                        <Text style={{fontSize: 20, fontWeight: "bold", color: "#706FD3"}}>Ok</Text>
+                                      </TouchableOpacity>
+                                  </LinearGradient>
+
+                                  <View style={{padding: 20,}}>
+                                    <Text style={styles.addPopUpCard_title}>Préparation du <Text style={{color: "#000", fontSize: 20, textDecorationLine: 'underline'}}>{item.barcode}</Text></Text>
+                                    <View style={{width: "100%", alignItems: "center"}}>
+                                      <View style={{height: 50, width: 300, flexDirection: "row", margin: 20,}}>
+                                        <TouchableOpacity
+                                          style={[styles.prepareModeStyleSaisi, {flexDirection: "row", justifyContent: "center", alignItems: "center",  borderWidth: 1, borderColor: "#00AAFF", borderTopLeftRadius: 10, borderBottomLeftRadius: 10, width: "50%", height: "100%",}]}
+                                          onPress={() => this.setState({prepareMode: {saisi: true, barecode: false}})}>
+                                          <Text style={{fontSize: 20, fontWeight: "bold", color: "#00AAFF"}}>Saisi</Text>
+                                          <Icon name="edit" size={20} style={{color: "#00AAFF", marginLeft: 10}}/>
+                                        </TouchableOpacity>
+
+                                        <TouchableOpacity
+                                          style={[styles.prepareModeStyleBarecode, {flexDirection: "row", justifyContent: "center", alignItems: "center", borderWidth: 1, borderColor: "#00AAFF", borderTopRightRadius: 10, borderBottomRightRadius: 10, width: "50%", height: "100%",}]}
+                                          onPress={() => this.setState({prepareMode: {saisi: false, barecode: true}})}>
+                                          <Text style={{fontSize: 20, fontWeight: "bold", color: "#00AAFF"}}>Code Bare</Text>
+                                          <Icon name="barcode" size={20} style={{color: "#00AAFF", marginLeft: 10}}/>
+                                        </TouchableOpacity>
+                                      </View>
+                                      
+                                    </View>
+                                    <View style={{width: "100%", alignItems: "center"}}>
+                                      <View style={{backgroundColor: "#dbdbdb", borderRadius: 5, height: 80, width: 150}}>
+                                        <ScrollView 
+                                          style={{flex: 1}} 
+                                          horizontal= {true}
+                                          decelerationRate={0}
+                                          snapToInterval={150} //your element width
+                                          snapToAlignment={"center"}
+                                          onScroll={this.handlePrepareScrollOptions}>
+                                            {this.state.pickingDataOptions.map((item, index) => (
+                                              <View style={{width: 150, alignItems: "center"}}>
+                                                <Text style={{color: "#00AAFF", fontSize: 25, fontWeight: "bold", margin: 20}}>{item.label}</Text>
+                                              </View>
+                                            ))}
+                                        </ScrollView>
+                                      </View>
+                                      
+                                      <View style={{width: "100%", marginTop: "10%"}}>
+                                        <View style={{flexDirection: "row", justifyContent: "center", alignItems: "center"}}>
+                                          <TouchableOpacity
+                                            style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 100, borderWidth: 1, borderColor: "#00AAFF"}}
+                                            onPress={() => remove_50_ToTextInput()}>
+                                            <Icon name="minus" size={20} style={{color: "#00AAFF", marginRight: 10}}/>
+                                            <Text style={{fontSize: 20}}>50</Text>
+                                          </TouchableOpacity>
+                                          <TouchableOpacity
+                                            style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 100, borderWidth: 1, borderColor: "#00AAFF"}}
+                                            onPress={() => remove_10_ToTextInput()}>
+                                            <Icon name="minus" size={20} style={{color: "#00AAFF", marginRight: 10}}/>
+                                            <Text style={{fontSize: 20}}>10</Text>
+                                          </TouchableOpacity>
+                                          <TouchableOpacity
+                                            style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 100, borderWidth: 1, borderColor: "#00AAFF"}}
+                                            onPress={() => remove_1_ToTextInput()}>
+                                            <Icon name="minus" size={20} style={{color: "#00AAFF", marginRight: 10}}/>
+                                            <Text style={{fontSize: 20}}>1</Text>
+                                          </TouchableOpacity>
+
+                                          <Text style={{color: "#000", fontSize: 20, width: 50, marginLeft: 5,  marginRight: 5, textAlign: "center"}}>{this.state.addRemoveNothing}</Text>
+
+                                          <TouchableOpacity
+                                            style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 100, borderWidth: 1, borderColor: "#00AAFF"}}
+                                            onPress={() => add_1_ToTextInput()}>
+                                            <Icon name="plus" size={20} style={{color: "#00AAFF", marginRight: 10}}/>
+                                            <Text style={{fontSize: 20}}>1</Text>
+                                          </TouchableOpacity>
+                                          <TouchableOpacity
+                                            style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 100, borderWidth: 1, borderColor: "#00AAFF"}}
+                                            onPress={() => add_10_ToTextInput()}>
+                                            <Icon name="plus" size={20} style={{color: "#00AAFF", marginRight: 10}}/>
+                                            <Text style={{fontSize: 20}}>10</Text>
+                                          </TouchableOpacity>
+                                          <TouchableOpacity
+                                            style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 100, borderWidth: 1, borderColor: "#00AAFF"}}
+                                            onPress={() => add_50_ToTextInput()}>
+                                            <Icon name="plus" size={20} style={{color: "#00AAFF", marginRight: 10}}/>
+                                            <Text style={{fontSize: 20}}>50</Text>
+                                          </TouchableOpacity>
+
+                                        </View>
+
+                                        {/* <Slider
+                                          step = { 10 } 
+                                          minimumValue = { 0 } 
+                                          maximumValue = { 1000 } 
+                                          minimumTrackTintColor = "#00AAFF" 
+                                          maximumTrackTintColor = "#dbdbdb"
+                                          thumbTintColor = "#706FD3"
+                                          onValueChange={(ChangedValue) => this.setState({ addRemoveNothing: ChangedValue })}
+                                          style = {{ width: '100%' }} 
+                                          /> */}
+
+                                      </View>
+                                    </View>
+                                  </View>
+                                </View>
+                              </CardView>
+                            </View>
+                        </Modal>
+
+
+                      {/* Line list of CMD */}
+
                       <TouchableOpacity onPress={() => this.prepareProduct(item)} onLongPress={() => this.productDetails(item)}>
 
                         {this.state.settings.isUseDetailedCMDLines ? 
@@ -487,12 +505,12 @@ class CommandeDetails extends Component {
                                   </View>
                                   <View style={styles.ic_and_details}>
                                     <Icon name="warehouse" size={15} style={styles.iconDetails} />
-                                    <Text>Enplacement : xxxxxxxxxx</Text>
+                                    <Text>Enplacement : {item.emplacement == null || item.emplacement == '' ? "Pas emplacement assigné" : item.emplacement}</Text>
                                   </View>
                                   <View style={[styles.ic_and_details, {width: "100%", justifyContent: "space-between"}]}>
                                     <View style={{width: "30%", flexDirection: "row", justifyContent: "flex-start"}}>
                                       <Icon name="boxes" size={15} style={styles.iconDetails} />
-                                      <Text>{item.qty} en Stock</Text>
+                                      <Text>{item.stock} en Stock</Text>
                                     </View>
                                     <View style={{width: "30%", flexDirection: "row", justifyContent: "center", marginRight: 20}}>
                                       <Icon name="boxes" size={15} style={styles.iconDetails} />
@@ -500,7 +518,7 @@ class CommandeDetails extends Component {
                                     </View>
                                     <View style={{width: "30%", flexDirection: "row", justifyContent: "flex-end", marginRight: 20}}>
                                       <Icon name="truck-loading" size={15} style={styles.iconDetails} />
-                                      <Text>{item.qty} Préparé</Text>
+                                      <Text>{this.state.addRemoveNothing} Préparé</Text>
                                     </View>
                                   </View>
 
@@ -532,7 +550,7 @@ class CommandeDetails extends Component {
                                 <View style={[styles.ic_and_details, {width: "100%", justifyContent: "space-between"}]}>
                                     <View style={{width: "30%", flexDirection: "row", justifyContent: "flex-start"}}>
                                       <Icon name="boxes" size={15} style={styles.iconDetails} />
-                                      <Text>{item.qty} en Stock</Text>
+                                      <Text>{item.stock} en Stock</Text>
                                     </View>
                                     <View style={{width: "30%", flexDirection: "row", justifyContent: "center", marginRight: 20}}>
                                       <Icon name="boxes" size={15} style={styles.iconDetails} />
@@ -540,7 +558,7 @@ class CommandeDetails extends Component {
                                     </View>
                                     <View style={{width: "30%", flexDirection: "row", justifyContent: "flex-end", marginRight: 20}}>
                                       <Icon name="truck-loading" size={15} style={styles.iconDetails} />
-                                      <Text>{item.qty} Préparé</Text>
+                                      <Text>{this.state.addRemoveNothing} Préparé</Text>
                                     </View>
                                   </View>
 
@@ -553,6 +571,7 @@ class CommandeDetails extends Component {
                         }
 
                       </TouchableOpacity>
+                      </View>
               ))
             }
 

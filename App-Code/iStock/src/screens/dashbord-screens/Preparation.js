@@ -76,6 +76,7 @@ class Preparation extends Component {
       await this._settings();
       await console.log('Done settings update!');
       console.log('new settings : ', this.state.settings);
+      console.log('listener filterConfig : ', this.state.filterConfig);
       // await this._getPickingData();
       return;
     });

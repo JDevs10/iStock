@@ -13,9 +13,10 @@ const DATABASE_VERSION = DatabaseInfo.DATABASE_VERSION;
 const DATABASE_DISPLAY_NAME = DatabaseInfo.DATABASE_DISPLAY_NAME;
 const DATABASE_SIZE = DatabaseInfo.DATABASE_SIZE;
 
-const TABLE_NAME = "warehouses";
+const TABLE_NAME = "Shipments";
 const COLUMN_ID = "id";
 const COLUMN_REF = "ref";
+
 const COLUMN_LABEL = "label";
 const COLUMN_LIEU = "lieu";
 const COLUMN_FK_PARENT = "fk_parent";
@@ -38,8 +39,8 @@ const create = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "(" +
 
 
 // create a component
-class WarehouseManager extends Component {
-    _TABLE_NAME_ = "warehouses";
+class ShipmentsManager extends Component {
+    _TABLE_NAME_ = "Shipments";
     _COLUMN_ID_ = "id";
     _COLUMN_LABEL_ = "label";
 
@@ -89,8 +90,8 @@ class WarehouseManager extends Component {
 
 
     //Create
-    async CREATE_WAREHOUSE_TABLE(){
-        console.log("##### CREATE_WAREHOUSE_TABLE #########################");
+    async CREATE_SHIPMENTS_TABLE(){
+        console.log("##### CREATE_SHIPMENTS_TABLE #########################");
         return await new Promise(async (resolve) => {
             try{
                 await db.transaction(async function (txn) {
@@ -110,8 +111,8 @@ class WarehouseManager extends Component {
 
 
     //Insert
-    async INSERT_WAREHOUSE(data_){
-        console.log("##### INSERT_WAREHOUSE #########################");
+    async INSERT_SHIPMENTS(data_){
+        console.log("##### INSERT_SHIPMENTS #########################");
         console.log("inserting.... ", data_);
         return await new Promise(async (resolve) => {
             try{
@@ -128,8 +129,8 @@ class WarehouseManager extends Component {
     }
 
     //Get by ref
-    async GET_WAREHOUSE_BY_REF(ref){
-        console.log("##### GET_WAREHOUSE_BY_REF #########################");
+    async GET_SHIPMENTS_BY_REF(ref){
+        console.log("##### GET_SHIPMENTS_BY_REF #########################");
 
         return await new Promise(async (resolve) => {
             let user = null;
@@ -155,8 +156,8 @@ class WarehouseManager extends Component {
 
 
     //Get list
-    async GET_WAREHOUSE_LIST(ref){
-        console.log("##### GET_WAREHOUSE_LIST #########################");
+    async GET_SHIPMENTS_LIST(ref){
+        console.log("##### GET_SHIPMENTS_LIST #########################");
 
         return await new Promise(async (resolve) => {
             let user = [];
@@ -181,8 +182,8 @@ class WarehouseManager extends Component {
     }
 
     //Delete
-    async DELETE_WAREHOUSE_LIST(){
-        console.log("##### DELETE_WAREHOUSE_LIST #########################");
+    async DELETE_SHIPMENTS_LIST(){
+        console.log("##### DELETE_SHIPMENTS_LIST #########################");
 
         return await new Promise(async (resolve) => {
             await db.transaction(async (tx) => {
@@ -193,8 +194,8 @@ class WarehouseManager extends Component {
     }
 
     //Delete
-    async DROP_WAREHOUSE(){
-        console.log("##### DROP_WAREHOUSE #########################");
+    async DROP_SHIPMENTS(){
+        console.log("##### DROP_SHIPMENTS #########################");
 
         return await new Promise(async (resolve) => {
             await db.transaction(async function (txn) {
@@ -210,4 +211,4 @@ class WarehouseManager extends Component {
 
 
 //make this component available to the app
-export default WarehouseManager;
+export default ShipmentsManager;

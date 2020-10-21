@@ -183,7 +183,7 @@ export function DrawerContent(props) {
                                 />
                             )}
                             label="Synchronisation Client"
-                            onPress={() => {download_tiers();}}
+                            onPress={() => {}}
                         />
                         <DrawerItem 
                             icon={() => (
@@ -193,8 +193,30 @@ export function DrawerContent(props) {
                                 size={iconStyle.size}
                                 />
                             )}
-                            label="Synchronisation Commande"
-                            onPress={() => {download_orders();}}
+                            label="Synchronisation Commandes"
+                            onPress={() => {props.navigation.navigate('OrdersSync');}}
+                        />
+                        <DrawerItem 
+                            icon={() => (
+                                <Icon 
+                                name="sync" 
+                                color={iconStyle.color}
+                                size={iconStyle.size}
+                                />
+                            )}
+                            label="Synchronisation Produits"
+                            onPress={() => {props.navigation.navigate('ProductSync');}}
+                        />
+                        <DrawerItem 
+                            icon={() => (
+                                <Icon 
+                                name="sync" 
+                                color={iconStyle.color}
+                                size={iconStyle.size}
+                                />
+                            )}
+                            label="Synchronisation Entrepots"
+                            onPress={() => {props.navigation.navigate('WarehousesSync');}}
                         />
                         <DrawerItem 
                             icon={() => (

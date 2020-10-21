@@ -17,6 +17,8 @@ import ProductDetails from '../screens/dashbord-screens/ProductDetails'
 import SupportInternal from '../screens/dashbord-screens/SupportInternal';
 import SupportExternal from '../screens/SupportExternal';
 import OrdersSync from '../screens/splash/OrdersSync';
+import ProductSync from '../screens/splash/ProductSync';
+import WarehousesSync from '../screens/splash/WarehousesSync';
 import {DrawerContent} from '../screens/side-bar-custom/DrawerContent';
 
 
@@ -36,6 +38,8 @@ class RouterNavigation extends Component {
           <Drawer.Screen name="ProductDetails" component={ProductDetails} />
           <Drawer.Screen name="Preparation" component={Preparation} />
           <Drawer.Screen name="OrdersSync" component={OrdersSync} />
+          <Drawer.Screen name="ProductSync" component={ProductSync} />
+          <Drawer.Screen name="WarehousesSync" component={WarehousesSync} />
           <Drawer.Screen name="Inventory" component={Inventory} />
           <Drawer.Screen name="Settings" component={Settings} />
           <Drawer.Screen name="Support" component={SupportInternal} />
