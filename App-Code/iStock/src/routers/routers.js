@@ -14,11 +14,14 @@ import Preparation from '../screens/dashbord-screens/Preparation';
 import Inventory from '../screens/dashbord-screens/Inventory';
 import Settings from '../screens/dashbord-screens/Settings';
 import ProductDetails from '../screens/dashbord-screens/ProductDetails'
+import Expeditions from '../screens/dashbord-screens/Expeditions'
 import SupportInternal from '../screens/dashbord-screens/SupportInternal';
 import SupportExternal from '../screens/SupportExternal';
 import OrdersSync from '../screens/splash/OrdersSync';
 import ProductSync from '../screens/splash/ProductSync';
+import ShipmentsSync from '../screens/splash/ShipmentsSync';
 import WarehousesSync from '../screens/splash/WarehousesSync';
+import Scanner from '../screens/dashbord-screens/Scanner';
 import {DrawerContent} from '../screens/side-bar-custom/DrawerContent';
 
 
@@ -39,8 +42,11 @@ class RouterNavigation extends Component {
           <Drawer.Screen name="Preparation" component={Preparation} />
           <Drawer.Screen name="OrdersSync" component={OrdersSync} />
           <Drawer.Screen name="ProductSync" component={ProductSync} />
+          <Drawer.Screen name="ShipmentsSync" component={ShipmentsSync} />
           <Drawer.Screen name="WarehousesSync" component={WarehousesSync} />
+          <Drawer.Screen name="Scanner" component={Scanner} />
           <Drawer.Screen name="Inventory" component={Inventory} />
+          <Drawer.Screen name="Expeditions" component={Expeditions} />
           <Drawer.Screen name="Settings" component={Settings} />
           <Drawer.Screen name="Support" component={SupportInternal} />
         </Drawer.Navigator>

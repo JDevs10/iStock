@@ -53,6 +53,10 @@ export default class NavbarPreparation extends Component {
     this.props._navigation.navigation.navigate('Support');
   }
 
+  async shipments(){
+    this.props._navigation.navigation.navigate('Expeditions');
+  }
+
   render() {
     // if (this.state.orientation === 'portrait') {
     //   console.log('orientation : ', this.state.orientation);
@@ -115,13 +119,19 @@ export default class NavbarPreparation extends Component {
       <View style={styles.body}>
         <ImageBackground source={IMG_SRC} resizeMode='cover' style={styles.backdrop}>
 
-            <Icon name="cloud" size={25} style={styles.icon1} onPress={() => this.syncOrders()}/>
+            <View style={[styles.icon1, {width: 100, flexDirection: "row", justifyContent: "space-between"}]}>
+              <Icon name="cloud" size={25} style={{color: "#fff"}} onPress={() => this.syncOrders()}/>
+              <Icon name="truck" size={25} style={{color: "#fff"}} onPress={() => this.shipments()}/>
+            </View>
 
             <View style={styles.text_layout}>
               <Text style={styles.text}>{this.props.textTittleValue}</Text>
             </View>
 
-            <Icon name="headset" size={25} style={styles.icon2} onPress={() => this.support()}/>
+            <View style={[styles.icon2]}>
+              <Icon name="headset" size={25} style={{color: "#fff"}} onPress={() => this.support()}/>
+            </View>
+            
 
         </ImageBackground>
 

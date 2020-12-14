@@ -1,0 +1,282 @@
+import React, { Component } from 'react';
+import { StyleSheet, ScrollView, TouchableOpacity, View, Text, Modal, Alert } from 'react-native';
+
+
+let PICKING_ACTION = 1;
+
+export default class PickingPopUp extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            pickingDataSelected: {
+                _opacity_: 1,
+                pickingPickOption: 1,
+                pickingMaxLimit: 0,
+                pickingMimLimit: 0,
+            },
+            pickingDataOptions: [{id: 1, label: "Ajouter", value: 1}, {id: 2, label: "Retirer", value: 0}],
+        };
+    }
+
+
+    handlePrepareScrollOptions(event){
+        const result = (event.nativeEvent.contentOffset.x / 150) + 1;
+        //console.log(result);
+        PICKING_ACTION = result;
+    }
+  
+    activeSaisiMode(){
+        this.setState({prepareMode: {saisi: true, barecode: false}})
+    }
+
+    add_50_ToTextInput = () => {
+        if(this.state.pickingMaxLimit >= (this.state.addRemoveNothing + 50)){
+            this.setState({
+            addRemoveNothing: this.state.addRemoveNothing + 50,
+            });
+            item.prepare_shipping_qty = (item.prepare_shipping_qty == null ? 0 : item.prepare_shipping_qty) + 50;
+        console.log("remove :=> "+item.prepare_shipping_qty);
+        }
+
+    }
+    add_10_ToTextInput = () => {
+        if(this.state.pickingMaxLimit >= (this.state.addRemoveNothing + 10)){
+            this.setState({
+            addRemoveNothing: this.state.addRemoveNothing + 10,
+            });
+            item.prepare_shipping_qty = (item.prepare_shipping_qty == null ? 0 : item.prepare_shipping_qty) + 10;
+        console.log("remove :=> "+item.prepare_shipping_qty);
+        }
+    }
+    add_1_ToTextInput = () => {
+        if(item.qty >= (item.prepare_shipping_qty + 1)){
+            this.setState({
+            addRemoveNothing: item.prepare_shipping_qty + 1,
+            });
+            item.prepare_shipping_qty = (item.prepare_shipping_qty == null ? 0 : item.prepare_shipping_qty) + 1;
+            console.log("add :=> "+item.prepare_shipping_qty);
+        }
+    }
+    remove_1_ToTextInput = () => {
+        if(this.state.pickingMimLimit <= (item.prepare_shipping_qty - 1)){
+            this.setState({
+            addRemoveNothing: item.prepare_shipping_qty - 1,
+            });
+            item.prepare_shipping_qty = (item.prepare_shipping_qty == null ? 0 : item.prepare_shipping_qty) - 1;
+            console.log("remove :=> "+item.prepare_shipping_qty);
+        }
+    }
+    remove_10_ToTextInput = () => {
+        if(this.state.pickingMimLimit <= (this.state.addRemoveNothing - 10)){
+            this.setState({
+            addRemoveNothing: this.state.addRemoveNothing - 10,
+            });
+            item.prepare_shipping_qty = (item.prepare_shipping_qty == null ? 0 : item.prepare_shipping_qty) - 10;
+            console.log("remove :=> "+item.prepare_shipping_qty);
+        }
+    }
+    remove_50_ToTextInput = () => {
+        if(this.state.pickingMimLimit <= (this.state.addRemoveNothing - 50)){
+            this.setState({
+            addRemoveNothing: this.state.addRemoveNothing - 50
+            });
+            item.prepare_shipping_qty = (item.prepare_shipping_qty == null ? 0 : item.prepare_shipping_qty) - 50;
+            console.log("remove :=> "+item.prepare_shipping_qty);
+        }
+    }
+
+
+    picking_Cancel(){
+        // this.setState({isPopUpVisible: false, _opacity_: 1});
+        this.props.onPickingClose(this.state.product);
+    }
+  
+    picking_OK(product){
+        const PICK = {
+          action: PICKING_ACTION,
+          product_id: product.id,
+          product_ref: product.ref,
+          product_stock: product.qty,
+          order_qty: product.qty,
+          prepare_qty: product.addRemoveNothing
+        }
+  
+  
+  
+        //check if this article was picked before
+        /*
+        let isPickedBefore = false;
+        const newPickingLineData = this.state.pickingLineData;
+        for(let x = 0; x < newPickingLineData.length; x++){
+          if(newPickingLineData[x].ref != null && newPickingLineData[x].barcode != null){
+            
+            const data__ = this.state.data;
+            for(let y = 0; y < data__.length; y++){
+              if(newPickingLineData[x].ref == data__[y].ref && newPickingLineData[x].barcode == data__[y].barcode){
+                isPickedBefore = true;
+                newPickingLineData[x].prepare_qty = PICK.prepare_qty;
+              }
+            }
+            
+          }
+        }
+  
+        if(!isPickedBefore){
+          console.log('PICK || isPickedBefore == false : ', PICK);
+          newPickingLineData.push(PICK);
+          this.setState({pickingLineData : newPickingLineData});
+        }
+        console.log('PICK || isPickedBefore == true : ', PICK);
+        */
+        
+        
+  
+        const COLUMN_ID = null;
+        const COLUMN_ROWID = null;
+        const COLUMN_ORIGIN_ID = "origin_id";
+        const COLUMN_LINE_ID = "line_id";
+        const COLUMN_FK_ORIGIN = "fk_origin";
+        const COLUMN_FK_EXPEDITION = "fk_expedition";
+        const COLUMN_ORIGIN_LINE_ID = "origin_line_id";
+        const COLUMN_FK_ORIGIN_LINE = "fk_origin_line";
+        const COLUMN_FK_PRODUCT = "fk_product";
+        const COLUMN_ENTREPOT_ID = "entrepot_id";
+        const COLUMN_QTY = "qty";
+        const COLUMN_QTY_ASK = "qty_ask";
+        const COLUMN_QTY_SHIPPED = "qty_shipped";
+        const COLUMN_REF = "ref";
+        const COLUMN_PRODUCT_REF = "product_ref";
+        const COLUMN_LIBELLE = "libelle";
+        const COLUMN_PRODUCT_LABEL = "product_label";
+        const COLUMN_DESC = "desc";
+        const COLUMN_DESCRIPTION = "description";
+        const COLUMN_DETAILS_ENTREPOT__ENTREPOT_ID = "details_entrepot__entrepot_id";
+        const COLUMN_DETAILS_ENTREPOT__QTY_SHIPPED = "details_entrepot__qty_shipped";
+        const COLUMN_DETAILS_ENTREPOT__LINE_ID = "details_entrepot__line_id";
+        const COLUMN_PRICE = "price";   // total ht
+        
+  
+        
+  
+        //this.setState({isPopUpVisible: false, _opacity_: 1, addRemoveNothing: PICK.prepare_qty});
+        // this.setState({isPopUpVisible: false, _opacity_: 1,});
+
+        this.props.onPickingOk(PICK);
+    }
+
+
+  render() {
+
+    console.log(this.props.settings);
+
+    return (
+      <View>
+        <Modal 
+            visible={this.props.settings.isPopUpVisible} 
+            transparent={true} >
+            <View style={{height: "100%", width: "100%", justifyContent: "center"}}>
+                <CardView cardElevation={25} cornerRadius={5} style={[styles.addPopUpCard, {}]}>
+                <View style={styles.addPopUpCard_body}>
+                <LinearGradient
+                    start={{x: 0.0, y: 1}} end={{x: 0.5, y: 1}}
+                    colors={['#00AAFF', '#706FD3']}
+                    style={{width: "100%", flexDirection: "row", justifyContent: "flex-end", }}>
+
+                        <TouchableOpacity
+                        style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 5, borderWidth: 1, borderColor: "#706FD3"}}
+                        onPress={() => {this.picking_Cancel()}}>
+                        <Text style={{fontSize: 20, fontWeight: "bold", color: "#706FD3"}}>Annuler</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                        style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 5, borderWidth: 1, borderColor: "#706FD3"}}
+                        onPress={() => this.picking_OK(item)}>
+                        <Text style={{fontSize: 20, fontWeight: "bold", color: "#706FD3"}}>Ok</Text>
+                        </TouchableOpacity>
+                    </LinearGradient>
+
+                    <View style={{padding: 20,}}>
+
+                    <View style={{paddingBottom: 50, width: "100%", flexDirection: "row", justifyContent: "space-between", alignItems: "center"}}>
+                        <Text style={styles.addPopUpCard_title}>Préparation du <Text style={{color: "#000", fontSize: 20, textDecorationLine: 'underline'}}>{item.barcode}</Text></Text>
+                        <TouchableOpacity
+                        style={[styles.prepareModeStyleSaisi, {flexDirection: "row", justifyContent: "center", alignItems: "center",  borderWidth: 1, borderColor: "#00AAFF", borderTopLeftRadius: 10, borderBottomLeftRadius: 10, width: "15%", height: 50,}]}
+                        onPress={() => this.activeSaisiMode() }>
+                        <Text style={{fontSize: 20, fontWeight: "bold", color: "#00AAFF"}}>Saisi</Text>
+                        <Icon name="edit" size={20} style={{color: "#00AAFF", marginLeft: 10}}/>
+                        </TouchableOpacity>
+                        
+                    </View>
+
+                    <View style={{width: "100%", alignItems: "center"}}>
+                        <View style={{backgroundColor: "#dbdbdb", borderRadius: 5, height: 80, width: 150}}>
+                        <ScrollView 
+                            style={{flex: 1}} 
+                            horizontal= {true}
+                            decelerationRate={0}
+                            snapToInterval={150} //your element width
+                            snapToAlignment={"center"}
+                            onScroll={this.handlePrepareScrollOptions}>
+                            {this.state.pickingDataOptions.map((item, index) => (
+                                <View style={{width: 150, alignItems: "center"}}>
+                                <Text style={{color: "#00AAFF", fontSize: 25, fontWeight: "bold", margin: 20}}>{item.label}</Text>
+                                </View>
+                            ))}
+                        </ScrollView>
+                        </View>
+                        
+                        <View style={{width: "100%", marginTop: "10%"}}>
+                        <View style={{flexDirection: "row", justifyContent: "center", alignItems: "center"}}>
+                            <TouchableOpacity
+                            style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 100, borderWidth: 1, borderColor: "#00AAFF"}}
+                            onPress={() => remove_50_ToTextInput()}>
+                            <Icon name="minus" size={20} style={{color: "#00AAFF", marginRight: 10}}/>
+                            <Text style={{fontSize: 20}}>50</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                            style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 100, borderWidth: 1, borderColor: "#00AAFF"}}
+                            onPress={() => remove_10_ToTextInput()}>
+                            <Icon name="minus" size={20} style={{color: "#00AAFF", marginRight: 10}}/>
+                            <Text style={{fontSize: 20}}>10</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                            style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 100, borderWidth: 1, borderColor: "#00AAFF"}}
+                            onPress={() => remove_1_ToTextInput()}>
+                            <Icon name="minus" size={20} style={{color: "#00AAFF", marginRight: 10}}/>
+                            <Text style={{fontSize: 20}}>1</Text>
+                            </TouchableOpacity>
+
+                            <Text style={{color: "#000", fontSize: 20, width: 50, marginLeft: 5,  marginRight: 5, textAlign: "center"}}>{this.state.addRemoveNothing}</Text>
+
+                            <TouchableOpacity
+                            style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 100, borderWidth: 1, borderColor: "#00AAFF"}}
+                            onPress={() => add_1_ToTextInput()}>
+                            <Icon name="plus" size={20} style={{color: "#00AAFF", marginRight: 10}}/>
+                            <Text style={{fontSize: 20}}>1</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                            style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 100, borderWidth: 1, borderColor: "#00AAFF"}}
+                            onPress={() => add_10_ToTextInput()}>
+                            <Icon name="plus" size={20} style={{color: "#00AAFF", marginRight: 10}}/>
+                            <Text style={{fontSize: 20}}>10</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                            style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 100, borderWidth: 1, borderColor: "#00AAFF"}}
+                            onPress={() => add_50_ToTextInput()}>
+                            <Icon name="plus" size={20} style={{color: "#00AAFF", marginRight: 10}}/>
+                            <Text style={{fontSize: 20}}>50</Text>
+                            </TouchableOpacity>
+
+                        </View>
+                        
+
+                        </View>
+                    </View>
+                    </View>
+                </View>
+                </CardView>
+            </View>
+        </Modal>
+      </View>
+    );
+  }
+}

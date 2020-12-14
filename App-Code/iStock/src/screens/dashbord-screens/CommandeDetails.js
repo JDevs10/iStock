@@ -2,7 +2,7 @@
 import React, { Component } from 'react';
 import CardView from 'react-native-cardview';
 import Icon from 'react-native-vector-icons/FontAwesome5';
-import { StyleSheet, ScrollView, TouchableOpacity, View, Text, TextInput, FlatList, Image, Dimensions, Alert, ImageBackground, Modal } from 'react-native';
+import { StyleSheet, ScrollView, TouchableOpacity, View, Text, Image, Dimensions, Linking, TouchableHighlight, PermissionsAndroid, Platform, Modal, Alert } from 'react-native';
 import { Card, Button, Slider } from 'react-native-elements'
 import LinearGradient from 'react-native-linear-gradient';
 import NavbarOrdersLines from '../../navbar/navbar-orders-lines';
@@ -11,9 +11,14 @@ import DeviceInfo from 'react-native-device-info';
 import OrderDetailButton from './assets/OrderDetailButton';
 import SettingsManager from '../../Database/SettingsManager';
 import OrderLinesManager from '../../Database/OrderLinesManager';
+import ShipmentsManager from '../../Database/ShipmentsManager';
+import ShipmentLinesManager from '../../Database/ShipmentLinesManager';
+import TokenManager from '../../Database/TokenManager';
 import OrderLinesFilter from './assets/OrderLinesFilter';
+import PickingPopUp from './assets/PickingPopUp';
 import moment from "moment";
-// import Modal from 'react-native-modal';
+import { CameraKitCameraScreen, } from 'react-native-camera-kit';
+
 
 let PICKING_ACTION = 1;
 
@@ -40,7 +45,6 @@ class CommandeDetails extends Component {
         };
     
         this.state = {
-          _opacity_: 1,
           isPopUpVisible: false,
           prepareMode: {saisi: true, barecode: false},
           isLoading: true,
@@ -48,11 +52,16 @@ class CommandeDetails extends Component {
           data: [],
           settings: {},
           filterConfig: {},
-          pickingPickOption: 1,
-          pickingMaxLimit: 0,
-          pickingMimLimit: 0,
-          pickingDataOptions: [{id: 1, label: "Ajouter", value: 1}, {id: 2, label: "Retirer", value: 0}],
-          orientation: isPortrait() ? 'portrait' : 'landscape'
+          pickingDataSelected: {
+            _opacity_: 1,
+            pickingPickOption: 1,
+            pickingMaxLimit: 0,
+            pickingMimLimit: 0,
+          },
+          orientation: isPortrait() ? 'portrait' : 'landscape',
+          //variable to hold the QR / Barecode value
+          qrvalue: '',
+          opneScanner: false,
         };
         
         // Event Listener for orientation changes
@@ -64,10 +73,13 @@ class CommandeDetails extends Component {
     }
 
     async  componentDidMount(){
+
+      this.setState({opneScanner: false});
       this.setState({addRemoveNothing: 0});
 
       await this._settings();
       await this._orderLinesData();
+      //await this._shipmentData();
 
       this.listener = await this.props.navigation.addListener('focus', async () => {
         // Prevent default action
@@ -81,13 +93,31 @@ class CommandeDetails extends Component {
       });
     }
 
-    productDetails = (value) => {
+    productDetails(value){
       this.props.navigation.navigate("ProductDetails", {product: value});
     }
 
     prepareProduct(product){
       console.log('prepareProduct: ', product);
-      this.setState({isPopUpVisible: true, _opacity_: 0, pickingMaxLimit: product.qty, pickingMimLimit: 0});
+      this.setState({
+        isPopUpVisible: true,
+        pickingDataSelected: {product: product, _opacity_: 0, pickingMaxLimit: product.qty, pickingMimLimit: 0}
+      });
+      //this.setState({isPopUpVisible: true, _opacity_: 0, pickingMaxLimit: product.qty, pickingMimLimit: 0});
+    }
+
+    _onPickingClose(product){
+      this.setState({
+        isPopUpVisible: false,
+        // pickingDataSelected: {product: product, _opacity_: 1, pickingMaxLimit: product.qty, pickingMimLimit: 0}
+      });
+    }
+
+    _onPickingOk(product){
+      this.setState({
+        isPopUpVisible: false,
+        // pickingDataSelected: {product: product, _opacity_: 1, pickingMaxLimit: product.qty, pickingMimLimit: 0}
+      });
     }
 
     async _settings(){
@@ -110,9 +140,70 @@ class CommandeDetails extends Component {
       this.setState({data: data, isLoading: false});
     }
 
+    async _shipmentData(){
+      const tm = new TokenManager();
+      await tm.initDB();
+
+      const token = await tm.GET_TOKEN_BY_ID(1).then(async (val) => {
+        return val;
+      });
+
+      const sm = new ShipmentsManager();
+      await sm.initDB();
+
+      const data = await sm.GET_SHIPMENTS_BY_ORIGIN(this.state.orderId).then(async (val) => {
+        return val;
+      });
+
+      if(data == null){
+        
+        const shipmentHeader = {
+          id: null,
+          origin: "commande",
+          origin_id: ""+this.state.orderId,
+          ref: "SHxxxx-xxxx", // idont know yet
+          socid: this.props.route.params.order.socid,
+          brouillon: null,
+          entrepot_id: null,
+          tracking_number: "",
+          tracking_url: "",
+          date_creation: moment(),
+          date_shipping: "",
+          date_expedition: "",
+          date_delivery: "",
+          statut: "",
+          shipping_method_id: null,
+          total_ht: 0.0,
+          total_tva: 0.0,
+          total_ttc: 0.0,
+          user_author_id: ""+token.userId+"",
+          shipping_method: null,
+          multicurrency_code: "EUR",
+          multicurrency_total_ht: "",
+          multicurrency_total_tva: "",
+          multicurrency_total_ttc: ""
+        };
+
+        const newShipment = await sm.INSERT_SHIPMENTS([shipmentHeader]).then(async (val) => {
+          return val;
+        });
+
+        return await sm.GET_SHIPMENTS_BY_ORIGIN(this.state.orderId).then(async (val) => {
+          return val;
+        });
+      }
+      //this.setState({isSavedShipment: (data == null ? false : true)});
+    }
+
     _onFilterPressed(data){
       console.log("_onFilterPressed : ", data);
       this.setState({isFilter: data.isFilter});
+    }
+
+    _onScannerPressed(data){
+      console.log("_onScannerPressed : ", data);
+      this.onOpneScanner();
+      //this.setState({opneScanner: true});
     }
 
     async _onDataToFilter(data){
@@ -122,95 +213,87 @@ class CommandeDetails extends Component {
       //await this._getPickingData();
     }
 
-    handlePrepareScrollOptions(event){
-      const result = (event.nativeEvent.contentOffset.x / 150) + 1;
-      //console.log(result);
-      PICKING_ACTION = result;
+    
+    (){
+      this.setState({prepareMode: {saisi: false, barecode: true}})
+      this.props.navigation.navigate("Scanner");
     }
 
-    picking_Cancel(){
-      this.setState({isPopUpVisible: false, _opacity_: 1});
-    }
+    onBarcodeScan(qrvalue) {
+      //called after te successful scanning of QRCode/Barcode
+      this.setState({ qrvalue: qrvalue });
+      this.setState({ opneScanner: false });
+      console.log('qrvalue : ', qrvalue);
+      console.log('opneScanner : ', false);
 
-    picking_OK(product){
-      const PICK = {
-        action: PICKING_ACTION,
-        product_id: product.id,
-        product_ref: product.ref,
-        product_stock: product.qty,
-        order_qty: product.qty,
-        prepare_qty: this.state.addRemoveNothing
+      let isFound = false;
+      let product = null;
+      const data_ = this.state.data;
+      for(let x=0; x<data_.length; x++){
+        //console.log('barcode : '+data_[x].barcode+' || qrvalue : '+qrvalue);
+
+        if(data_[x].barcode == qrvalue){
+          console.log('barcode found !: ', data_[x].barcode);
+          console.log('produit : ', data_[x]);
+          isFound = true;
+          product = data_[x];
+          break;
+        }
       }
 
-      console.log('PICK : ', PICK);
+      if(isFound){
+        this.prepareProduct(product);
+      }
+      else{
+        Alert.alert(
+          "Scanner",
+          "Le scanner n'a pas pu trouver le code-barres \""+qrvalue+"\" du produit dans la commande à préparer.",
+          [
+            {text: 'Ok', onPress: () => true},
+          ],
+          { cancelable: false });
+      }
 
-      this.setState({isPopUpVisible: false, _opacity_: 1, addRemoveNothing: PICK.prepare_qty});
     }
 
+    onOpneScanner() {
+      var that = this;
+      //To Start Scanning
+      if(Platform.OS === 'android'){
+        async function requestCameraPermission() {
+          try {
+          const granted = await PermissionsAndroid.request(
+              PermissionsAndroid.PERMISSIONS.CAMERA,{
+              'title': 'Permission Caméra',
+              'message': 'Permettre à iStock de utiliser la caméra, pour scanner les QR Code ou Barecode'//'CameraExample App needs access to your camera '
+              }
+          )
+          if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+              //If CAMERA Permission is granted
+              that.setState({ qrvalue: '' });
+              that.setState({ opneScanner: true });
+              console.log('opneScanner : ', true);
+          } else {
+              alert("CAMERA permission denied");
+          }
+          } catch (err) {
+          alert("Camera permission err",err);
+          console.warn(err);
+          }
+        }
+        //Calling the camera permission function
+        requestCameraPermission();
+      }
+      else{
+        that.setState({ qrvalue: '' });
+        that.setState({ opneScanner: true });
+        console.log('opneScanner : ', true);
+      }
+    }
+
+
+
     render() {
-        // console.log('this.props.navigation : ', this.props.route.params);
-        
-        // const orderId = this.state.orderId;
-        // const order = params ? params.order : null;
-        // console.log('order : ', this.props.route.params.order);
-        // console.log('orderId : ', orderId);
-
-
-        // if (this.state.orientation === 'portrait') {
-        //     console.log('orientation : ', this.state.orientation);
-        // }
-        // else {
-        //     console.log('orientation : ', this.state.orientation);
-        // }
-
-        const add_50_ToTextInput = () => {
-          if(this.state.pickingMaxLimit >= (this.state.addRemoveNothing + 50)){
-            this.setState({
-              addRemoveNothing: this.state.addRemoveNothing + 50,
-            });
-            console.log("add :=> "+this.state.addRemoveNothing);
-          }
-        }
-        const add_10_ToTextInput = () => {
-          if(this.state.pickingMaxLimit >= (this.state.addRemoveNothing + 10)){
-            this.setState({
-              addRemoveNothing: this.state.addRemoveNothing + 10,
-            });
-            console.log("add :=> "+this.state.addRemoveNothing);
-          }
-        }
-        const add_1_ToTextInput = () => {
-          if(this.state.pickingMaxLimit >= (this.state.addRemoveNothing + 1)){
-            this.setState({
-              addRemoveNothing: this.state.addRemoveNothing + 1,
-            });
-            console.log("add :=> "+this.state.addRemoveNothing);
-          }
-        }
-        const remove_1_ToTextInput = () => {
-          if(this.state.pickingMimLimit <= (this.state.addRemoveNothing - 1)){
-            this.setState({
-              addRemoveNothing: this.state.addRemoveNothing - 1,
-            });
-            console.log("remove :=> "+this.state.addRemoveNothing);
-          }
-        }
-        const remove_10_ToTextInput = () => {
-          if(this.state.pickingMimLimit <= (this.state.addRemoveNothing - 10)){
-            this.setState({
-              addRemoveNothing: this.state.addRemoveNothing - 10,
-            });
-            console.log("remove :=> "+this.state.addRemoveNothing);
-          }
-        }
-        const remove_50_ToTextInput = () => {
-          if(this.state.pickingMimLimit <= (this.state.addRemoveNothing - 50)){
-            this.setState({
-              addRemoveNothing: this.state.addRemoveNothing - 50
-            });
-            console.log("remove :=> "+this.state.addRemoveNothing);
-          }
-        }
       
         const styles = StyleSheet.create({
           container: {
@@ -327,10 +410,20 @@ class CommandeDetails extends Component {
             fontWeight: "bold",
             margin: 20
           },
+          backButton: {
+            height: 50,
+            width: "50%",
+            backgroundColor: "#00AAFF",
+            // justifyContent: "center",
+            // alignItems: "center",
+            // alignContent: "center",
+          }
         });
       
 
         return (
+          <View style={styles.container}>
+            {!this.state.opneScanner ? 
             <LinearGradient
                 start={{x: 0.0, y: 1}} end={{x: 0.5, y: 1}}
                 colors={['#00AAFF', '#706FD3']}
@@ -339,267 +432,186 @@ class CommandeDetails extends Component {
                 <NavbarOrdersLines navigation={ this.props } textTittleValue={"" + this.props.route.params.order.ref_commande}/>
                 <View style={styles.mainBody}>
 
-                  <OrderLinesFilter onDataToFilter={this._onDataToFilter.bind(this)} settings={{isFilter: this.state.isFilter}}/>
+                  {this.state.isPopUpVisible ? 
+                    <PickingPopUp settings={ {isPopUpVisible: this.state.isPopUpVisible} } onPickingClose={this._onPickingClose.bind(this)} onPickingOk={this._onPickingOk.bind(this)} />
+                  : 
+                    <View>
+                      <ScrollView style={{flex: 1}}>
+                        {
+                          this.state.data.map((item, index) => (
+                              <View>
 
-                <ScrollView style={{flex: 1}}>
-                {
-                    this.state.data.map((item, index) => (
-                      <View>
+                              <TouchableOpacity onPress={() => this.prepareProduct(item)} onLongPress={() => this.productDetails(item)}>
 
-                        {/* Pop To prepare de CMD */}
-                        <Modal 
-                          visible={this.state.isPopUpVisible} 
-                          transparent={true} >
-                            <View style={{height: "100%", width: "100%", justifyContent: "center"}}>
-                              <CardView cardElevation={25} cornerRadius={5} style={[styles.addPopUpCard, {}]}>
-                                <View style={styles.addPopUpCard_body}>
-                                <LinearGradient
-                                  start={{x: 0.0, y: 1}} end={{x: 0.5, y: 1}}
-                                  colors={['#00AAFF', '#706FD3']}
-                                  style={{width: "100%", flexDirection: "row", justifyContent: "flex-end", }}>
-
-                                      <TouchableOpacity
-                                        style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 5, borderWidth: 1, borderColor: "#706FD3"}}
-                                        onPress={() => {this.picking_Cancel()}}>
-                                        <Text style={{fontSize: 20, fontWeight: "bold", color: "#706FD3"}}>Annuler</Text>
-                                      </TouchableOpacity>
-                                      <TouchableOpacity
-                                        style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 5, borderWidth: 1, borderColor: "#706FD3"}}
-                                        onPress={() => this.picking_OK(item)}>
-                                        <Text style={{fontSize: 20, fontWeight: "bold", color: "#706FD3"}}>Ok</Text>
-                                      </TouchableOpacity>
-                                  </LinearGradient>
-
-                                  <View style={{padding: 20,}}>
-                                    <Text style={styles.addPopUpCard_title}>Préparation du <Text style={{color: "#000", fontSize: 20, textDecorationLine: 'underline'}}>{item.barcode}</Text></Text>
-                                    <View style={{width: "100%", alignItems: "center"}}>
-                                      <View style={{height: 50, width: 300, flexDirection: "row", margin: 20,}}>
-                                        <TouchableOpacity
-                                          style={[styles.prepareModeStyleSaisi, {flexDirection: "row", justifyContent: "center", alignItems: "center",  borderWidth: 1, borderColor: "#00AAFF", borderTopLeftRadius: 10, borderBottomLeftRadius: 10, width: "50%", height: "100%",}]}
-                                          onPress={() => this.setState({prepareMode: {saisi: true, barecode: false}})}>
-                                          <Text style={{fontSize: 20, fontWeight: "bold", color: "#00AAFF"}}>Saisi</Text>
-                                          <Icon name="edit" size={20} style={{color: "#00AAFF", marginLeft: 10}}/>
-                                        </TouchableOpacity>
-
-                                        <TouchableOpacity
-                                          style={[styles.prepareModeStyleBarecode, {flexDirection: "row", justifyContent: "center", alignItems: "center", borderWidth: 1, borderColor: "#00AAFF", borderTopRightRadius: 10, borderBottomRightRadius: 10, width: "50%", height: "100%",}]}
-                                          onPress={() => this.setState({prepareMode: {saisi: false, barecode: true}})}>
-                                          <Text style={{fontSize: 20, fontWeight: "bold", color: "#00AAFF"}}>Code Bare</Text>
-                                          <Icon name="barcode" size={20} style={{color: "#00AAFF", marginLeft: 10}}/>
-                                        </TouchableOpacity>
-                                      </View>
-                                      
-                                    </View>
-                                    <View style={{width: "100%", alignItems: "center"}}>
-                                      <View style={{backgroundColor: "#dbdbdb", borderRadius: 5, height: 80, width: 150}}>
-                                        <ScrollView 
-                                          style={{flex: 1}} 
-                                          horizontal= {true}
-                                          decelerationRate={0}
-                                          snapToInterval={150} //your element width
-                                          snapToAlignment={"center"}
-                                          onScroll={this.handlePrepareScrollOptions}>
-                                            {this.state.pickingDataOptions.map((item, index) => (
-                                              <View style={{width: 150, alignItems: "center"}}>
-                                                <Text style={{color: "#00AAFF", fontSize: 25, fontWeight: "bold", margin: 20}}>{item.label}</Text>
-                                              </View>
-                                            ))}
-                                        </ScrollView>
-                                      </View>
-                                      
-                                      <View style={{width: "100%", marginTop: "10%"}}>
-                                        <View style={{flexDirection: "row", justifyContent: "center", alignItems: "center"}}>
-                                          <TouchableOpacity
-                                            style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 100, borderWidth: 1, borderColor: "#00AAFF"}}
-                                            onPress={() => remove_50_ToTextInput()}>
-                                            <Icon name="minus" size={20} style={{color: "#00AAFF", marginRight: 10}}/>
-                                            <Text style={{fontSize: 20}}>50</Text>
-                                          </TouchableOpacity>
-                                          <TouchableOpacity
-                                            style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 100, borderWidth: 1, borderColor: "#00AAFF"}}
-                                            onPress={() => remove_10_ToTextInput()}>
-                                            <Icon name="minus" size={20} style={{color: "#00AAFF", marginRight: 10}}/>
-                                            <Text style={{fontSize: 20}}>10</Text>
-                                          </TouchableOpacity>
-                                          <TouchableOpacity
-                                            style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 100, borderWidth: 1, borderColor: "#00AAFF"}}
-                                            onPress={() => remove_1_ToTextInput()}>
-                                            <Icon name="minus" size={20} style={{color: "#00AAFF", marginRight: 10}}/>
-                                            <Text style={{fontSize: 20}}>1</Text>
-                                          </TouchableOpacity>
-
-                                          <Text style={{color: "#000", fontSize: 20, width: 50, marginLeft: 5,  marginRight: 5, textAlign: "center"}}>{this.state.addRemoveNothing}</Text>
-
-                                          <TouchableOpacity
-                                            style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 100, borderWidth: 1, borderColor: "#00AAFF"}}
-                                            onPress={() => add_1_ToTextInput()}>
-                                            <Icon name="plus" size={20} style={{color: "#00AAFF", marginRight: 10}}/>
-                                            <Text style={{fontSize: 20}}>1</Text>
-                                          </TouchableOpacity>
-                                          <TouchableOpacity
-                                            style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 100, borderWidth: 1, borderColor: "#00AAFF"}}
-                                            onPress={() => add_10_ToTextInput()}>
-                                            <Icon name="plus" size={20} style={{color: "#00AAFF", marginRight: 10}}/>
-                                            <Text style={{fontSize: 20}}>10</Text>
-                                          </TouchableOpacity>
-                                          <TouchableOpacity
-                                            style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 100, borderWidth: 1, borderColor: "#00AAFF"}}
-                                            onPress={() => add_50_ToTextInput()}>
-                                            <Icon name="plus" size={20} style={{color: "#00AAFF", marginRight: 10}}/>
-                                            <Text style={{fontSize: 20}}>50</Text>
-                                          </TouchableOpacity>
-
+                                {this.state.settings.isUseDetailedCMDLines ? 
+                                  <CardView key={index} cardElevation={10} cornerRadius={5} style={[styles.cardViewStyle, {height: 230}]}>
+                                    <View style={styles.cardViewStyle1}>
+                                      <View style={[styles.article, { flexDirection: "row" }]}>
+                                        <View>
+                                          <Image style={{ width: DeviceInfo.isTablet() ? 125 : 50, height: DeviceInfo.isTablet() ? 125 : 50 }} source={require('../../../img/no_image.jpeg')} />
                                         </View>
+                                        <View style={{ flex: 1, marginLeft: 10 }}>
+                                          <View style={styles.ic_and_details}>
+                                            <View style={styles.aname}>
+                                              <Text style={styles.articlename}>{item.libelle}</Text>
+                                            </View>
+                                            <View style={styles.aref}>
+                                              <Text style={styles.ref}>{item.ref}</Text>
+                                            </View>
+                                          </View>
+                                          <View style={styles.ic_and_details}>
+                                            <Icon name="tag" size={15} style={styles.iconDetails} />
+                                            <Text>Lot : <Text style={{fontWeight: "bold"}}>xxxxxxxxxx</Text></Text>
+                                          </View>
+                                          <View style={styles.ic_and_details}>
+                                            <Icon name="calendar-alt" size={15} style={styles.iconDetails} />
+                                            <Text>DLC : <Text style={{fontWeight: "bold"}}>{moment(new Date(new Number("1601892911000"))).format('DD-MM-YYYY')}</Text></Text>
+                                          </View>
+                                          <View style={styles.ic_and_details}>
+                                            <Icon name="calendar-alt" size={15} style={styles.iconDetails} />
+                                            <Text>DLUO : <Text style={{fontWeight: "bold"}}>{moment(new Date(new Number("1601892911000"))).format('DD-MM-YYYY')}</Text></Text>
+                                          </View>
+                                          <View style={styles.ic_and_details}>
+                                            <Icon name="warehouse" size={15} style={styles.iconDetails} />
+                                            <Text>Enplacement : <Text style={{fontWeight: "bold"}}>{item.emplacement == null || item.emplacement == '' ? "Pas emplacement assigné" : item.emplacement}</Text></Text>
+                                          </View>
+                                          <View style={[styles.ic_and_details, {width: "100%", justifyContent: "space-between"}]}>
+                                            <View style={{width: "30%", flexDirection: "row", justifyContent: "flex-start"}}>
+                                              <Icon name="boxes" size={15} style={styles.iconDetails} />
+                                              <Text>{item.stock} en Stock</Text>
+                                            </View>
+                                            <View style={{width: "30%", flexDirection: "row", justifyContent: "center", marginRight: 20}}>
+                                              <Icon name="boxes" size={15} style={styles.iconDetails} />
+                                              <Text>{item.qty} Commandé</Text>
+                                            </View>
+                                            <View style={{width: "30%", flexDirection: "row", justifyContent: "flex-end", marginRight: 20}}>
+                                              <Icon name="truck-loading" size={15} style={styles.iconDetails} />
+                                              <Text>{item.prepare_shipping_qty == null ? "0 Préparé": item.prepare_shipping_qty+" Préparé"}</Text>
+                                            </View>
+                                          </View>
 
-                                        {/* <Slider
-                                          step = { 10 } 
-                                          minimumValue = { 0 } 
-                                          maximumValue = { 1000 } 
-                                          minimumTrackTintColor = "#00AAFF" 
-                                          maximumTrackTintColor = "#dbdbdb"
-                                          thumbTintColor = "#706FD3"
-                                          onValueChange={(ChangedValue) => this.setState({ addRemoveNothing: ChangedValue })}
-                                          style = {{ width: '100%' }} 
-                                          /> */}
+                                          <View style={{ borderBottomColor: '#00AAFF', borderBottomWidth: 1, marginRight: 10 }} />
 
+                                          <View style={styles.pricedetails}>
+                                            <View style={styles.price}>
+                                              <Text>Total TTC : {item.total_ttc > 0 ? (parseFloat(item.total_ttc)).toFixed(2) : '0'} €</Text>
+                                            </View>
+                                          </View>
+                                        </View>
+                                        
                                       </View>
                                     </View>
-                                  </View>
-                                </View>
-                              </CardView>
+                                  </CardView>
+                                : 
+                                  <CardView key={index} cardElevation={10} cornerRadius={5} style={[styles.cardViewStyle, {height: 120}]}>
+                                    <View style={styles.cardViewStyle1}>
+                                      <View style={[styles.article, {flexDirection: "row"}]}>
+                                        <View style={{flex: 1, marginLeft: 10}}>
+                                        <View style={styles.ic_and_details}>
+                                          <View style={styles.aname}>
+                                          <Text style={styles.articlename}>{item.libelle}</Text>
+                                          </View>
+                                          <View style={styles.aref}>
+                                            <Text style={styles.ref}>{item.ref}</Text>
+                                          </View>
+                                        </View>
+                                        <View style={[styles.ic_and_details, {width: "100%", justifyContent: "space-between"}]}>
+                                            <View style={{width: "30%", flexDirection: "row", justifyContent: "flex-start"}}>
+                                              <Icon name="boxes" size={15} style={styles.iconDetails} />
+                                              <Text>{item.stock} en Stock</Text>
+                                            </View>
+                                            <View style={{width: "30%", flexDirection: "row", justifyContent: "center", marginRight: 20}}>
+                                              <Icon name="boxes" size={15} style={styles.iconDetails} />
+                                              <Text>{item.qty} Commandé</Text>
+                                            </View>
+                                            <View style={{width: "30%", flexDirection: "row", justifyContent: "flex-end", marginRight: 20}}>
+                                              <Icon name="truck-loading" size={15} style={styles.iconDetails} />
+                                              <Text>{item.prepare_shipping_qty == null ? "0 Préparé": item.prepare_shipping_qty+" Préparé"}</Text>
+                                            </View>
+                                          </View>
+
+                                        <View style={{ borderBottomColor: '#00AAFF', borderBottomWidth: 1, marginRight: 10 }} />
+                                        </View>
+                                        
+                                      </View>
+                                    </View>
+                                  </CardView>
+                                }
+
+                              </TouchableOpacity>
                             </View>
-                        </Modal>
+                          ))
+                        }
 
-
-                      {/* Line list of CMD */}
-
-                      <TouchableOpacity onPress={() => this.prepareProduct(item)} onLongPress={() => this.productDetails(item)}>
-
-                        {this.state.settings.isUseDetailedCMDLines ? 
-                          <CardView key={index} cardElevation={10} cornerRadius={5} style={[styles.cardViewStyle, {height: 230}]}>
-                            <View style={styles.cardViewStyle1}>
-                              <View style={[styles.article, { flexDirection: "row" }]}>
-                                <View>
-                                  <Image style={{ width: DeviceInfo.isTablet() ? 125 : 50, height: DeviceInfo.isTablet() ? 125 : 50 }} source={require('../../../img/no_image.jpeg')} />
-                                </View>
-                                <View style={{ flex: 1, marginLeft: 10 }}>
-                                  <View style={styles.ic_and_details}>
-                                    <View style={styles.aname}>
-                                      <Text style={styles.articlename}>{item.libelle}</Text>
-                                    </View>
-                                    <View style={styles.aref}>
-                                      <Text style={styles.ref}>{item.ref}</Text>
-                                    </View>
-                                  </View>
-                                  <View style={styles.ic_and_details}>
-                                    <Icon name="tag" size={15} style={styles.iconDetails} />
-                                    <Text>Lot : xxxxxxxxxx</Text>
-                                  </View>
-                                  <View style={styles.ic_and_details}>
-                                    <Icon name="calendar-alt" size={15} style={styles.iconDetails} />
-                                    <Text>DLC : {moment(new Date(new Number("1601892911000"))).format('DD-MM-YYYY')}</Text>
-                                  </View>
-                                  <View style={styles.ic_and_details}>
-                                    <Icon name="calendar-alt" size={15} style={styles.iconDetails} />
-                                    <Text>DLUO : {moment(new Date(new Number("1601892911000"))).format('DD-MM-YYYY')}</Text>
-                                  </View>
-                                  <View style={styles.ic_and_details}>
-                                    <Icon name="warehouse" size={15} style={styles.iconDetails} />
-                                    <Text>Enplacement : {item.emplacement == null || item.emplacement == '' ? "Pas emplacement assigné" : item.emplacement}</Text>
-                                  </View>
-                                  <View style={[styles.ic_and_details, {width: "100%", justifyContent: "space-between"}]}>
-                                    <View style={{width: "30%", flexDirection: "row", justifyContent: "flex-start"}}>
-                                      <Icon name="boxes" size={15} style={styles.iconDetails} />
-                                      <Text>{item.stock} en Stock</Text>
-                                    </View>
-                                    <View style={{width: "30%", flexDirection: "row", justifyContent: "center", marginRight: 20}}>
-                                      <Icon name="boxes" size={15} style={styles.iconDetails} />
-                                      <Text>{item.qty} Commandé</Text>
-                                    </View>
-                                    <View style={{width: "30%", flexDirection: "row", justifyContent: "flex-end", marginRight: 20}}>
-                                      <Icon name="truck-loading" size={15} style={styles.iconDetails} />
-                                      <Text>{this.state.addRemoveNothing} Préparé</Text>
-                                    </View>
-                                  </View>
-
-                                  <View style={{ borderBottomColor: '#00AAFF', borderBottomWidth: 1, marginRight: 10 }} />
-
-                                  <View style={styles.pricedetails}>
-                                    <View style={styles.price}>
-                                      <Text>Total TTC : {item.total_ttc > 0 ? (parseFloat(item.total_ttc)).toFixed(2) : '0'} €</Text>
-                                    </View>
-                                  </View>
-                                </View>
-                                
-                              </View>
+                        {this.state.isLoading ? 
+                          <CardView cardElevation={7} cornerRadius={10} style={styles.lastCard}>
+                            <View>
+                              <Text style={styles.lastCard_text}>Loading Data...</Text>
                             </View>
                           </CardView>
                         : 
-                          <CardView key={index} cardElevation={10} cornerRadius={5} style={[styles.cardViewStyle, {height: 120}]}>
-                            <View style={styles.cardViewStyle1}>
-                              <View style={[styles.article, {flexDirection: "row"}]}>
-                                <View style={{flex: 1, marginLeft: 10}}>
-                                <View style={styles.ic_and_details}>
-                                  <View style={styles.aname}>
-                                  <Text style={styles.articlename}>{item.libelle}</Text>
-                                  </View>
-                                  <View style={styles.aref}>
-                                    <Text style={styles.ref}>{item.ref}</Text>
-                                  </View>
-                                </View>
-                                <View style={[styles.ic_and_details, {width: "100%", justifyContent: "space-between"}]}>
-                                    <View style={{width: "30%", flexDirection: "row", justifyContent: "flex-start"}}>
-                                      <Icon name="boxes" size={15} style={styles.iconDetails} />
-                                      <Text>{item.stock} en Stock</Text>
-                                    </View>
-                                    <View style={{width: "30%", flexDirection: "row", justifyContent: "center", marginRight: 20}}>
-                                      <Icon name="boxes" size={15} style={styles.iconDetails} />
-                                      <Text>{item.qty} Commandé</Text>
-                                    </View>
-                                    <View style={{width: "30%", flexDirection: "row", justifyContent: "flex-end", marginRight: 20}}>
-                                      <Icon name="truck-loading" size={15} style={styles.iconDetails} />
-                                      <Text>{this.state.addRemoveNothing} Préparé</Text>
-                                    </View>
-                                  </View>
-
-                                <View style={{ borderBottomColor: '#00AAFF', borderBottomWidth: 1, marginRight: 10 }} />
-                                </View>
-                                
-                              </View>
+                          <CardView cardElevation={7} cornerRadius={10} style={styles.lastCard}>
+                            <View>
+                              <Text style={styles.lastCard_text}>No More Data...</Text>
                             </View>
                           </CardView>
                         }
 
-                      </TouchableOpacity>
-                      </View>
-              ))
-            }
+                      </ScrollView>
 
-            {this.state.isLoading ? 
-              <CardView cardElevation={7} cornerRadius={10} style={styles.lastCard}>
-                <View>
-                  <Text style={styles.lastCard_text}>Loading Data...</Text>
-                </View>
-              </CardView>
-            : 
-              <CardView cardElevation={7} cornerRadius={10} style={styles.lastCard}>
-                <View>
-                  <Text style={styles.lastCard_text}>No More Data...</Text>
-                </View>
-              </CardView>
-            }
-          </ScrollView>
+                      {/* Main twist button */}
+                      <OrderDetailButton navigation={this.props.navigation} isFilterPressed={this._onFilterPressed.bind(this)} isScannerPressed={this._onScannerPressed.bind(this)}/>
+                      {/* END Main twist button */}
+                    </View>
+                  }
 
-          
+                  <OrderLinesFilter onDataToFilter={this._onDataToFilter.bind(this)} settings={{isFilter: this.state.isFilter}}/>
 
-
-          {/* Main twist button */}
-          <OrderDetailButton navigation={this.props.navigation} isFilterPressed={this._onFilterPressed.bind(this)}/>
-          {/* END Main twist button */}
+                
 
         </View>
         <MyFooter_v2 />
       </LinearGradient>
+
+      :
+
+      <View style={{ flex: 1, width: "100%", height: "100%"}}>
+        <CameraKitCameraScreen
+          showFrame={true}
+          //Show/hide scan frame
+          scanBarcode={true}
+          //Can restrict for the QR Code only
+          laserColor={'#00AAFF'}
+          //Color can be of your choice
+          frameColor={'#706FD3'}
+          //If frame is visible then frame color
+          colorForScannerFrame={'black'}
+          //Scanner Frame color
+          onReadCode={event =>
+              this.onBarcodeScan(event.nativeEvent.codeStringValue)
+          }
+          cameraOptions={{
+              flashMode: 'auto',                // on/off/auto(default)
+              focusMode: 'on',                  // off/on(default)
+              zoomMode: 'on',                   // off/on(default)
+              ratioOverlay:'1:1',               // optional
+              ratioOverlayColor: '#00000077'    // optional
+          }}
+          resetFocusTimeout={0}               // optional
+          resetFocusWhenMotionDetected={true} // optional
+          />
+
+        <View style={{height: 50, width: "100%", alignItems: "center", marginBottom: 200}}>
+          <TouchableHighlight
+            onPress={() => {this.setState({opneScanner: false}); }}
+            style={{backgroundColor: "#00AAFF", justifyContent: "center", alignItems: "center", height:"100%", width: 200, }}>
+            <Text style={{color: '#FFFFFF', fontSize: 20 }}>Back</Text>
+          </TouchableHighlight>
+        </View>
+      </View>
+      }
+
+    </View>
     );
   }
 }

@@ -46,7 +46,7 @@ export default class ProductDetailButton extends Component {
 
     action_1 = () => {
         console.log('action_1');
-        this.props.navigation.goBack()
+        this.props.navigation.goBack();
         this.default__();
     }
     action_2 = () => {

@@ -373,17 +373,17 @@ class Preparation extends Component {
                                     </View>
                                   </View>
                                   <View style={styles.ic_and_details}>
-                                    <Icon name="user" size={15} style={styles.iconDetails} />
-                                    <Text>Créé par : {item.user}</Text>
+                                    <Icon name="user" size={15} style={styles.iconDetails}/>
+                                    <Text>Créé par : <Text style={{fontWeight: "bold"}}>{item.user}</Text></Text>
                                   </View>
                                   <View style={styles.ic_and_details}>
-                                    <Icon name="boxes" size={15} style={styles.iconDetails} />
+                                    <Icon name="boxes" size={15} style={styles.iconDetails}/>
                                     <Text>{item.lines_nb} Produit(s)</Text>
                                   </View>
                                   <View style={styles.ic_and_details}>
                                     <View style={{flexDirection: "row", width: "80%"}}>
                                       <Icon name="calendar-alt" size={15} style={styles.iconDetails} />
-                                      <Text>Faite le : {moment(new Date(new Number(item.date_commande+"000"))).format('DD-MM-YYYY')}</Text>
+                                      <Text>Faite le : <Text style={{fontWeight: "bold"}}>{moment(new Date(new Number(item.date_commande+"000"))).format('DD-MM-YYYY')}</Text></Text>
                                     </View>
                                     <View style={styles.cdate}>
                                       <Text style={styles.date}>Livré Le {moment(new Date(new Number(item.date_livraison+"000"))).format('DD-MM-YYYY')}</Text>

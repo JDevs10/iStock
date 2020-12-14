@@ -46,7 +46,7 @@ class UserServices extends Component {
         .then(async (response) => {
             if(response.status == 200){
                 console.log('Status == 200');
-                // console.log(response.data);
+                console.log(response.data);
                 account.key = response.data.success.token;
                 
                 await axios.post(`${account.serverUrl}/api/index.php/istockapi/login`, 

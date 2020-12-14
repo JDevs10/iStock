@@ -215,6 +215,17 @@ export function DrawerContent(props) {
                                 size={iconStyle.size}
                                 />
                             )}
+                            label="Synchronisation Expeditions"
+                            onPress={() => {props.navigation.navigate('ShipmentsSync');}}
+                        />
+                        <DrawerItem 
+                            icon={() => (
+                                <Icon 
+                                name="sync" 
+                                color={iconStyle.color}
+                                size={iconStyle.size}
+                                />
+                            )}
                             label="Synchronisation Entrepots"
                             onPress={() => {props.navigation.navigate('WarehousesSync');}}
                         />

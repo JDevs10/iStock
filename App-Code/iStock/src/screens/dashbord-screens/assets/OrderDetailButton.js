@@ -62,6 +62,7 @@ export default class OrderDetailButton extends Component {
     }
     action_4 = () => {
         console.log('action_4');
+        this.props.isScannerPressed(true);
         this.default__();
     }
     action_5 = () => {
@@ -143,47 +144,36 @@ export default class OrderDetailButton extends Component {
             <Animated.View style={{position: 'relative', left: btn_1X, top: btn_1Y }}>
                 <View style={styles.secondaryButtons}>
                     <TouchableOpacity onPress={this.action_1}>
-                    {/* <Image style={{width: DeviceInfo.isTablet() ? 50 : 25, height: DeviceInfo.isTablet() ? 80 : 40 }} source={require('../../../../img/return-button-v1.png')}/> */}
                     <Icon name="chevron-left" size={DeviceInfo.isTablet() ? 60 : 40} style={{color: "#fff"}} />
                     </TouchableOpacity>
                 </View>
             </Animated.View>
 
-            <Animated.View style={{position: 'relative', left: btn_2X, top: btn_2Y }}>
+            {/* <Animated.View style={{position: 'relative', left: btn_2X, top: btn_2Y }}>
                 <View style={styles.secondaryButtons}>
                     <TouchableOpacity onPress={this.action_2}>
-                        {/* <Image style={{width: DeviceInfo.isTablet() ? 60 : 40, height: DeviceInfo.isTablet() ? 60 : 40 }} source={require('../../../../img/plus-white.png')}/> */}
                         <Icon name="plus" size={DeviceInfo.isTablet() ? 60 : 40} style={{color: "#fff"}} />
                     </TouchableOpacity>
                 </View>
-            </Animated.View>
+            </Animated.View> */}
             <Animated.View style={{position: 'relative', left: btn_3X, top: btn_3Y }}>
                 <View style={styles.secondaryButtons}>
                     <TouchableOpacity onPress={this.action_3}>
-                        {/* <FontAwesome name="key" color="#05375a" size={60} />  */}
-                        {/* <Image style={{width: DeviceInfo.isTablet() ? 60 : 40, height: DeviceInfo.isTablet() ? 60 : 40 }} source={require('../../../../img/Barre-Code.png')}/> */}
                         <Icon name="filter" size={DeviceInfo.isTablet() ? 60 : 40} style={{color: "#fff"}} />
-                        {/* <Text>inventory</Text> */}
                     </TouchableOpacity>
                 </View>
             </Animated.View>
             <Animated.View style={{position: 'relative', left: btn_4X, top: btn_4Y }}>
                 <View style={styles.secondaryButtons}>
                     <TouchableOpacity onPress={this.action_4}>
-                        {/* <FontAwesome name="key" color="#05375a" size={60} />  */}
-                        {/* <Image style={{width: DeviceInfo.isTablet() ? 60 : 40, height: DeviceInfo.isTablet() ? 60 : 40 }} source={require('../../../../img/Barre-Code.png')}/> */}
                         <Icon name="barcode" size={DeviceInfo.isTablet() ? 60 : 40} style={{color: "#fff"}} />
-                        {/* <Text>inventory</Text> */}
                     </TouchableOpacity>
                 </View>
             </Animated.View>
             <Animated.View style={{position: 'relative', left: btn_5X, top: btn_5Y }}>
                 <View style={styles.secondaryButtons}>
                     <TouchableOpacity onPress={this.action_5}>
-                        {/* <FontAwesome name="key" color="#05375a" size={60} />  */}
-                        {/* <Image style={{width: DeviceInfo.isTablet() ? 60 : 40, height: DeviceInfo.isTablet() ? 60 : 40 }} source={require('../../../../img/Info.png')}/> */}
                         <Icon name="info" size={DeviceInfo.isTablet() ? 60 : 40} style={{color: "#fff"}} />
-                        {/* <Text>inventory</Text> */}
                     </TouchableOpacity>
                 </View>
             </Animated.View>
@@ -191,7 +181,6 @@ export default class OrderDetailButton extends Component {
             <Animated.View style={[styles.mainBtn, sizeStyle]}>
                 <TouchableOpacity onPress={this.handlePress} underlayColor="#ABCDEF">
                 <Animated.View style={{ transform: [{ rotate: rotation }] }}>
-                    {/* <FontAwesome name="plus" color="#05375a" size={75} />  */}
                     <Image style={{width: DeviceInfo.isTablet() ? 100 : 60 , height: DeviceInfo.isTablet() ? 100 : 60 }} source={require('../../../../img/Logo.png')}/>
                 </Animated.View>
                 </TouchableOpacity>
