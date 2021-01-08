@@ -69,7 +69,7 @@ class Preparation extends Component {
 
   async  componentDidMount(){
     await this._settings();
-    //await this._getPickingData();
+    await this._getPickingData();
 
     this.listener = await this.props.navigation.addListener('focus', async () => {
       // Prevent default action
@@ -77,7 +77,7 @@ class Preparation extends Component {
       await console.log('Done settings update!');
       console.log('new settings : ', this.state.settings);
       console.log('listener filterConfig : ', this.state.filterConfig);
-      // await this._getPickingData();
+      await this._getPickingData();
       return;
     });
   }

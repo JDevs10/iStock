@@ -49,7 +49,7 @@ class CommandeDetails extends Component {
           prepareMode: {saisi: true, barecode: false},
           isLoading: true,
           orderId: this.props.route.params.order.commande_id,
-          data: [],
+          data: [{"barcode": "5000112554359P", "emplacement": null, "fk_commande": "385", "id": 58, "libelle": "COCA ZERO 33CL DEN PALETTE", "prepare_shipping_qty": 0, "price": "950.4", "qty": "1", "ref": "00000002P", "stock": "1", "total_ht": "950.40000000", "total_ttc": "1002.67000000", "total_tva": "52.27000000", "tva_tx": "5.500"}],
           settings: {},
           filterConfig: {},
           pickingDataSelected: {
@@ -137,6 +137,7 @@ class CommandeDetails extends Component {
       const data = await olm.GET_LINES_BY_ORDER_ID(this.state.orderId).then(async (val) => {
         return await val;
       });
+      console.log("res data", data);
       this.setState({data: data, isLoading: false});
     }
 
@@ -213,11 +214,12 @@ class CommandeDetails extends Component {
       //await this._getPickingData();
     }
 
-    
+    /*
     (){
       this.setState({prepareMode: {saisi: false, barecode: true}})
       this.props.navigation.navigate("Scanner");
     }
+	*/
 
     onBarcodeScan(qrvalue) {
       //called after te successful scanning of QRCode/Barcode
@@ -435,8 +437,8 @@ class CommandeDetails extends Component {
                   {this.state.isPopUpVisible ? 
                     <PickingPopUp settings={ {isPopUpVisible: this.state.isPopUpVisible} } onPickingClose={this._onPickingClose.bind(this)} onPickingOk={this._onPickingOk.bind(this)} />
                   : 
-                    <View>
-                      <ScrollView style={{flex: 1}}>
+                    <View style={{flex: 1}}>
+                      <ScrollView>
                         {
                           this.state.data.map((item, index) => (
                               <View>

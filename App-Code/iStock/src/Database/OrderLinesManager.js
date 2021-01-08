@@ -210,6 +210,35 @@ class OrderLinesManager extends Component {
         });
     }
 
+    async GET_LINES_BY_ORDER_ID_v2(id){
+        console.log("##### GET_LINES_BY_ORDER_ID #########################");
+        const pm = new ProductsManager();
+        const wm = new WarehouseManager();
+
+        console.log("Order id Lines SQL => : SELECT l." + COLUMN_ID + ", l." + COLUMN_ORDER_ID + ", l." + COLUMN_LABEL + ", l." + COLUMN_REF + ", l." +COLUMN_QTE + ", l." +COLUMN_PRICE + ", l." +COLUMN_TVA_TX + ", l." +COLUMN_TOTAL_HT + ", l." +COLUMN_TOTAL_TVA + ", l." +COLUMN_TOTAL_TTC + ", (SELECT "+wm._COLUMN_LABEL_+" from "+wm._TABLE_NAME_+" as w where p."+pm._COLUMN_EMPLACEMENT_+" = w."+wm._COLUMN_ID_+") as emplacement, p."+pm._COLUMN_STOCK_+", p."+pm._COLUMN_CODEBARRE_+", p."+pm._COLUMN_REF_+" FROM " + TABLE_NAME + " as l, "+pm._TABLE_NAME_+" as p WHERE l." + COLUMN_ORDER_ID + " = " + id + " AND l."+COLUMN_REF+" = p."+pm._COLUMN_REF_);
+
+        return await new Promise(async (resolve) => {
+            try{
+                const lines = [];
+                await db.transaction(async (tx) => {
+                    await tx.executeSql("SELECT l." + COLUMN_ID + ", l." + COLUMN_ORDER_ID + ", l." + COLUMN_LABEL + ", l." + COLUMN_REF + ", l." +COLUMN_QTE + ", l." +COLUMN_PRICE + ", l." +COLUMN_TVA_TX + ", l." +COLUMN_TOTAL_HT + ", l." +COLUMN_TOTAL_TVA + ", l." +COLUMN_TOTAL_TTC + ", (SELECT "+wm._COLUMN_LABEL_+" from "+wm._TABLE_NAME_+" as w where p."+pm._COLUMN_EMPLACEMENT_+" = w."+wm._COLUMN_ID_+") as emplacement, p."+pm._COLUMN_STOCK_+", p."+pm._COLUMN_CODEBARRE_+", p."+pm._COLUMN_REF_+" FROM " + TABLE_NAME + " as l, "+pm._TABLE_NAME_+" as p WHERE l." + COLUMN_ORDER_ID + " = " + id + " AND l."+COLUMN_REF+" = p."+pm._COLUMN_REF_, [], async (tx, results) => {
+                        var len = results.rows.length;
+                        for (let i = 0; i < len; i++) {
+                            let row = results.rows.item(i);
+                            row.prepare_shipping_qty = 0;
+                            lines.push(row);
+                        }
+                        console.log(lines);
+                        await resolve(lines);
+                    });
+                });
+            } catch(error){
+                console.log("error: ", error);
+                return resolve(null);
+            }
+        });
+    }
+
     //Delete
     async DROP_ORDER_LINES(){
         console.log("##### DROP_ORDER #########################");

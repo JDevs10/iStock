@@ -1,5 +1,10 @@
 import React, { Component } from 'react';
-import { StyleSheet, ScrollView, TouchableOpacity, View, Text, Modal, Alert } from 'react-native';
+import CardView from 'react-native-cardview';
+import Icon from 'react-native-vector-icons/FontAwesome5';
+import { StyleSheet, ScrollView, TouchableOpacity, View, Text, Modal } from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
+import moment from "moment";
+import { CameraKitCameraScreen, } from 'react-native-camera-kit';
 
 
 let PICKING_ACTION = 1;
@@ -168,6 +173,131 @@ export default class PickingPopUp extends Component {
   render() {
 
     console.log(this.props.settings);
+
+    const styles = StyleSheet.create({
+        container: {
+          flex: 1,
+          // for popup when active
+        },
+        mainBody: {
+          backgroundColor: '#ffffff',
+          borderTopLeftRadius: 30,
+          borderTopRightRadius: 30,
+          borderBottomLeftRadius: 30,
+          borderBottomRightRadius: 30,
+          paddingHorizontal: 20,
+          paddingVertical: 30,
+          height: this.state.orientation === 'portrait' ? '84%' : '74%',
+          width: '100%',
+          position: "absolute",
+          bottom: this.state.orientation === 'portrait' ? "10%" : "15%",
+          opacity: this.state._opacity_,
+        },
+        cardViewStyle: {
+          width: '95%',
+          margin: 10,
+          // marginBottom: 20,
+        },
+        cardViewStyle1: {
+          paddingTop: 10,
+          alignItems: 'center',
+          flexDirection: 'row',
+          width: '95%',
+          //height: 150,
+        },
+        article: {
+          //alignItems: 'center',
+          margin: 20,
+          width: '100%'
+        },
+        ic_and_details: {
+          flexDirection: 'row',
+          margin: 3,
+          //alignItems: 'center',
+        },
+        aname: {
+          width: '80%',
+        },
+        articlename: {
+          color: '#00AAFF',
+          fontSize: 20,
+          //marginBottom: 15,
+        },
+        aref: {
+          width: '20%',
+        },
+        ref: {
+          backgroundColor: '#dbdbdb',
+          height: 30,
+          width: '100%',
+          textAlign: 'center',
+          justifyContent: 'center',
+          alignItems: 'center',
+          borderRadius: 10,
+          textAlignVertical: 'center'
+        },
+        iconDetails: {
+          marginRight: 10,
+          color: '#00AAFF',
+        },
+        pricedetails: {
+          flexDirection: 'row',
+          width: '100%',
+        },
+        price: {
+          width: '75%',
+        },
+        addPopUpCard : {
+          // height: 600,
+          width: '95%',
+          // justifyContent: "center",
+          // alignContent: "center",
+          // alignItems: "center",
+          // padding: 20,
+          margin: 20,
+          marginBottom: 70,
+          // position: 'absolute',
+        },
+        addPopUpCard_body : {
+          // height: 600,
+          width: '100%',
+        },
+        addPopUpCard_title : {
+          color: "#00AAFF",
+          fontSize: 30,
+          fontWeight: "bold",
+          margin: 20
+        },
+        // prepareModeStyleSaisi: {
+        //   backgroundColor: (this.state.prepareMode.saisi ? "#dbdbdb" : null)
+        // },
+        // prepareModeStyleBarecode: {
+        //   backgroundColor: (this.state.prepareMode.barecode ? "#dbdbdb" : null)
+        // },
+        lastCard: {
+          height: 70,
+          width: '95%',
+          justifyContent: "center",
+          alignContent: "center",
+          alignItems: "center",
+          margin: 20,
+          marginBottom: 70,
+        },
+        lastCard_text: {
+          flex: 1,
+          fontSize: 20,
+          fontWeight: "bold",
+          margin: 20
+        },
+        backButton: {
+          height: 50,
+          width: "50%",
+          backgroundColor: "#00AAFF",
+          // justifyContent: "center",
+          // alignItems: "center",
+          // alignContent: "center",
+        }
+      });
 
     return (
       <View>
