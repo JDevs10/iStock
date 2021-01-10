@@ -18,6 +18,10 @@ class SupportInternal extends React.Component {
     };
   }
 
+  cancel_ticket(){
+    this.props.navigation.goBack();
+  }
+
   send_ticket() {
     if ((this.state.subject != '') && (this.state.srv != '') && (this.state.message != '')) {
       let current_date = moment().format('YYYY-MM-DD hh:mm:ss a');
@@ -83,6 +87,9 @@ class SupportInternal extends React.Component {
               </View>
 
               <View style={{ alignItems: 'center' }}>
+                <TouchableOpacity style={styles.CancelButtonStyle} activeOpacity={.5} onPress={() => this.cancel_ticket()}>
+                  <Text style={styles.TextStyle}>Annuler</Text>
+                </TouchableOpacity>
                 <TouchableOpacity style={styles.SubmitButtonStyle} activeOpacity={.5} onPress={() => this.send_ticket()}>
                   <Text style={styles.TextStyle}>Envoyer</Text>
                 </TouchableOpacity>
@@ -164,6 +171,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     textAlign: 'center',
     width: '70%'
+  },
+  CancelButtonStyle: {
+    marginTop: 10,
+    paddingTop: 15,
+    paddingBottom: 15,
+    backgroundColor: 'red',
+    borderRadius: 25,
+    width: 300,
   },
   SubmitButtonStyle: {
     marginTop: 10,

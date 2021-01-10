@@ -434,9 +434,11 @@ class CommandeDetails extends Component {
                 <NavbarOrdersLines navigation={ this.props } textTittleValue={"" + this.props.route.params.order.ref_commande}/>
                 <View style={styles.mainBody}>
 
+                <OrderLinesFilter onDataToFilter={this._onDataToFilter.bind(this)} settings={{isFilter: this.state.isFilter}}/>
+
                   {this.state.isPopUpVisible ? 
-                    <PickingPopUp settings={ {isPopUpVisible: this.state.isPopUpVisible} } onPickingClose={this._onPickingClose.bind(this)} onPickingOk={this._onPickingOk.bind(this)} />
-                  : 
+                    <PickingPopUp settings={ {isPopUpVisible: this.state.isPopUpVisible, pickingDataSelected: this.state.pickingDataSelected} } onPickingClose={this._onPickingClose.bind(this)} onPickingOk={this._onPickingOk.bind(this)} />
+                    : 
                     <View style={{flex: 1}}>
                       <ScrollView>
                         {
@@ -566,10 +568,6 @@ class CommandeDetails extends Component {
                       {/* END Main twist button */}
                     </View>
                   }
-
-                  <OrderLinesFilter onDataToFilter={this._onDataToFilter.bind(this)} settings={{isFilter: this.state.isFilter}}/>
-
-                
 
         </View>
         <MyFooter_v2 />
