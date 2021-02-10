@@ -1,9 +1,10 @@
-//import liraries
 import React, { Component } from 'react';
 import {StyleSheet, View, Text, Image, Animated, Alert} from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
+import Icon from 'react-native-vector-icons/FontAwesome5';
 import DeviceInfo from 'react-native-device-info';
-import SettingsManager from '../../../Database/SettingsManager';
+import Strings from '../../../utilities/Strings';
+const STRINGS = new Strings();
 
 // Main bouton
 const MAIN_BTN_HEIGHT_TABLETTE = 125;
@@ -29,12 +30,13 @@ const SECONDARY_BTN_BORDER_RADIUS_PHONE = 40;
 
 
 // create a component
-class SettingsDetailButton extends Component {
+export default class ShipmentsButton extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            isFilter: true
         };
-      }
+    }
     
         buttonSize = new Animated.Value(1);
         mode = new Animated.Value(0);
@@ -71,44 +73,26 @@ class SettingsDetailButton extends Component {
     
         action_1 = () => {
             console.log('action_1');
-            this.props.navigation.goBack();
+            this.props.navigation.navigate("Dashboard");
             this.default__();
         }
         action_2 = () => {
             console.log('action_2');
+            this.props.isFilterPressed({isFilter: this.state.isFilter});
+            this.setState({isFilter: !this.state.isFilter});
+            //this.default__();
+        }
+        action_3 = () => {
+            console.log('action_3');
+            //this.default__();
+    
             Alert.alert(
-                "Information",
-                "Les configurations ci-dessous affectent le fonctionnement de l'application ...",
+                STRINGS._INFO_PREPARATION_LIST_TITLE,
+                STRINGS._INFO_PREPARATION_LIST_TEXT,
                 [
                   {text: 'Ok', onPress: () => true},
                 ],
-                { cancelable: false }
-            );
-            this.default__();
-        }
-        action_3 = async() => {
-            console.log('action_3');
-            await this.save();
-            await this.default__();
-        }
-
-        async save(){
-            console.log('this.props.parentData : ', this.props.parentData);
-            const data = {
-                isUseImages: this.props.parentData.isUseImages,
-                isUseDetailedCMD: this.props.parentData.isUseDetailedCMD,
-                isUseDetailedCMDLines: this.props.parentData.isUseDetailedCMDLines
-            };
-
-            const sm = new SettingsManager();
-            await sm.initDB();
-            const res = await sm.UPDATE_SETTINGS(data).then(async (val) => {
-                return await val;
-            });
-
-            if(res){
-                this.props.navigation.goBack();
-            }
+                { cancelable: false });
         }
     
       render() {
@@ -151,30 +135,30 @@ class SettingsDetailButton extends Component {
             outputRange: [DeviceInfo.isTablet() ? 20 : 0, DeviceInfo.isTablet() ? -50 : -25]
         });
     
+    
         return (
             <View style={{position: 'relative', alignItems: 'center'}}>
     
                 <Animated.View style={{position: 'relative', left: btn_1X, top: btn_1Y }}>
                     <View style={styles.secondaryButtons}>
                         <TouchableOpacity onPress={this.action_1}>
-                        <Image style={{width: DeviceInfo.isTablet() ? 50 : 25, height: DeviceInfo.isTablet() ? 80 : 40 }} source={require('../../../../img/return-button-v1.png')}/>
+                            <Icon name="chevron-left" size={DeviceInfo.isTablet() ? 60 : 40} style={{color: "#fff"}} />
                         </TouchableOpacity>
                     </View>
                 </Animated.View>
     
-                <Animated.View style={{position: 'relative', left: btn_2X, top: btn_2Y }}>
+                {/* <Animated.View style={{position: 'relative', left: btn_2X, top: btn_2Y }}>
                     <View style={styles.secondaryButtons}>
                         <TouchableOpacity onPress={this.action_2}>
-                            <Image style={{width: DeviceInfo.isTablet() ? 60 : 40, height: DeviceInfo.isTablet() ? 60 : 40 }} source={require('../../../../img/Info.png')}/>
+                            <Icon name="filter" size={DeviceInfo.isTablet() ? 60 : 30} style={{color: "#fff"}} />
                         </TouchableOpacity>
                     </View>
-                </Animated.View>
+                </Animated.View> */}
+
                 <Animated.View style={{position: 'relative', left: btn_3X, top: btn_3Y }}>
                     <View style={styles.secondaryButtons}>
                         <TouchableOpacity onPress={this.action_3}>
-                            {/* <FontAwesome name="key" color="#05375a" size={60} />  */}
-                            <Image style={{width: DeviceInfo.isTablet() ? 60 : 40, height: DeviceInfo.isTablet() ? 60 : 40 }} source={require('../../../../img/save-white.png')}/>
-                            {/* <Text>inventory</Text> */}
+                            <Icon name="info" size={DeviceInfo.isTablet() ? 60 : 40} style={{color: "#fff"}} />
                         </TouchableOpacity>
                     </View>
                 </Animated.View>
@@ -182,14 +166,13 @@ class SettingsDetailButton extends Component {
                 <Animated.View style={[styles.mainBtn, sizeStyle]}>
                     <TouchableOpacity onPress={this.handlePress} underlayColor="#ABCDEF">
                     <Animated.View style={{ transform: [{ rotate: rotation }] }}>
-                        {/* <FontAwesome name="plus" color="#05375a" size={75} />  */}
                         <Image style={{width: DeviceInfo.isTablet() ? 100 : 60 , height: DeviceInfo.isTablet() ? 100 : 60 }} source={require('../../../../img/Logo.png')}/>
                     </Animated.View>
                     </TouchableOpacity>
                 </Animated.View>
             </View>
         );
-      }
+    }
 }
 
 const styles = StyleSheet.create({
@@ -220,6 +203,3 @@ const styles = StyleSheet.create({
         backgroundColor: "#ABCDEF"
     }
 });
-  
-//make this component available to the app
-export default SettingsDetailButton;

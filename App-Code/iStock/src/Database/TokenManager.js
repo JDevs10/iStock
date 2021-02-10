@@ -92,6 +92,7 @@ class TokenManager extends Component {
                 });
                 return await resolve(true);
             } catch(error){
+                console.log("CREATE_TOKEN_TABLE : ", error);
                 return await resolve(false);
             }
         });
@@ -109,6 +110,7 @@ class TokenManager extends Component {
                 });
                 return await resolve(true);
             } catch(error){
+                console.log("INSERT_TOKEN : ", error);
                 return await resolve(false);
             }
         });

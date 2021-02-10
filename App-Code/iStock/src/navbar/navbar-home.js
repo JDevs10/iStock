@@ -9,6 +9,7 @@ import {
 } from 'react-native/Libraries/NewAppScreen';
 import DeviceInfo from 'react-native-device-info';
 import Icon from 'react-native-vector-icons/FontAwesome5';
+import TokenManager from '../Database/TokenManager';
 const IMG_SRC = require('../../img/banner.png');
 
 export default class NavbarHome extends Component {
@@ -43,7 +44,7 @@ export default class NavbarHome extends Component {
     });
   }
 
-  componentWillMount() {
+  componentDidMount(){
     BackHandler.addEventListener('hardwareBackPress', this.existPressed);
   }
 
@@ -66,7 +67,17 @@ export default class NavbarHome extends Component {
   async leaving(isLeaving) {
     if (isLeaving == true) {
       await AsyncStorage.removeItem('token');
-      BackHandler.exitApp();
+      const tm = new TokenManager();
+      await tm.initDB();
+
+      const _token_ = await tm.DELETE_TOKEN_LIST().then(async (val) => {
+        return await val;
+      });
+
+      if(_token_){
+        BackHandler.exitApp();
+      }
+      
     } else {
       console.log('Cancel Pressed');
     }

@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import SQLite from 'react-native-sqlite-storage';
 import DatabaseInfo from './DatabaseInfo';
+import ProductsLotDlcDluoManager from './ProductsLotDlcDluoManager';
 SQLite.DEBUG(true);
 SQLite.enablePromise(true);
 
@@ -20,9 +21,6 @@ const COLUMN_REF = "ref";
 const COLUMN_LABEL = "label";
 const COLUMN_CODEBARRE = "barcode";
 const COLUMN_DESCRIPTION = "description";
-const COLUMN_LOT = "lot";
-const COLUMN_DLC = "dlc";
-const COLUMN_DLUO = "dluo";
 const COLUMN_EMPLACEMENT = "emplacement";
 const COLUMN_STOCK = "stock";
 const COLUMN_IMAGE = "image";
@@ -33,9 +31,6 @@ const create = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "(" +
     COLUMN_LABEL + " VARCHAR(255)," +
     COLUMN_CODEBARRE + " VARCHAR(255)," +
     COLUMN_DESCRIPTION + " VARCHAR(255)," +
-    COLUMN_LOT + " VARCHAR(255)," +
-    COLUMN_DLC + " VARCHAR(255)," +
-    COLUMN_DLUO + " VARCHAR(255)," +
     COLUMN_EMPLACEMENT + " VARCHAR(255)," +
     COLUMN_STOCK + " VARCHAR(255)," +
     COLUMN_IMAGE + " VARCHAR(255)" +
@@ -45,6 +40,7 @@ const create = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "(" +
 // create a component
 class ProductsManager extends Component {
     _TABLE_NAME_ = "products";
+    _COLUMN_ID_ = COLUMN_ID;
     _COLUMN_REF_ = "ref";
     _COLUMN_CODEBARRE_ = "barcode";
     _COLUMN_EMPLACEMENT_ = "emplacement";
@@ -124,9 +120,17 @@ class ProductsManager extends Component {
             try{
                 for(let x = 0; x < data_.length; x++){
                     data_[x].image = "";
+                    console.log("data_ : ", data_[x]);
+
                     await db.transaction(async (tx) => {
-                        await tx.executeSql("INSERT INTO " + TABLE_NAME + " ("+COLUMN_ID+", "+COLUMN_REF+", "+COLUMN_LABEL+", "+COLUMN_CODEBARRE+", "+COLUMN_DESCRIPTION+", "+COLUMN_LOT+", "+COLUMN_DLC+", "+COLUMN_DLUO+", "+COLUMN_EMPLACEMENT+", "+COLUMN_STOCK+", "+COLUMN_IMAGE+") VALUES (NULL, '"+data_[x].ref+"', '"+data_[x].label.replace(/'/g, "''")+"', '"+(data_[x].barcode == null ? "" : data_[x].barcode)+"', "+(data_[x].description == null ? null : "'"+data_[x].description.replace(/'/g, "''")+"'" )+", '"+data_[x].lot+"', '"+data_[x].dlc+"', '"+data_[x].dluo+"', '"+(data_[x].fk_default_warehouse == null ? "" : data_[x].fk_default_warehouse)+"', '"+data_[x].stock_reel+"', '"+data_[x].image+"')", []);
+                        await tx.executeSql("INSERT INTO " + TABLE_NAME + " ("+COLUMN_ID+", "+COLUMN_REF+", "+COLUMN_LABEL+", "+COLUMN_CODEBARRE+", "+COLUMN_DESCRIPTION+", "+COLUMN_EMPLACEMENT+", "+COLUMN_STOCK+", "+COLUMN_IMAGE+") VALUES (NULL, '"+data_[x].ref+"', '"+data_[x].label.replace(/'/g, "''")+"', '"+(data_[x].barcode == null ? "" : data_[x].barcode)+"', "+(data_[x].description == null ? null : "'"+data_[x].description.replace(/'/g, "''")+"'" )+", '"+(data_[x].fk_default_warehouse == null ? "" : data_[x].fk_default_warehouse)+"', '"+data_[x].stock_reel+"', '"+data_[x].image+"')", []);
                     });
+
+                    if(data_[x].Lot_DLC_DLUO_Batch != null && data_[x].Lot_DLC_DLUO_Batch.length > 0){
+                        const res = new ProductsLotDlcDluoManager();
+                        await res.initDB();
+                        await res.INSERT_ProductsLotDlcDluo(data_[x].Lot_DLC_DLUO_Batch);
+                    }
                 }
                 return await resolve(true);
             } catch(error){
@@ -143,7 +147,7 @@ class ProductsManager extends Component {
         return await new Promise(async (resolve) => {
             let product = {};
             await db.transaction(async (tx) => {
-                await tx.executeSql("SELECT p."+COLUMN_ID+", p."+COLUMN_REF+", p."+COLUMN_LABEL+", p."+COLUMN_CODEBARRE+", p."+COLUMN_DESCRIPTION+", p."+COLUMN_LOT+", p."+COLUMN_DLC+", p."+COLUMN_DLUO+", p."+COLUMN_IMAGE+" FROM "+TABLE_NAME+" p WHERE p."+COLUMN_REF+" = '"+ref+"'", []).then(async ([tx,results]) => {
+                await tx.executeSql("SELECT p."+COLUMN_ID+", p."+COLUMN_REF+", p."+COLUMN_LABEL+", p."+COLUMN_CODEBARRE+", p."+COLUMN_DESCRIPTION+", p."+COLUMN_IMAGE+" FROM "+TABLE_NAME+" p WHERE p."+COLUMN_REF+" = '"+ref+"'", []).then(async ([tx,results]) => {
                     console.log("Query completed");
                     var len = results.rows.length;
                     for (let i = 0; i < len; i++) {
@@ -169,14 +173,14 @@ class ProductsManager extends Component {
         return await new Promise(async (resolve) => {
             const products = [];
             await db.transaction(async (tx) => {
-                await tx.executeSql('SELECT p.'+COLUMN_ID+', p.'+COLUMN_REF+', p.'+COLUMN_LABEL+', p.'+COLUMN_CODEBARRE+', p.'+COLUMN_DESCRIPTION+', p.'+COLUMN_LOT+', p.'+COLUMN_DLC+', p.'+COLUMN_DLUO+', p.'+COLUMN_IMAGE+' FROM '+TABLE_NAME+' p', []).then(async ([tx,results]) => {
+                await tx.executeSql('SELECT p.'+COLUMN_ID+', p.'+COLUMN_REF+', p.'+COLUMN_LABEL+', p.'+COLUMN_CODEBARRE+', p.'+COLUMN_DESCRIPTION+', p.'+COLUMN_IMAGE+' FROM '+TABLE_NAME+' p', []).then(async ([tx,results]) => {
                     console.log("Query completed");
                     var len = results.rows.length;
                     for (let i = 0; i < len; i++) {
                         let row = results.rows.item(i);
-                        const { id, ref, label, codebarre, description, lot, dlc, dluo, image } = row;
+                        const { id, ref, label, codebarre, description, image } = row;
                         products.push({
-                            id, ref, label, codebarre, description, lot, dlc, dluo, image
+                            id, ref, label, codebarre, description, image
                         });
                     }
                     //console.log(products);
@@ -198,7 +202,7 @@ class ProductsManager extends Component {
 
         return await new Promise(async (resolve) => {
             await db.transaction(async (tx) => {
-                await tx.executeSql("UPDATE " + TABLE_NAME + " SET " + COLUMN_REF + " = "+data_.ref+", "+COLUMN_LABEL+" = "+data_.label.replace(/'/g, "''")+", "+COLUMN_CODEBARRE+" = "+data_.codebarre+", "+COLUMN_DESCRIPTION+" = "+data_.description.replace(/'/g, "''")+", "+COLUMN_LOT+" = "+data_.lot+", "+COLUMN_DLC+" = "+data_.dlc+", "+COLUMN_DLUO+" = "+data_.dluo+", "+COLUMN_EMPLACEMENT+" = "+data_.emplacement+", "+COLUMN_IMAGE+" = "+data_.image+" WHERE " + COLUMN_ID + " = " + data_.id, []);
+                await tx.executeSql("UPDATE " + TABLE_NAME + " SET " + COLUMN_REF + " = "+data_.ref+", "+COLUMN_LABEL+" = "+data_.label.replace(/'/g, "''")+", "+COLUMN_CODEBARRE+" = "+data_.codebarre+", "+COLUMN_DESCRIPTION+" = "+data_.description.replace(/'/g, "''")+", "+COLUMN_EMPLACEMENT+" = "+data_.emplacement+", "+COLUMN_IMAGE+" = "+data_.image+" WHERE " + COLUMN_ID + " = " + data_.id, []);
                 resolve(true);
 
             }).then(async (result) => {

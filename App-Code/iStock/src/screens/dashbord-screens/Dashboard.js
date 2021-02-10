@@ -64,10 +64,10 @@ export default class Dashboard extends Component {
         borderBottomRightRadius: 30,
         paddingHorizontal: 20,
         paddingVertical: 30,
-        height: this.state.orientation === 'portrait' ? '80%' : '60%',
+        height: this.state.orientation === 'portrait' ? '80%' : '75%',
         width: '100%',
         position: "absolute",
-        bottom: this.state.orientation === 'portrait' ? "12%" : "22%",
+        bottom: this.state.orientation === 'portrait' ? "10%" : "10%",
       }
     });
 

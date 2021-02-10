@@ -13,7 +13,7 @@ import ButtonSpinner from 'react-native-button-spinner';
 import LinearGradient from 'react-native-linear-gradient';
 import NavbarPreparation from '../../navbar/navbar-preparation';
 import MyFooter_v2 from '../footers/MyFooter_v2';
-import PreparationButton from '../dashbord-screens/assets/PreparationButton';
+import ShipmentsButton from '../dashbord-screens/assets/ShipmentsButton';
 import SettingsManager from '../../Database/SettingsManager';
 import OrderManager from '../../Database/OrderManager';
 import Statut from '../../utilities/Statut';
@@ -177,10 +177,10 @@ export default class Expeditions extends Component {
               borderBottomLeftRadius: 30,
               borderBottomRightRadius: 30,
               paddingVertical: 30,
-              height: this.state.orientation === 'portrait' ? '84%' : '74%',
+              height: this.state.orientation === 'portrait' ? '80%' : '75%',
               width: '100%',
               position: "absolute",
-              bottom: this.state.orientation === 'portrait' ? "10%" : "15%",
+              bottom: this.state.orientation === 'portrait' ? "10%" : "10%",
             },
             cardViewStyle: {
               width: '95%',
@@ -461,8 +461,8 @@ export default class Expeditions extends Component {
     
     
               {/* Main twist button */}
-              <PreparationButton navigation={this.props.navigation}/>
-              {/* <PreparationButton navigation={this.props.navigation} isFilterPressed={this._onFilterPressed.bind(this)}/> */}
+              <ShipmentsButton navigation={this.props.navigation}/>
+              {/* <ShipmentsButton navigation={this.props.navigation} isFilterPressed={this._onFilterPressed.bind(this)}/> */}
               {/* END Main twist button */}
     
             </View>

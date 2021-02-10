@@ -3,6 +3,32 @@ import {StyleSheet, View, Text, Image, TouchableHighlight, Animated, Alert} from
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import DeviceInfo from 'react-native-device-info';
+import Strings from '../../../utilities/Strings';
+const STRINGS = new Strings();
+
+// Main bouton
+const MAIN_BTN_HEIGHT_TABLETTE = 125;
+const MAIN_BTN_WIDTH_TABLETTE = 125;
+const MAIN_BTN_POSITION_B_TABLETTE = -100;
+const MAIN_BTN_BORDER_RADIUS_TABLETTE = 60;
+
+const MAIN_BTN_HEIGHT_PHONE = 75;
+const MAIN_BTN_WIDTH_PHONE = 75;
+const MAIN_BTN_POSITION_B_PHONE = -60;
+const MAIN_BTN_BORDER_RADIUS_PHONE = 40;
+
+// Main bouton
+const SECONDARY_BTN_HEIGHT_TABLETTE = 100;
+const SECONDARY_BTN_WIDTH_TABLETTE = 100;
+const SECONDARY_BTN_POSITION_B_TABLETTE = -80;
+const SECONDARY_BTN_BORDER_RADIUS_TABLETTE = 50;
+
+const SECONDARY_BTN_HEIGHT_PHONE = 70;
+const SECONDARY_BTN_WIDTH_PHONE = 70;
+const SECONDARY_BTN_POSITION_B_PHONE = -60;
+const SECONDARY_BTN_BORDER_RADIUS_PHONE = 40;
+
+
 
 export default class OrderDetailButton extends Component {
   constructor(props) {
@@ -47,31 +73,22 @@ export default class OrderDetailButton extends Component {
 
     action_1 = () => {
         console.log('action_1');
-        this.props.navigation.goBack();
+        this.props.navigation.navigate("Dashboard");
         this.default__();
     }
     action_2 = () => {
         console.log('action_2');
-        this.default__();
+        this.props.isFilterPressed({isFilter: this.state.isFilter});
+        this.setState({isFilter: !this.state.isFilter});
+        //this.default__();
     }
     action_3 = () => {
         console.log('action_3');
-        this.props.isFilterPressed({isFilter: this.state.isFilter});
-        this.setState({isFilter: !this.state.isFilter});
-        this.default__();
-    }
-    action_4 = () => {
-        console.log('action_4');
-        this.props.isScannerPressed(true);
-        this.default__();
-    }
-    action_5 = () => {
-        console.log('action_5');
         //this.default__();
 
         Alert.alert(
-            "Information sur l'ajout d'un produit",
-            "Le lorem ipsum est, en imprimerie, une suite de mots sans signification utilisée à titre provisoire pour calibrer une mise en page, le texte définitif venant remplacer le faux-texte dès qu'il est prêt ou que la mise en page est achevée. Généralement, on utilise un texte en faux latin, le Lorem ipsum ou Lipsum",
+            STRINGS._INFO_PREPARATION_LIST_TITLE,
+            STRINGS._INFO_PREPARATION_LIST_TEXT,
             [
               {text: 'Ok', onPress: () => true},
             ],
@@ -90,7 +107,7 @@ export default class OrderDetailButton extends Component {
   
     const btn_1X = this.mode.interpolate({
         inputRange: [0, 1],
-        outputRange: [DeviceInfo.isTablet() ? -50 : -25, DeviceInfo.isTablet() ? -200 : -100]
+        outputRange: [DeviceInfo.isTablet() ? -50 : -35, DeviceInfo.isTablet() ? -200 : -120]
     });
   
     const btn_1Y = this.mode.interpolate({
@@ -100,40 +117,20 @@ export default class OrderDetailButton extends Component {
   
     const btn_2X = this.mode.interpolate({
         inputRange: [0, 1],
-        outputRange: [DeviceInfo.isTablet() ? -50 : -25, DeviceInfo.isTablet() ? -160 : -30]
+        outputRange: [DeviceInfo.isTablet() ? -50 : -35, DeviceInfo.isTablet() ? -50 : -35]
     });
   
     const btn_2Y = this.mode.interpolate({
         inputRange: [0, 1],
-        outputRange: [DeviceInfo.isTablet() ? 20 : 0, DeviceInfo.isTablet() ? -150 : -75]
+        outputRange: [DeviceInfo.isTablet() ? 20 : 0, DeviceInfo.isTablet() ? -150 : -90]
     });
   
     const btn_3X = this.mode.interpolate({
         inputRange: [0, 1],
-        outputRange: [DeviceInfo.isTablet() ? -50 : -25, DeviceInfo.isTablet() ? -50 : 30]
+        outputRange: [DeviceInfo.isTablet() ? -50 : -35, DeviceInfo.isTablet() ? 100 : 50]
     });
   
     const btn_3Y = this.mode.interpolate({
-        inputRange: [0, 1],
-        outputRange: [DeviceInfo.isTablet() ? 20 : 0, DeviceInfo.isTablet() ? -150 : -75]
-    });
-
-    const btn_4X = this.mode.interpolate({
-        inputRange: [0, 1],
-        outputRange: [DeviceInfo.isTablet() ? -50 : -25, DeviceInfo.isTablet() ? 65 : 30]
-    });
-  
-    const btn_4Y = this.mode.interpolate({
-        inputRange: [0, 1],
-        outputRange: [DeviceInfo.isTablet() ? 20 : 0, DeviceInfo.isTablet() ? -150 : -75]
-    });
-
-    const btn_5X = this.mode.interpolate({
-        inputRange: [0, 1],
-        outputRange: [DeviceInfo.isTablet() ? -50 : -25, DeviceInfo.isTablet() ? 100 : 50]
-    });
-  
-    const btn_5Y = this.mode.interpolate({
         inputRange: [0, 1],
         outputRange: [DeviceInfo.isTablet() ? 20 : 0, DeviceInfo.isTablet() ? -50 : -25]
     });
@@ -144,35 +141,26 @@ export default class OrderDetailButton extends Component {
             <Animated.View style={{position: 'relative', left: btn_1X, top: btn_1Y }}>
                 <View style={styles.secondaryButtons}>
                     <TouchableOpacity onPress={this.action_1}>
-                    <Icon name="chevron-left" size={DeviceInfo.isTablet() ? 60 : 40} style={{color: "#fff"}} />
+                        {/* <Image style={{width: DeviceInfo.isTablet() ? 50 : 25, height: DeviceInfo.isTablet() ? 80 : 40 }} source={require('../../../../img/return-button-v1.png')}/> */}
+                        <Icon name="chevron-left" size={DeviceInfo.isTablet() ? 60 : 40} style={{color: "#fff"}} />
                     </TouchableOpacity>
                 </View>
             </Animated.View>
 
-            {/* <Animated.View style={{position: 'relative', left: btn_2X, top: btn_2Y }}>
+            <Animated.View style={{position: 'relative', left: btn_2X, top: btn_2Y }}>
                 <View style={styles.secondaryButtons}>
                     <TouchableOpacity onPress={this.action_2}>
-                        <Icon name="plus" size={DeviceInfo.isTablet() ? 60 : 40} style={{color: "#fff"}} />
+                        {/* <Image style={{width: DeviceInfo.isTablet() ? 60 : 40, height: DeviceInfo.isTablet() ? 60 : 40 }} source={require('../../../../img/plus-white.png')}/> */}
+                        <Icon name="filter" size={DeviceInfo.isTablet() ? 60 : 30} style={{color: "#fff"}} />
                     </TouchableOpacity>
                 </View>
-            </Animated.View> */}
+            </Animated.View>
             <Animated.View style={{position: 'relative', left: btn_3X, top: btn_3Y }}>
                 <View style={styles.secondaryButtons}>
                     <TouchableOpacity onPress={this.action_3}>
-                        <Icon name="filter" size={DeviceInfo.isTablet() ? 60 : 40} style={{color: "#fff"}} />
-                    </TouchableOpacity>
-                </View>
-            </Animated.View>
-            <Animated.View style={{position: 'relative', left: btn_4X, top: btn_4Y }}>
-                <View style={styles.secondaryButtons}>
-                    <TouchableOpacity onPress={this.action_4}>
-                        <Icon name="barcode" size={DeviceInfo.isTablet() ? 60 : 40} style={{color: "#fff"}} />
-                    </TouchableOpacity>
-                </View>
-            </Animated.View>
-            <Animated.View style={{position: 'relative', left: btn_5X, top: btn_5Y }}>
-                <View style={styles.secondaryButtons}>
-                    <TouchableOpacity onPress={this.action_5}>
+                        {/* <FontAwesome name="key" color="#05375a" size={60} />  */}
+                        {/* <Image style={{width: DeviceInfo.isTablet() ? 60 : 40, height: DeviceInfo.isTablet() ? 60 : 40 }} source={require('../../../../img/Info.png')}/> */}
+                        {/* <Text>inventory</Text> */}
                         <Icon name="info" size={DeviceInfo.isTablet() ? 60 : 40} style={{color: "#fff"}} />
                     </TouchableOpacity>
                 </View>
@@ -181,6 +169,7 @@ export default class OrderDetailButton extends Component {
             <Animated.View style={[styles.mainBtn, sizeStyle]}>
                 <TouchableOpacity onPress={this.handlePress} underlayColor="#ABCDEF">
                 <Animated.View style={{ transform: [{ rotate: rotation }] }}>
+                    {/* <FontAwesome name="plus" color="#05375a" size={75} />  */}
                     <Image style={{width: DeviceInfo.isTablet() ? 100 : 60 , height: DeviceInfo.isTablet() ? 100 : 60 }} source={require('../../../../img/Logo.png')}/>
                 </Animated.View>
                 </TouchableOpacity>
@@ -195,11 +184,11 @@ const styles = StyleSheet.create({
         backgroundColor: "#FFF",
         alignItems: "center",
         justifyContent: "center",
-        height: DeviceInfo.isTablet() ? 125 : 62, 
-        width: DeviceInfo.isTablet() ? 125 : 62,
-        borderRadius: DeviceInfo.isTablet() ? 60 : 30,
+        height: DeviceInfo.isTablet() ? MAIN_BTN_HEIGHT_TABLETTE : MAIN_BTN_HEIGHT_PHONE, 
+        width: DeviceInfo.isTablet() ? MAIN_BTN_WIDTH_TABLETTE : MAIN_BTN_WIDTH_PHONE,
+        borderRadius: DeviceInfo.isTablet() ? MAIN_BTN_BORDER_RADIUS_TABLETTE : MAIN_BTN_BORDER_RADIUS_PHONE,
         position: "absolute",
-        bottom: DeviceInfo.isTablet() ? -100 : 0,
+        bottom: DeviceInfo.isTablet() ? MAIN_BTN_POSITION_B_TABLETTE : MAIN_BTN_POSITION_B_PHONE,
         shadowColor: "#000",
         shadowRadius: 5,
         shadowOffset: {height: 10},
@@ -208,16 +197,14 @@ const styles = StyleSheet.create({
         borderColor: "#00AAFF"
     },
     secondaryButtons: {
-        width: 10, height: 10,
-        position: "absolute",
-        bottom: DeviceInfo.isTablet() ? -80 : 0,
         alignItems: "center",
         justifyContent: "center",
-        width: DeviceInfo.isTablet() ? 100 : 50,
-        height: DeviceInfo.isTablet() ? 100 : 50,
-        borderRadius: DeviceInfo.isTablet() ? 50 : 25,
+        height: DeviceInfo.isTablet() ? SECONDARY_BTN_HEIGHT_TABLETTE : SECONDARY_BTN_HEIGHT_PHONE, 
+        width: DeviceInfo.isTablet() ? SECONDARY_BTN_WIDTH_TABLETTE : SECONDARY_BTN_WIDTH_PHONE,
+        borderRadius: DeviceInfo.isTablet() ? SECONDARY_BTN_BORDER_RADIUS_TABLETTE : SECONDARY_BTN_BORDER_RADIUS_PHONE,
+        position: "absolute",
+        bottom: DeviceInfo.isTablet() ? SECONDARY_BTN_POSITION_B_TABLETTE : SECONDARY_BTN_POSITION_B_PHONE,
         backgroundColor: "#ABCDEF"
     }
 });
-  
   

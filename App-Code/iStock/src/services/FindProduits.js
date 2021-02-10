@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import axios from 'axios';
 import ProductsManager from '../Database/ProductsManager';
+import ProductsLotDlcDluoManager from '../Database/ProductsLotDlcDluoManager';
 
 const LIMIT = "50";
 
@@ -17,6 +18,10 @@ class FindProduits extends Component {
         const productsManager = new ProductsManager();
         await productsManager.initDB();
         await productsManager.CREATE_PRODUCT_TABLE();
+
+        const productsLotDlcDluoManager = new ProductsLotDlcDluoManager();
+        await productsLotDlcDluoManager.initDB();
+        await productsLotDlcDluoManager.CREATE_ProductsLotDlcDluo_TABLE();
     
         console.log('productsManager', 'getAllProductsFromServer()');
         console.log('token', token);
@@ -26,8 +31,8 @@ class FindProduits extends Component {
     
         return await new Promise(async (resolve)=> {
           while(i_ < 600){
-            console.log(`${token.server}/api/index.php/products?sortfield=t.rowid&sortorder=ASC&limit=${LIMIT}&page=${i_}&DOLAPIKEY=${token.token}`);
-            await axios.get(`${token.server}/api/index.php/products?sortfield=t.rowid&sortorder=ASC&limit=${LIMIT}&page=${i_}`, 
+            console.log(`${token.server}/api/index.php/istockapi/products?sortfield=t.rowid&sortorder=ASC&limit=${LIMIT}&page=${i_}&DOLAPIKEY=${token.token}`);
+            await axios.get(`${token.server}/api/index.php/istockapi/products?sortfield=t.rowid&sortorder=ASC&limit=${LIMIT}&page=${i_}`, 
                 { headers: { 'DOLAPIKEY': token.token, 'Accept': 'application/json' } })
             .then(async (response) => {
                 if(response.status == 200){

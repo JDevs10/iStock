@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
 
   cardViewStyle: {
     justifyContent: 'center',
-    width: '90%',
+    width: '98%',
     height: 450,
     marginBottom: 20,
   },

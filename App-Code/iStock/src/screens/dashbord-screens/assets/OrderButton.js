@@ -3,6 +3,8 @@ import {StyleSheet, View, Text, Image, TouchableHighlight, Animated, Alert} from
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import DeviceInfo from 'react-native-device-info';
+import Strings from '../../../utilities/Strings';
+const STRINGS = new Strings();
 
 export default class OrderButton extends Component {
   constructor(props) {
@@ -78,7 +80,7 @@ export default class OrderButton extends Component {
   
     const btn_1X = this.mode.interpolate({
         inputRange: [0, 1],
-        outputRange: [DeviceInfo.isTablet() ? -50 : -25, DeviceInfo.isTablet() ? -200 : -100]
+        outputRange: [DeviceInfo.isTablet() ? -50 : -35, DeviceInfo.isTablet() ? -200 : -120]
     });
   
     const btn_1Y = this.mode.interpolate({
@@ -98,7 +100,7 @@ export default class OrderButton extends Component {
   
     const btn_3X = this.mode.interpolate({
         inputRange: [0, 1],
-        outputRange: [DeviceInfo.isTablet() ? -50 : -25, DeviceInfo.isTablet() ? 100 : 50]
+        outputRange: [DeviceInfo.isTablet() ? -50 : -35, DeviceInfo.isTablet() ? 100 : 50]
     });
   
     const btn_3Y = this.mode.interpolate({

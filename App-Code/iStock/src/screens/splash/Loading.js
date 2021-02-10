@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { StyleSheet, View, StatusBar, Text, ImageBackground, Image, AsyncStorage } from 'react-native';
+import { StyleSheet, View, StatusBar, Text, ImageBackground, Image, AsyncStorage, Alert, BackHandler } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import MyFooter from '../footers/MyFooter';
 import {
@@ -11,6 +11,7 @@ import {
 } from 'react-native/Libraries/NewAppScreen';
 import FindServers from '../../services/FindServers';
 import TokenManager from '../../Database/TokenManager';
+import Scanner from '../../utilities/Scanner';
 const BG = require('../../../img/waiting_bg.png');
 
 
@@ -31,7 +32,8 @@ class Loading extends Component {
         ...this.state,
         loadingNotify: 'Téléchargement des configs du serveur...'
       });
-    }, 3000);
+    }, 500);
+
 
     //find token
     const tm = new TokenManager();
@@ -57,7 +59,21 @@ class Loading extends Component {
         this.props.navigation.navigate('login');
       }, 2500);
     } else {
-      alert("Le serveur Big Data Consulting n'est pas joignable...\n");
+      Alert.alert(
+        "Fermeture iStock",
+        "Le serveur Big Data Consulting n'est pas joignable...",
+        [
+          { text: 'Ok', onPress: () => {
+            this.setState({loadingNotify: "Fermeture...."});
+            setTimeout(() => { 
+              BackHandler.exitApp(); 
+            }, 3000);
+            } 
+          },
+        ],
+        { cancelable: false }
+      );
+
     }
   }
 
@@ -65,6 +81,8 @@ class Loading extends Component {
 
     return (
       <View style={styles.container}>
+        <Scanner />
+
         <View style={styles.backgroundContainer}>
           <Image source={BG} style={styles.backdrop} />
         </View>

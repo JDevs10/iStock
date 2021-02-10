@@ -17,13 +17,13 @@ import TokenManager from '../../Database/TokenManager';
 import OrderLinesFilter from './assets/OrderLinesFilter';
 import PickingPopUp from './assets/PickingPopUp';
 import moment from "moment";
-import { CameraKitCameraScreen, } from 'react-native-camera-kit';
+import Scanner from '../../utilities/Scanner';
 
 
 let PICKING_ACTION = 1;
 
 // create a component
-class CommandeDetails extends Component {
+class CommandeDetails extends Scanner{
   
     constructor(props){
         super(props);
@@ -59,9 +59,6 @@ class CommandeDetails extends Component {
             pickingMimLimit: 0,
           },
           orientation: isPortrait() ? 'portrait' : 'landscape',
-          //variable to hold the QR / Barecode value
-          qrvalue: '',
-          opneScanner: false,
         };
         
         // Event Listener for orientation changes
@@ -81,6 +78,8 @@ class CommandeDetails extends Component {
       await this._orderLinesData();
       //await this._shipmentData();
 
+      this.scannerEnable();
+
       this.listener = await this.props.navigation.addListener('focus', async () => {
         // Prevent default action
         await this._settings();
@@ -89,6 +88,8 @@ class CommandeDetails extends Component {
         await this.setState({orderId: this.props.route.params.order.commande_id});
         this.setState({data: []});
         await this._orderLinesData();
+
+        this.scannerEnable();
         return;
       });
     }
@@ -113,7 +114,128 @@ class CommandeDetails extends Component {
       });
     }
 
-    _onPickingOk(product){
+    async _onPickingOk(product){
+
+      console.log("cmd : ", this.props.route.params.order);
+      console.log("product : ", product);
+      const cmd_header = this.props.route.params.order;
+
+      // check if shipment obj exist in db
+      const sm = new ShipmentsManager();
+      await sm.initDB();
+      const isShipment = await sm.GET_SHIPMENTS_BY_ORIGIN(cmd_header.commande_id).then(async (val) => {
+          return val;
+      });
+
+      if(isShipment == null){
+        // create shipment obj & array lines
+        const SHIPMENT = {
+          id: null,
+          ref: "SH-PROV-"+moment(),
+          project_id: null,
+          socid: cmd_header.socId,
+          origin_id: cmd_header.commande_id,
+          origin:"commande",
+          entrepot_id: null,
+          projectid: null,
+          shipping_method_id: 2,
+          shipping_method: "Génerict Transport", 
+          user_author_id: 1, // need current user token id
+          origin_type: (product.origin_type == null ? "" : product.origin_type),
+          weight: (product.weight == null ? "0" : product.weight),
+          weight_units: (product.weight_units == null ? "0" : product.weight_units),
+          size_w: (product.sizeW == null ? "0" : product.sizeW),
+          width_units: (product.width_units == null ? "0" : product.width_units),
+          size_h: (product.sizeH == null ? "0" : product.sizeH),
+          height_units: (product.height_units == null ? "0" : product.height_units),
+          size_s: (product.sizeS == null ? "0" : product.sizeS),
+          depth_units: (product.depth_units == null ? "0" : product.depth_units),
+          true_size: "xx",
+          date_delivery: (cmd_header.date_livraison == null ? "null" : cmd_header.date_livraison),
+          tracking_number: (product.tracking_number == null ? "" : product.tracking_number),
+          tracking_url: (product.tracking_url == null ? "" : product.tracking_url),
+          statut: 0, //brouillion / draft
+          lines: [
+            {
+              id: null,
+              fk_expedition: product.fk_expedition,
+              entrepot_id: product.entrepot_id,
+              origin_line_id: product.origin_line_id,
+              qty: product.qty,
+              rang: product.rang,
+              array_options: []
+            }
+          ]
+        };
+
+        console.log('SHIPMENT', SHIPMENT);
+
+        //insert to db header + lines
+        await sm.initDB();
+        const isShipment_ = await sm.INSERT_SHIPMENTS([SHIPMENT]).then(async (val) => {
+            return val;
+        });
+
+        if(isShipment_){
+          alert("Expédition créé !");
+        }else{
+          alert("Expédition non créé !");
+        }
+
+      } else{
+        //shipment existe so check picked line
+        const slm = new ShipmentLinesManager();
+        await slm.initDB();
+        const isShipmentLine = await slm.GET_SHIPMENT_LINE_BY_ORIGIN_LINE_ID(product.origin_line_id).then(async (val) => {
+            return val;
+        });
+
+        const SHIPMENT_LINE = {
+          id: null,
+          fk_expedition: product.fk_expedition,
+          entrepot_id: product.entrepot_id,
+          origin_line_id: product.origin_line_id,
+          qty: product.qty,
+          rang: product.rang,
+          array_options: []
+        };
+        await slm.initDB();
+
+        if(isShipmentLine == null){
+          
+          const isShipmentLine_ = await slm.INSERT_SHIPMENT_LINES([SHIPMENT_LINE]).then(async (val) => {
+              return val;
+          });
+
+          if(isShipmentLine_){
+            alert("Produit ajouté dans l'expédition !");
+          }else{
+            alert("Produit non ajouté dans l'expédition !");
+          }
+
+        }else{
+
+          const isShipmentLine_ = await slm.UPDATE_SHIPMENT_LINE([SHIPMENT_LINE]).then(async (val) => {
+            return val;
+          });
+
+          if(isShipmentLine_){
+            alert("Produit mit à jour dans l'expédition !");
+          }else{
+            alert("Produit non à jour dans l'expédition !");
+          }
+
+        }
+
+      }
+      
+
+      //  If true: update db obj line
+      //  Else true: create it
+
+
+      // {"brouillon": "null", "client_name": "Développeur @JL", "commande_id": 672, "date_commande": "1603929600", "date_creation": "1603929600", "date_livraison": 1604448000, "id": 45, "is_sync": 1, "lines_nb": 4, "note_privee": "", "note_public": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor. Cras elementum ultrices diam. Maecenas ligula massa, varius a, semper congue, euismod non, mi. Proin porttitor, orci nec nonummy molestie, enim est eleifend mi, non fermentum diam nisl sit amet erat. Duis semper. Duis arcu massa, scelerisque vitae, consequat in, pretium a, enim. Pellentesque congue. Ut in risus volutpat libero pharetra tempor. Cras vestibulum bibendum augue. Praesent egestas leo in pede. Praesent blandit odio eu enim. Pellentesque sed dui ut augue blandit sodales. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Aliquam nibh. Mauris ac mauris sed pede pellentesque fermentum. Maecenas adipiscing ante non diam sodales hendrerit.", "ref_client": undefined, "ref_commande": "CMD201029-000414", "remise": "0", "remise_absolue": "null", "remise_percent": "0", "socId": 2254, "statut": 3, "total_ht": "56.20000000", "total_ttc": "56.20000000", "total_tva": "0.00000000", "user": " SuperAdmin", "user_author_id": 1}
+
       this.setState({
         isPopUpVisible: false,
         // pickingDataSelected: {product: product, _opacity_: 1, pickingMaxLimit: product.qty, pickingMimLimit: 0}
@@ -134,7 +256,7 @@ class CommandeDetails extends Component {
       await this.setState({isLoading: true});
 
       const olm = new OrderLinesManager();
-      const data = await olm.GET_LINES_BY_ORDER_ID(this.state.orderId).then(async (val) => {
+      const data = await olm.GET_LINES_BY_ORDER_ID_v2(this.state.orderId).then(async (val) => {
         return await val;
       });
       console.log("res data", data);
@@ -214,88 +336,12 @@ class CommandeDetails extends Component {
       //await this._getPickingData();
     }
 
-    /*
-    (){
-      this.setState({prepareMode: {saisi: false, barecode: true}})
-      this.props.navigation.navigate("Scanner");
-    }
-	*/
-
-    onBarcodeScan(qrvalue) {
-      //called after te successful scanning of QRCode/Barcode
-      this.setState({ qrvalue: qrvalue });
-      this.setState({ opneScanner: false });
-      console.log('qrvalue : ', qrvalue);
-      console.log('opneScanner : ', false);
-
-      let isFound = false;
-      let product = null;
-      const data_ = this.state.data;
-      for(let x=0; x<data_.length; x++){
-        //console.log('barcode : '+data_[x].barcode+' || qrvalue : '+qrvalue);
-
-        if(data_[x].barcode == qrvalue){
-          console.log('barcode found !: ', data_[x].barcode);
-          console.log('produit : ', data_[x]);
-          isFound = true;
-          product = data_[x];
-          break;
-        }
-      }
-
-      if(isFound){
-        this.prepareProduct(product);
-      }
-      else{
-        Alert.alert(
-          "Scanner",
-          "Le scanner n'a pas pu trouver le code-barres \""+qrvalue+"\" du produit dans la commande à préparer.",
-          [
-            {text: 'Ok', onPress: () => true},
-          ],
-          { cancelable: false });
-      }
-
-    }
-
-    onOpneScanner() {
-      var that = this;
-      //To Start Scanning
-      if(Platform.OS === 'android'){
-        async function requestCameraPermission() {
-          try {
-          const granted = await PermissionsAndroid.request(
-              PermissionsAndroid.PERMISSIONS.CAMERA,{
-              'title': 'Permission Caméra',
-              'message': 'Permettre à iStock de utiliser la caméra, pour scanner les QR Code ou Barecode'//'CameraExample App needs access to your camera '
-              }
-          )
-          if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-              //If CAMERA Permission is granted
-              that.setState({ qrvalue: '' });
-              that.setState({ opneScanner: true });
-              console.log('opneScanner : ', true);
-          } else {
-              alert("CAMERA permission denied");
-          }
-          } catch (err) {
-          alert("Camera permission err",err);
-          console.warn(err);
-          }
-        }
-        //Calling the camera permission function
-        requestCameraPermission();
-      }
-      else{
-        that.setState({ qrvalue: '' });
-        that.setState({ opneScanner: true });
-        console.log('opneScanner : ', true);
-      }
-    }
-
+    
 
 
     render() {
+
+      console.log("Scanner res => ", this.getScannerResult());
       
         const styles = StyleSheet.create({
           container: {
@@ -310,10 +356,10 @@ class CommandeDetails extends Component {
             borderBottomRightRadius: 30,
             paddingHorizontal: 20,
             paddingVertical: 30,
-            height: this.state.orientation === 'portrait' ? '84%' : '74%',
+            height: this.state.orientation === 'portrait' ? '80%' : '75%',
             width: '100%',
             position: "absolute",
-            bottom: this.state.orientation === 'portrait' ? "10%" : "15%",
+            bottom: this.state.orientation === 'portrait' ? "10%" : "10%",
             opacity: this.state._opacity_,
           },
           cardViewStyle: {
@@ -339,7 +385,7 @@ class CommandeDetails extends Component {
             //alignItems: 'center',
           },
           aname: {
-            width: '80%',
+            width: '100%',
           },
           articlename: {
             color: '#00AAFF',
@@ -403,7 +449,7 @@ class CommandeDetails extends Component {
             justifyContent: "center",
             alignContent: "center",
             alignItems: "center",
-            margin: 20,
+            margin: 10,
             marginBottom: 70,
           },
           lastCard_text: {
@@ -425,7 +471,6 @@ class CommandeDetails extends Component {
 
         return (
           <View style={styles.container}>
-            {!this.state.opneScanner ? 
             <LinearGradient
                 start={{x: 0.0, y: 1}} end={{x: 0.5, y: 1}}
                 colors={['#00AAFF', '#706FD3']}
@@ -443,12 +488,12 @@ class CommandeDetails extends Component {
                       <ScrollView>
                         {
                           this.state.data.map((item, index) => (
-                              <View>
+                              <View key={index} >
 
                               <TouchableOpacity onPress={() => this.prepareProduct(item)} onLongPress={() => this.productDetails(item)}>
 
                                 {this.state.settings.isUseDetailedCMDLines ? 
-                                  <CardView key={index} cardElevation={10} cornerRadius={5} style={[styles.cardViewStyle, {height: 230}]}>
+                                  <CardView cardElevation={10} cornerRadius={5} style={[styles.cardViewStyle,]}>
                                     <View style={styles.cardViewStyle1}>
                                       <View style={[styles.article, { flexDirection: "row" }]}>
                                         <View>
@@ -459,39 +504,26 @@ class CommandeDetails extends Component {
                                             <View style={styles.aname}>
                                               <Text style={styles.articlename}>{item.libelle}</Text>
                                             </View>
-                                            <View style={styles.aref}>
-                                              <Text style={styles.ref}>{item.ref}</Text>
-                                            </View>
                                           </View>
                                           <View style={styles.ic_and_details}>
                                             <Icon name="tag" size={15} style={styles.iconDetails} />
-                                            <Text>Lot : <Text style={{fontWeight: "bold"}}>xxxxxxxxxx</Text></Text>
+                                            <Text>Ref : <Text style={{fontWeight: "bold"}}>{item.ref}</Text></Text>
                                           </View>
                                           <View style={styles.ic_and_details}>
-                                            <Icon name="calendar-alt" size={15} style={styles.iconDetails} />
-                                            <Text>DLC : <Text style={{fontWeight: "bold"}}>{moment(new Date(new Number("1601892911000"))).format('DD-MM-YYYY')}</Text></Text>
+                                            <Icon name="tag" size={15} style={styles.iconDetails} />
+                                            <Text>CodeBarre : <Text style={{fontWeight: "bold"}}>{item.barcode}</Text></Text>
                                           </View>
                                           <View style={styles.ic_and_details}>
-                                            <Icon name="calendar-alt" size={15} style={styles.iconDetails} />
-                                            <Text>DLUO : <Text style={{fontWeight: "bold"}}>{moment(new Date(new Number("1601892911000"))).format('DD-MM-YYYY')}</Text></Text>
+                                            <Icon name="boxes" size={15} style={styles.iconDetails} />
+                                            <Text>{item.stock} en Stock</Text>
                                           </View>
                                           <View style={styles.ic_and_details}>
-                                            <Icon name="warehouse" size={15} style={styles.iconDetails} />
-                                            <Text>Enplacement : <Text style={{fontWeight: "bold"}}>{item.emplacement == null || item.emplacement == '' ? "Pas emplacement assigné" : item.emplacement}</Text></Text>
+                                            <Icon name="boxes" size={15} style={styles.iconDetails} />
+                                            <Text>{item.qty} Commandé</Text>
                                           </View>
-                                          <View style={[styles.ic_and_details, {width: "100%", justifyContent: "space-between"}]}>
-                                            <View style={{width: "30%", flexDirection: "row", justifyContent: "flex-start"}}>
-                                              <Icon name="boxes" size={15} style={styles.iconDetails} />
-                                              <Text>{item.stock} en Stock</Text>
-                                            </View>
-                                            <View style={{width: "30%", flexDirection: "row", justifyContent: "center", marginRight: 20}}>
-                                              <Icon name="boxes" size={15} style={styles.iconDetails} />
-                                              <Text>{item.qty} Commandé</Text>
-                                            </View>
-                                            <View style={{width: "30%", flexDirection: "row", justifyContent: "flex-end", marginRight: 20}}>
-                                              <Icon name="truck-loading" size={15} style={styles.iconDetails} />
+                                          <View style={styles.ic_and_details}>
+                                          <Icon name="truck-loading" size={15} style={styles.iconDetails} />
                                               <Text>{item.prepare_shipping_qty == null ? "0 Préparé": item.prepare_shipping_qty+" Préparé"}</Text>
-                                            </View>
                                           </View>
 
                                           <View style={{ borderBottomColor: '#00AAFF', borderBottomWidth: 1, marginRight: 10 }} />
@@ -507,7 +539,7 @@ class CommandeDetails extends Component {
                                     </View>
                                   </CardView>
                                 : 
-                                  <CardView key={index} cardElevation={10} cornerRadius={5} style={[styles.cardViewStyle, {height: 120}]}>
+                                  <CardView cardElevation={10} cornerRadius={5} style={[styles.cardViewStyle,]}>
                                     <View style={styles.cardViewStyle1}>
                                       <View style={[styles.article, {flexDirection: "row"}]}>
                                         <View style={{flex: 1, marginLeft: 10}}>
@@ -572,45 +604,6 @@ class CommandeDetails extends Component {
         </View>
         <MyFooter_v2 />
       </LinearGradient>
-
-      :
-
-      <View style={{ flex: 1, width: "100%", height: "100%"}}>
-        <CameraKitCameraScreen
-          showFrame={true}
-          //Show/hide scan frame
-          scanBarcode={true}
-          //Can restrict for the QR Code only
-          laserColor={'#00AAFF'}
-          //Color can be of your choice
-          frameColor={'#706FD3'}
-          //If frame is visible then frame color
-          colorForScannerFrame={'black'}
-          //Scanner Frame color
-          onReadCode={event =>
-              this.onBarcodeScan(event.nativeEvent.codeStringValue)
-          }
-          cameraOptions={{
-              flashMode: 'auto',                // on/off/auto(default)
-              focusMode: 'on',                  // off/on(default)
-              zoomMode: 'on',                   // off/on(default)
-              ratioOverlay:'1:1',               // optional
-              ratioOverlayColor: '#00000077'    // optional
-          }}
-          resetFocusTimeout={0}               // optional
-          resetFocusWhenMotionDetected={true} // optional
-          />
-
-        <View style={{height: 50, width: "100%", alignItems: "center", marginBottom: 200}}>
-          <TouchableHighlight
-            onPress={() => {this.setState({opneScanner: false}); }}
-            style={{backgroundColor: "#00AAFF", justifyContent: "center", alignItems: "center", height:"100%", width: 200, }}>
-            <Text style={{color: '#FFFFFF', fontSize: 20 }}>Back</Text>
-          </TouchableHighlight>
-        </View>
-      </View>
-      }
-
     </View>
     );
   }

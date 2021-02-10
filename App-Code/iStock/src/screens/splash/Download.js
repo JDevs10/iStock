@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { StyleSheet, View, Text, ImageBackground, Image, StatusBar, AsyncStorage } from 'react-native';
+import { StyleSheet, View, Text, ImageBackground, Image, StatusBar, AsyncStorage, Alert, BackHandler } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import MyFooter from '../footers/MyFooter';
 import FindProduits from '../../services/FindProduits';
@@ -9,6 +9,7 @@ import FindCommandes from '../../services/FindCommandes';
 import FindCommandesLines from '../../services/FindCommandesLines';
 import FindUsers from '../../services/FindUsers';
 import FindWarehouses from '../../services/FindWarehouses';
+import FindShipments from '../../services/FindShipments';
 import SettingsManager from '../../Database/SettingsManager';
 import TokenManager from '../../Database/TokenManager';
 import CheckData from '../../services/CheckData';
@@ -89,7 +90,7 @@ class Download extends Component {
 
     
     let currentStep = 1;
-    let allSteps = 7;
+    let allSteps = 8;
     const res = [];
 
     // 1 // Get all users info from server
@@ -205,7 +206,7 @@ class Download extends Component {
     currentStep++;
 
 
-    // 7 // Get all orders lines from server
+    // 7 // Get all warehouse lines from server
     setTimeout(() => {
       this.setState({
         ...this.state,
@@ -220,6 +221,24 @@ class Download extends Component {
       return val;
     });
     res.push(res7);
+    currentStep++;
+    
+
+    // 8 // Get all shipments and shipment lines from server
+    setTimeout(() => {
+      this.setState({
+        ...this.state,
+        loadingNotify: 'Téléchargement des Expeditions...'+currentStep+'/'+allSteps
+      });
+    }, 3000);
+
+    const findShipments = new FindShipments();
+    const res8 = await findShipments.getAllShipmentsFromServer(token).then(async (val) => {
+      console.log('findShipments.getAllShipmentsFromServer : ');
+      console.log(val);
+      return val;
+    });
+    res.push(res8);
     currentStep++;
 
 
@@ -238,7 +257,20 @@ class Download extends Component {
         return;
       }, 2500);
     } else {
-      alert("Le serveur Big Data Consulting n'est pas joignable...\n");
+      Alert.alert(
+        "Fermeture iStock",
+        "Le serveur Big Data Consulting n'est pas joignable...",
+        [
+          { text: 'Ok', onPress: () => {
+            this.setState({loadingNotify: "Fermeture...."});
+            setTimeout(() => { 
+              BackHandler.exitApp(); 
+            }, 3000);
+            } 
+          },
+        ],
+        { cancelable: false }
+      );
     }
     
   }

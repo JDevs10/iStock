@@ -26,6 +26,7 @@
     "react-native-button-spinner": "^0.1.4",
     "react-native-camera-kit": "^8.0.4",
     "react-native-cardview": "^2.0.5",
+    "react-native-datawedge-intents": "^0.1.5",
     "react-native-datepicker": "^1.7.2",
     "react-native-device-info": "^5.6.1",
     "react-native-dialogs": "^1.1.1",

@@ -284,7 +284,7 @@ class SignIn extends React.Component {
       }
 
       const user = new UserServices();
-      user.SigningIn(data__);
+      user.SigningIn(data_);
     };
 
     return (
@@ -483,12 +483,12 @@ class SignIn extends React.Component {
 
                       {this.state.secureKeyTextEntry ?
                         <Feather
-                          name="eye"
+                          name="eye-off"
                           color="#4A4AD4"
                           size={20} />
                         :
                         <Feather
-                          name="eye-off"
+                          name="eye"
                           color="#4A4AD4"
                           size={20} />
                       }
@@ -564,7 +564,7 @@ const styles = StyleSheet.create({
     // paddingHorizontal: 20,
     // paddingTop: 20,
     // paddingBottom: 30,
-    height: '25%',
+    height: '20%',
     width: '100%',
     position: "absolute"
   },
@@ -582,7 +582,7 @@ const styles = StyleSheet.create({
     height: '70%',
     width: '100%',
     position: "absolute",
-    bottom: 60,
+    bottom: 40,
   },
   text_header: {
     padding: 20,

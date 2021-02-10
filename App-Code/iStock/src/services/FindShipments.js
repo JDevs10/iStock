@@ -21,6 +21,8 @@ class FindShipments extends Component {
     await shipmentsLinesManager.initDB();
     await shipmentsLinesManager.CREATE_SHIPMENT_LINES_TABLE();
 
+    return true;
+    /*
     console.log('shipmentsManager', 'ShipmentsManager()');
     console.log('token', token);
     
@@ -34,7 +36,7 @@ class FindShipments extends Component {
             { headers: { 'DOLAPIKEY': token.token, 'Accept': 'application/json' } })
         .then(async (response) => {
             if(response.status == 200){
-                //console.log(response.data);
+                console.log(response.data);
 
                 const res_1 = await shipmentsManager.INSERT_SHIPMENTS(response.data);
                 console.log('res_1 : ', res_1);
@@ -65,6 +67,11 @@ class FindShipments extends Component {
         });
       }
     });
+    */
+
+  }
+
+  async getShipmentByOriginId(token, origin_id){
 
   }
 

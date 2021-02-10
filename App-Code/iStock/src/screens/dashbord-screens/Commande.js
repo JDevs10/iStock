@@ -114,10 +114,10 @@ class Commande extends Component {
         borderBottomLeftRadius: 30,
         borderBottomRightRadius: 30,
         paddingVertical: 30,
-        height: this.state.orientation === 'portrait' ? '84%' : '74%',
+        height: this.state.orientation === 'portrait' ? '80%' : '75%',
         width: '100%',
         position: "absolute",
-        bottom: this.state.orientation === 'portrait' ? "10%" : "15%",
+        bottom: this.state.orientation === 'portrait' ? "10%" : "10%",
       },
       ref_container: {
         backgroundColor: '#dbdbdb',

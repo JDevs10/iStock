@@ -63,7 +63,7 @@ class Settings extends Component {
       isUseImages: (list == null ? false : list.isUseImages),
       isUseDetailedCMD: (list == null ? false : list.isUseDetailedCMD),
       isUseDetailedCMDLines: (list == null ? false : list.isUseDetailedCMDLines),
-      appVersion: "1.0",
+      appVersion: "0.53.6",
     });
   }
 
@@ -214,10 +214,10 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 30,
     paddingHorizontal: 20,
     paddingVertical: 30,
-    height: '60%',
+    height: '65%',
     width: '100%',
     position: "absolute",
-    bottom: 120,
+    bottom: "10%",
   },
   text_header: {
     padding: 20,
@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
   },
   action_:{
     flexDirection: 'row',
-    width: 350,
+    width: '100%',
   },
   actionError: {
     flexDirection: 'row',

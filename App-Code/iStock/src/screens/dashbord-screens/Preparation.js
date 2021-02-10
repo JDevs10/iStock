@@ -202,10 +202,10 @@ class Preparation extends Component {
         borderBottomLeftRadius: 30,
         borderBottomRightRadius: 30,
         paddingVertical: 30,
-        height: this.state.orientation === 'portrait' ? '84%' : '74%',
+        height: this.state.orientation === 'portrait' ? '80%' : '75%',
         width: '100%',
         position: "absolute",
-        bottom: this.state.orientation === 'portrait' ? "10%" : "15%",
+        bottom: this.state.orientation === 'portrait' ? "10%" : "10%",
       },
       cardViewStyle: {
         width: '95%',
@@ -263,18 +263,23 @@ class Preparation extends Component {
         //alignItems: 'center',
       },
       cname: {
-        width: '80%',
+        width: '70%',
       },
       entreprisename: {
         color: '#00AAFF',
         fontSize: 20,
         //marginBottom: 15,
       },
+      cref: {
+        width: 140,
+        marginLeft: 'auto'
+      },
       cdate: {
-        width: '20%',
+        width: 130,
         textAlign: 'center',
         justifyContent: 'center',
         alignItems: 'center',
+        marginLeft: 'auto'
       },
       date: {
         backgroundColor: '#dbdbdb',
@@ -354,13 +359,13 @@ class Preparation extends Component {
             style={{ flex: 1 }}>
             {
               this.state.data.map((item, index) => (
-                <View>
+                <View key={index} >
                   {/* {item.statut === 1 ? */}
                     {!this.state.isLoading ? 
                       <View>
                         {this.state.settings.isUseDetailedCMD ? 
 
-                          <CardView key={index} cardElevation={10} cornerRadius={5} style={styles.cardViewStyle}>
+                          <CardView cardElevation={10} cornerRadius={5} style={styles.cardViewStyle}>
                             <View style={styles.cardViewStyle1}>
                               <View style={styles.order}>
                                 <TouchableOpacity onPress={() => this._Showcommande(item)}>
@@ -368,7 +373,7 @@ class Preparation extends Component {
                                     <View style={styles.cname}>
                                       <Text style={styles.entreprisename}>{item.client_name}</Text>
                                     </View>
-                                    <View style={styles.cdate}>
+                                    <View style={styles.cref}>
                                       {item.id == 0 ? (<Text>Nouvelle commande</Text>) : (<Text style={styles.ref}>{item.ref_commande}</Text>)}
                                     </View>
                                   </View>
@@ -381,7 +386,7 @@ class Preparation extends Component {
                                     <Text>{item.lines_nb} Produit(s)</Text>
                                   </View>
                                   <View style={styles.ic_and_details}>
-                                    <View style={{flexDirection: "row", width: "80%"}}>
+                                    <View style={{flexDirection: "row", width: "50%"}}>
                                       <Icon name="calendar-alt" size={15} style={styles.iconDetails} />
                                       <Text>Faite le : <Text style={{fontWeight: "bold"}}>{moment(new Date(new Number(item.date_commande+"000"))).format('DD-MM-YYYY')}</Text></Text>
                                     </View>
@@ -410,7 +415,7 @@ class Preparation extends Component {
                             </View>
                           </CardView>
                         : 
-                          <CardView key={index} cardElevation={5} cornerRadius={5} style={[styles.cardViewStyle, {height: 120}]}>
+                          <CardView cardElevation={5} cornerRadius={5} style={[styles.cardViewStyle, {height: 120}]}>
                             <View style={[styles.cardViewStyle1, {paddingTop: 0}]}>
                                 <View style={styles.order}>
                                     <TouchableOpacity onPress={() => this._Showcommande(item)}>

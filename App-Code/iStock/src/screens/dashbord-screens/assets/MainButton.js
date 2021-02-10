@@ -4,6 +4,29 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import DeviceInfo from 'react-native-device-info';
 
+// Main bouton
+const MAIN_BTN_HEIGHT_TABLETTE = 125;
+const MAIN_BTN_WIDTH_TABLETTE = 125;
+const MAIN_BTN_POSITION_B_TABLETTE = -100;
+const MAIN_BTN_BORDER_RADIUS_TABLETTE = 60;
+
+const MAIN_BTN_HEIGHT_PHONE = 75;
+const MAIN_BTN_WIDTH_PHONE = 75;
+const MAIN_BTN_POSITION_B_PHONE = -60;
+const MAIN_BTN_BORDER_RADIUS_PHONE = 40;
+
+// Main bouton
+const SECONDARY_BTN_HEIGHT_TABLETTE = 100;
+const SECONDARY_BTN_WIDTH_TABLETTE = 100;
+const SECONDARY_BTN_POSITION_B_TABLETTE = -80;
+const SECONDARY_BTN_BORDER_RADIUS_TABLETTE = 50;
+
+const SECONDARY_BTN_HEIGHT_PHONE = 70;
+const SECONDARY_BTN_WIDTH_PHONE = 70;
+const SECONDARY_BTN_POSITION_B_PHONE = -60;
+const SECONDARY_BTN_BORDER_RADIUS_PHONE = 40;
+
+
 export default class MainButton extends Component {
     constructor(props){
         super(props);
@@ -76,7 +99,7 @@ export default class MainButton extends Component {
   
     const btn_1X = this.mode.interpolate({
         inputRange: [0, 1],
-        outputRange: [DeviceInfo.isTablet() ? -50 : -25, DeviceInfo.isTablet() ? -200 : -100]
+        outputRange: [DeviceInfo.isTablet() ? -50 : -35, DeviceInfo.isTablet() ? -200 : -120]
     });
   
     const btn_1Y = this.mode.interpolate({
@@ -86,17 +109,17 @@ export default class MainButton extends Component {
   
     const btn_2X = this.mode.interpolate({
         inputRange: [0, 1],
-        outputRange: [DeviceInfo.isTablet() ? -50 : -25, DeviceInfo.isTablet() ? -50 : -25]
+        outputRange: [DeviceInfo.isTablet() ? -50 : -35, DeviceInfo.isTablet() ? -50 : -35]
     });
   
     const btn_2Y = this.mode.interpolate({
         inputRange: [0, 1],
-        outputRange: [DeviceInfo.isTablet() ? 20 : 0, DeviceInfo.isTablet() ? -150 : -75]
+        outputRange: [DeviceInfo.isTablet() ? 20 : 0, DeviceInfo.isTablet() ? -150 : -90]
     });
   
     const btn_3X = this.mode.interpolate({
         inputRange: [0, 1],
-        outputRange: [DeviceInfo.isTablet() ? -50 : -25, DeviceInfo.isTablet() ? 100 : 50]
+        outputRange: [DeviceInfo.isTablet() ? -50 : -35, DeviceInfo.isTablet() ? 100 : 50]
     });
   
     const btn_3Y = this.mode.interpolate({
@@ -153,11 +176,11 @@ const styles = StyleSheet.create({
         backgroundColor: "#FFF",
         alignItems: "center",
         justifyContent: "center",
-        height: DeviceInfo.isTablet() ? 125 : 62, 
-        width: DeviceInfo.isTablet() ? 125 : 62,
-        borderRadius: DeviceInfo.isTablet() ? 60 : 30,
+        height: DeviceInfo.isTablet() ? MAIN_BTN_HEIGHT_TABLETTE : MAIN_BTN_HEIGHT_PHONE, 
+        width: DeviceInfo.isTablet() ? MAIN_BTN_WIDTH_TABLETTE : MAIN_BTN_WIDTH_PHONE,
+        borderRadius: DeviceInfo.isTablet() ? MAIN_BTN_BORDER_RADIUS_TABLETTE : MAIN_BTN_BORDER_RADIUS_PHONE,
         position: "absolute",
-        bottom: DeviceInfo.isTablet() ? -100 : 0,
+        bottom: DeviceInfo.isTablet() ? MAIN_BTN_POSITION_B_TABLETTE : MAIN_BTN_POSITION_B_PHONE,
         shadowColor: "#000",
         shadowRadius: 5,
         shadowOffset: {height: 10},
@@ -166,14 +189,13 @@ const styles = StyleSheet.create({
         borderColor: "#00AAFF"
     },
     secondaryButtons: {
-        width: 10, height: 10,
-        position: "absolute",
-        bottom: DeviceInfo.isTablet() ? -80 : 0,
         alignItems: "center",
         justifyContent: "center",
-        width: DeviceInfo.isTablet() ? 100 : 50,
-        height: DeviceInfo.isTablet() ? 100 : 50,
-        borderRadius: DeviceInfo.isTablet() ? 50 : 25,
+        height: DeviceInfo.isTablet() ? SECONDARY_BTN_HEIGHT_TABLETTE : SECONDARY_BTN_HEIGHT_PHONE, 
+        width: DeviceInfo.isTablet() ? SECONDARY_BTN_WIDTH_TABLETTE : SECONDARY_BTN_WIDTH_PHONE,
+        borderRadius: DeviceInfo.isTablet() ? SECONDARY_BTN_BORDER_RADIUS_TABLETTE : SECONDARY_BTN_BORDER_RADIUS_PHONE,
+        position: "absolute",
+        bottom: DeviceInfo.isTablet() ? SECONDARY_BTN_POSITION_B_TABLETTE : SECONDARY_BTN_POSITION_B_PHONE,
         backgroundColor: "#ABCDEF"
     }
 });

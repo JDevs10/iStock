@@ -26,13 +26,29 @@ class UserServices extends Component {
         });
         console.log('server_list : ', servers);
 
+        let isServerActive = false;
         for(let i = 0; i < servers.length; i++){
             if(account.entreprise == servers[i].name){
                 account.serverUrl = servers[i].url;
+                account.serverStatus = servers[i].status;
+                isServerActive = true;
                 break;
             }
         }
 
+        // Check if the server exist and avaiable
+        if(!isServerActive){
+            if(account.serverUrl == null || account.serverUrl == ""){
+                console.log("Le server " + account.entreprise + " n'est pas joignable ou configuré dans iApps");
+                alert("Le server " + account.entreprise + " n'est pas joignable ou configuré dans iApps");
+                return;
+            }
+            if(account.serverStatus == null || account.serverStatus != 1){
+                console.log("Le server " + account.entreprise + " est inactive !");
+                alert("Le server " + account.entreprise + " est inactive !");
+                return;
+            }
+        }
         // console.log('end: ', account);
 
         //login
@@ -110,6 +126,7 @@ class UserServices extends Component {
         console.log('SigningIn');
         console.log(account);
 
+        console.log(`${account.server}/api/index.php/istockapi/login`);
         axios.post(`${account.server}/api/index.php/istockapi/login`,
             {
                 login: account.identifiant,
@@ -140,6 +157,7 @@ class UserServices extends Component {
                 };
                 console.log(user_data);
 
+                console.log(`${account.server}/api/index.php/istockapi/authentifications/create?DOLAPIKEY${account.key}`);
                 axios.post(`${account.server}/api/index.php/istockapi/authentifications/create`, 
                     user_data, 
                     { headers: { 'DOLAPIKEY': account.key, 'Accept': 'application/json' } })
@@ -167,6 +185,7 @@ class UserServices extends Component {
             isUser = false;
             console.log('error 1 : ');
             console.log( error);
+            console.log( error.response.code);
             console.log( error.response.request._response);
             alert("Vous n'avez pas de compte sur " + account.server);
         });

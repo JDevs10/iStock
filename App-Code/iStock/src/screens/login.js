@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
   header: {
     // paddingBottom: 30,
     // paddingTop: 20,
-    height: '44%',
+    height: '20%',
     width: '100%',
     position: "absolute"
   },
@@ -276,10 +276,10 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 30,
     paddingHorizontal: 20,
     paddingVertical: 30,
-    height: '50%',
+    height: '65%',
     width: '100%',
     position: "absolute",
-    bottom: '5%',
+    bottom: 40,
   },
   text_footer: {
     color: '#05375a',

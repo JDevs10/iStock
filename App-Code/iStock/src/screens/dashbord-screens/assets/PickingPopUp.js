@@ -126,81 +126,23 @@ export default class PickingPopUp extends Component {
 
 
     picking_Cancel(){
-        // this.setState({isPopUpVisible: false, _opacity_: 1});
         this.props.onPickingClose(this.state.product);
     }
   
     picking_OK(product){
-        const PICK = {
-          action: PICKING_ACTION,
-          product_id: product.id,
-          product_ref: product.ref,
-          product_stock: product.qty,
-          order_qty: product.qty,
-          prepare_qty: product.addRemoveNothing
-        }
+        console.log("picking_OK(product) :=> ", product);
   
-  
-  
-        //check if this article was picked before
-        /*
-        let isPickedBefore = false;
-        const newPickingLineData = this.state.pickingLineData;
-        for(let x = 0; x < newPickingLineData.length; x++){
-          if(newPickingLineData[x].ref != null && newPickingLineData[x].barcode != null){
-            
-            const data__ = this.state.data;
-            for(let y = 0; y < data__.length; y++){
-              if(newPickingLineData[x].ref == data__[y].ref && newPickingLineData[x].barcode == data__[y].barcode){
-                isPickedBefore = true;
-                newPickingLineData[x].prepare_qty = PICK.prepare_qty;
-              }
-            }
-            
-          }
-        }
-  
-        if(!isPickedBefore){
-          console.log('PICK || isPickedBefore == false : ', PICK);
-          newPickingLineData.push(PICK);
-          this.setState({pickingLineData : newPickingLineData});
-        }
-        console.log('PICK || isPickedBefore == true : ', PICK);
-        */
-        
-        
-  
-        const COLUMN_ID = null;
-        const COLUMN_ROWID = null;
-        const COLUMN_ORIGIN_ID = "origin_id";
-        const COLUMN_LINE_ID = "line_id";
-        const COLUMN_FK_ORIGIN = "fk_origin";
-        const COLUMN_FK_EXPEDITION = "fk_expedition";
-        const COLUMN_ORIGIN_LINE_ID = "origin_line_id";
-        const COLUMN_FK_ORIGIN_LINE = "fk_origin_line";
-        const COLUMN_FK_PRODUCT = "fk_product";
-        const COLUMN_ENTREPOT_ID = "entrepot_id";
-        const COLUMN_QTY = "qty";
-        const COLUMN_QTY_ASK = "qty_ask";
-        const COLUMN_QTY_SHIPPED = "qty_shipped";
-        const COLUMN_REF = "ref";
-        const COLUMN_PRODUCT_REF = "product_ref";
-        const COLUMN_LIBELLE = "libelle";
-        const COLUMN_PRODUCT_LABEL = "product_label";
-        const COLUMN_DESC = "desc";
-        const COLUMN_DESCRIPTION = "description";
-        const COLUMN_DETAILS_ENTREPOT__ENTREPOT_ID = "details_entrepot__entrepot_id";
-        const COLUMN_DETAILS_ENTREPOT__QTY_SHIPPED = "details_entrepot__qty_shipped";
-        const COLUMN_DETAILS_ENTREPOT__LINE_ID = "details_entrepot__line_id";
-        const COLUMN_PRICE = "price";   // total ht
-        
-  
-        
-  
-        //this.setState({isPopUpVisible: false, _opacity_: 1, addRemoveNothing: PICK.prepare_qty});
-        // this.setState({isPopUpVisible: false, _opacity_: 1,});
-
-        this.props.onPickingOk(PICK);
+        //prepare shipment line obj
+        const PICK_LINE = {
+          fk_expedition: product.fk_commande,
+          entrepot_id: product.emplacement_id,
+          origin_line_id: product.order_line_id,
+          qty: product.prepare_shipping_qty,
+          rang: product.rang,
+          array_options: []
+        };
+        // return line obj to main called class
+        this.props.onPickingOk(PICK_LINE);
     }
 
 
@@ -346,17 +288,17 @@ export default class PickingPopUp extends Component {
                     colors={['#00AAFF', '#706FD3']}
                     style={{width: "100%", flexDirection: "row", justifyContent: "flex-end", }}>
 
-                        <TouchableOpacity
-                            style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 5, borderWidth: 1, borderColor: "#706FD3"}}
-                            onPress={() => {this.picking_Cancel()}}>
-                            <Text style={{fontSize: 20, fontWeight: "bold", color: "#706FD3"}}>Annuler</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 5, borderWidth: 1, borderColor: "#706FD3"}}
-                            onPress={() => this.picking_OK(this.state.pickingDataSelected.product)}>
-                            <Text style={{fontSize: 20, fontWeight: "bold", color: "#706FD3"}}>Ok</Text>
-                        </TouchableOpacity>
-                    </LinearGradient>
+                    <TouchableOpacity
+                        style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 5, borderWidth: 1, borderColor: "#706FD3"}}
+                        onPress={() => {this.picking_Cancel()}}>
+                        <Text style={{fontSize: 20, fontWeight: "bold", color: "#706FD3"}}>Annuler</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 5, borderWidth: 1, borderColor: "#706FD3"}}
+                        onPress={() => this.picking_OK(this.state.pickingDataSelected.product)}>
+                        <Text style={{fontSize: 20, fontWeight: "bold", color: "#706FD3"}}>Ok</Text>
+                    </TouchableOpacity>
+                </LinearGradient>
 
                     <View style={{padding: 20,}}>
 
