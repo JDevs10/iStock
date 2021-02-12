@@ -148,11 +148,10 @@ class ProductDetails extends Component {
         borderBottomRightRadius: 30,
         paddingHorizontal: 20,
         paddingVertical: 30,
-        height: this.state.orientation === 'portrait' ? '84%' : '74%',
+        height: this.state.orientation === 'portrait' ? '80%' : '75%',
         width: '100%',
         position: "absolute",
-        bottom: this.state.orientation === 'portrait' ? "10%" : "20%",
-        marginBottom: 5
+        bottom: this.state.orientation === 'portrait' ? "10%" : "10%",
       },
       cardViewStyle: {
         width: '95%',
@@ -281,15 +280,18 @@ class ProductDetails extends Component {
     });
 
 
+
     return (
       <LinearGradient
         start={{ x: 0.0, y: 1 }} end={{ x: 0.5, y: 1 }}
         colors={['#00AAFF', '#706FD3']}
         style={styles.container}>
 
-        <NavbarDashboard navigation={this.props} textTittleValue={Object.keys(this.state.data).length == 0 ? "Aucun Produit" : "Produit " + product.name} />
+        <NavbarDashboard navigation={this.props} textTittleValue={Object.keys(this.state.data).length == 0 ? "Aucun Produit" : product.libelle} />
         <View style={styles.mainBody}>
-          <ScrollView style={{ flex: 1 }}>
+          <ScrollView 
+            nestedScrollEnabled = {true}
+            style={{ flex: 1 }}>
 
             {Object.keys(this.state.data).length == 0 ? 
             <View>
@@ -301,58 +303,72 @@ class ProductDetails extends Component {
             </View>
             :
             <View>
-              <Text>{JSON.stringify(this.state.data)}</Text>
+              {/* <Text>{JSON.stringify(product)}</Text> */}
 
               <CardView cardElevation={10} cornerRadius={5} style={styles.cardViewStyle}>
                 <View style={styles.cardViewStyle1}>
-                  <View style={[styles.article, { flexDirection: "row" }]}>
-                    <View>
+                  <View style={[styles.article, ]}>
+                    <View style={{justifyContent: "center",alignContent: "center",alignItems: "center",}}>
                       {this.state.settings.isUseImages ? 
-                        <Image style={{ width: DeviceInfo.isTablet() ? 400 : 50, height: DeviceInfo.isTablet() ? 400 : 50 }} source={{uri: product.image}} />
+                        <Image style={{ width: DeviceInfo.isTablet() ? 400 : 100, height: DeviceInfo.isTablet() ? 400 : 100 }} source={{uri: product.image}} />
                       : 
-                        <Image style={{ width: DeviceInfo.isTablet() ? 400 : 50, height: DeviceInfo.isTablet() ? 400 : 50 }} source={require('../../../img/no_image.jpeg')} />
+                        <Image style={{ width: DeviceInfo.isTablet() ? 400 : 100, height: DeviceInfo.isTablet() ? 400 : 100 }} source={require('../../../img/no_image.jpeg')} />
                       }
-                      </View>
-                    <View style={{ flex: 1, marginLeft: 40 }}>
+                    </View>
+                    <View style={{ flex: 1, marginLeft: 0 }}>
                       <View style={styles.ic_and_details}>
                         <View style={styles.aname}>
                           <Text style={styles.articlename}>{product.name}</Text>
-                          <View style={{ flexDirection: "row", marginTop: 10 }}>
+                          <View style={{ flexDirection: "row", marginTop: 0 }}>
                             <Text style={styles.subtexts}>Référence : </Text>
                             <Text style={styles.ref}>{product.ref}</Text>
                           </View>
-                          <View style={{ flexDirection: "row", marginBottom: 50 }}>
+                          <View style={{ flexDirection: "row", marginBottom: 0 }}>
                             <Text style={styles.subtexts}>Code-Barre : </Text>
-                            <Text style={styles.ref}>xxxxxxxx</Text>
+                            <Text style={styles.ref}>{product.barcode}</Text>
                           </View>
                         </View>
                       </View>
                       <View style={[styles.ic_and_details]}>
                         <View>
                           <Text style={styles.subtexts}>Description : </Text>
-                          <Text>XXXXXXXXXXXXXXXXXXXXXXXXXX XXXXXX XXXXXXXXXXX XX XXXXX XX  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</Text>
+                          <Text>{product.description}</Text>
                         </View>
                       </View>
-                      <View style={[styles.ic_and_details, { marginTop: 40 }]}>
-                        <Icon name="boxes" size={15} style={styles.iconDetails} />
-                        <Text>XXX en stock</Text>
-                      </View>
-                      <View style={[styles.ic_and_details]}>
-                        <Icon name="boxes" size={15} style={styles.iconDetails} />
-                        <Text>N°Lot : XXXXXXXXXXX</Text>
-                      </View>
-                      <View style={[styles.ic_and_details]}>
-                        <Icon name="boxes" size={15} style={styles.iconDetails} />
-                        <Text>DLC : xx/xx/xxxx</Text>
-                      </View>
-                      <View style={[styles.ic_and_details]}>
-                        <Icon name="boxes" size={15} style={styles.iconDetails} />
-                        <Text>DLUO : xx/xx/xxxx</Text>
-                      </View>
-                      <View style={[styles.ic_and_details]}>
-                        <Icon name="boxes" size={15} style={styles.iconDetails} />
-                        <Text>Emplacement : xxxxx</Text>
-                      </View>
+
+                      {product.productLotDlcDluoData != null ?
+                        <View style={{height: 170, marginTop: 20, marginBottom: 20, marginRight: 10}}>
+                          <Text style={styles.subtexts}>Les entrepots</Text>
+                          <ScrollView
+                              nestedScrollEnabled = {true}
+                              style={{
+                                  borderWidth: 2,
+                                  borderColor: "#000",
+                                  borderRadius: 2,}}>
+                              {product.productLotDlcDluoData.map((item, index) => (
+                                  <View key={index}>
+                                    <TouchableOpacity
+                                        style={[{
+                                            borderWidth: 2,
+                                            borderColor: "#dbdbdb",
+                                            borderRadius: 5,
+                                            padding: 5,
+                                            margin: 5,}, item.styles
+                                        ]}>
+                                        <Text style={styles.subtexts}>Entrepot : <Text style={{color: "#000", fontSize: 15, fontWeight: "bold",}}>{item.entrepot}</Text></Text>
+                                        <Text style={styles.subtexts}>Lot : <Text style={{color: "#000", fontSize: 15, fontWeight: "bold",}}>{item.batch}</Text></Text>
+                                        <Text style={styles.subtexts}>DLC : <Text style={{color: "#000", fontSize: 15, fontWeight: "bold",}}>{item.eatby}</Text></Text>
+                                        <Text style={styles.subtexts}>DLUO : <Text style={{color: "#000", fontSize: 15, fontWeight: "bold",}}>{item.sellby}</Text></Text>
+                                        <Text style={styles.subtexts}>Stock : <Text style={{color: "#000", fontSize: 15, fontWeight: "bold",}}>{item.stock}</Text></Text>
+                                    </TouchableOpacity>
+                                  </View>
+                                ))}
+                          </ScrollView>
+                        </View>
+                      :
+                        null
+                      }
+
                     </View>
                   </View>
                 </View>

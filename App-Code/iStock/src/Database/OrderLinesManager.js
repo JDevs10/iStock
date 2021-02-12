@@ -5,6 +5,8 @@ import SQLite from 'react-native-sqlite-storage';
 import DatabaseInfo from './DatabaseInfo';
 import ProductsManager from './ProductsManager';
 import WarehouseManager from './WarehouseManager';
+import ProductsLotDlcDluoManager from './ProductsLotDlcDluoManager';
+import ShipmentLinesManager from './ShipmentLinesManager';
 SQLite.DEBUG(true);
 SQLite.enablePromise(true);
 
@@ -219,6 +221,7 @@ class OrderLinesManager extends Component {
         console.log("##### GET_LINES_BY_ORDER_ID-v2 #########################");
         const pm = new ProductsManager();
         const wm = new WarehouseManager();
+        const sml = new ShipmentLinesManager();
 
         console.log("Order id Lines SQL => : SELECT l." + COLUMN_ID + ", l." + COLUMN_ORDER_ID + ", l." + COLUMN_ORDER_LINE_ID + ", l." + COLUMN_LABEL + ", l." + COLUMN_REF + ", l." + COLUMN_RANG + ", l." +COLUMN_QTE + ", l." +COLUMN_PRICE + ", l." +COLUMN_TVA_TX + ", l." +COLUMN_TOTAL_HT + ", l." +COLUMN_TOTAL_TVA + ", l." +COLUMN_TOTAL_TTC + ", (SELECT "+wm._COLUMN_ID_+" from "+wm._TABLE_NAME_+" as w where p."+pm._COLUMN_EMPLACEMENT_+" = w."+wm._COLUMN_ID_+") as emplacement_id, (SELECT "+wm._COLUMN_LABEL_+" from "+wm._TABLE_NAME_+" as w where p."+pm._COLUMN_EMPLACEMENT_+" = w."+wm._COLUMN_ID_+") as emplacement, p."+pm._COLUMN_STOCK_+", p."+pm._COLUMN_CODEBARRE_+", p."+pm._COLUMN_REF_+" FROM " + TABLE_NAME + " as l, "+pm._TABLE_NAME_+" as p WHERE l." + COLUMN_ORDER_ID + " = " + id + " AND l."+COLUMN_REF+" = p."+pm._COLUMN_REF_);
 
@@ -226,11 +229,18 @@ class OrderLinesManager extends Component {
             try{
                 const lines = [];
                 await db.transaction(async (tx) => {
-                    await tx.executeSql("SELECT l." + COLUMN_ID + ", l." + COLUMN_ORDER_ID + ", l." + COLUMN_ORDER_LINE_ID + ", l." + COLUMN_LABEL + ", l." + COLUMN_REF + ", l." + COLUMN_RANG + ", l." +COLUMN_QTE + ", l." +COLUMN_PRICE + ", l." +COLUMN_TVA_TX + ", l." +COLUMN_TOTAL_HT + ", l." +COLUMN_TOTAL_TVA + ", l." +COLUMN_TOTAL_TTC + ", (SELECT "+wm._COLUMN_ID_+" from "+wm._TABLE_NAME_+" as w where p."+pm._COLUMN_EMPLACEMENT_+" = w."+wm._COLUMN_ID_+") as emplacement_id, (SELECT "+wm._COLUMN_LABEL_+" from "+wm._TABLE_NAME_+" as w where p."+pm._COLUMN_EMPLACEMENT_+" = w."+wm._COLUMN_ID_+") as emplacement, p."+pm._COLUMN_STOCK_+", p."+pm._COLUMN_CODEBARRE_+", p."+pm._COLUMN_REF_+" FROM " + TABLE_NAME + " as l, "+pm._TABLE_NAME_+" as p WHERE l." + COLUMN_ORDER_ID + " = " + id + " AND l."+COLUMN_REF+" = p."+pm._COLUMN_REF_, [], async (tx, results) => {
+                    await tx.executeSql("SELECT l." + COLUMN_ID + ", l." + COLUMN_ORDER_ID + ", l." + COLUMN_ORDER_LINE_ID + ", p."+pm._COLUMN_PRODUCT_ID_+", l." + COLUMN_LABEL + ", l." + COLUMN_REF + ", l." + COLUMN_RANG + ", l." +COLUMN_QTE + ", l." +COLUMN_PRICE + ", l." +COLUMN_TVA_TX + ", l." +COLUMN_TOTAL_HT + ", l." +COLUMN_TOTAL_TVA + ", l." +COLUMN_TOTAL_TTC + ", (SELECT "+wm._COLUMN_ID_+" from "+wm._TABLE_NAME_+" as w where p."+pm._COLUMN_EMPLACEMENT_+" = w."+wm._COLUMN_ID_+") as emplacement_id, (SELECT "+wm._COLUMN_LABEL_+" from "+wm._TABLE_NAME_+" as w where p."+pm._COLUMN_EMPLACEMENT_+" = w."+wm._COLUMN_ID_+") as emplacement, p."+pm._COLUMN_STOCK_+", p."+pm._COLUMN_CODEBARRE_+", p."+pm._COLUMN_REF_+", p."+pm._COLUMN_DESCRIPTION_+", (SELECT sml."+sml._COLUMN_QTY_+" FROM "+sml._TABLE_NAME_+" as sml WHERE sml."+sml._COLUMN_ORIGIN_LINE_ID_+" = l."+COLUMN_ORDER_LINE_ID+" AND sml."+sml._COLUMN_RANG_+" = l."+COLUMN_RANG+") as prepare_shipping_qty FROM " + TABLE_NAME + " as l, "+pm._TABLE_NAME_+" as p WHERE l." + COLUMN_ORDER_ID + " = " + id + " AND l."+COLUMN_REF+" = p."+pm._COLUMN_REF_, [], async (tx, results) => {
                         var len = results.rows.length;
                         for (let i = 0; i < len; i++) {
-                            let row = results.rows.item(i);
-                            row.prepare_shipping_qty = 0;
+
+                            let row = await results.rows.item(i);
+                            const pldd = new ProductsLotDlcDluoManager();
+                            await pldd.initDB();
+                            const data = await pldd.GET_ProductsLotDlcDluo_BY_PRODUCT_ID(row.product_id).then(async (val) => {
+                                return await val;
+                            });
+                            row.productLotDlcDluoData = data;
+                            row.prepare_shipping_qty = (row.prepare_shipping_qty == null ? 0 : row.prepare_shipping_qty);
                             lines.push(row);
                         }
                         console.log(lines);

@@ -14,6 +14,7 @@ export default class PickingPopUp extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            isShowNextPick: false,
             addRemoveNothing: 0,
             pickingDataSelected: {
                 _opacity_: 1,
@@ -28,15 +29,17 @@ export default class PickingPopUp extends Component {
     }
 
     componentDidMount(){
+        const prepare_shipping_qty = parseInt(this.props.settings.pickingDataSelected.product.prepare_shipping_qty);
+        this.props.settings.pickingDataSelected.product.prepare_shipping_qty = prepare_shipping_qty;
         this.setState({
             addRemoveNothing: this.props.settings.pickingDataSelected.product.prepare_shipping_qty,
             pickingDataSelected: this.props.settings.pickingDataSelected
         });
-        console.log(this.state);
+        console.log(this.state.pickingDataSelected);
     }
 
     handlePrepareScrollOptions = (event) =>{
-        const result = (event.nativeEvent.contentOffset.x / 150) + 1;
+        const result = (event.nativeEvent.contentOffset.x / 100) + 1;
         if(Number.isInteger(result)){
             console.log(result);
             console.log(event);
@@ -145,6 +148,40 @@ export default class PickingPopUp extends Component {
         this.props.onPickingOk(PICK_LINE);
     }
 
+    selectProductWarehouse(data, index){
+        const newData = this.state.pickingDataSelected.product.productLotDlcDluoData;
+        newData.forEach((item, _index_) => {
+            
+            if(index != _index_){
+                item.styles = [{
+                    backgroundColor: "#DBDBDB"
+                }]
+            }else{
+                item.styles = [{
+                    backgroundColor: "#FFFFFF"
+                }]
+            }
+        });
+        const state = this.state;
+        state.isShowNextPick = true;
+        state.pickingDataSelected.product.selectProductWarehouse = data;
+        this.setState({
+            state
+        });
+    }
+
+    unSelectProductWarehouse(){
+        const newData = this.state.pickingDataSelected.product.productLotDlcDluoData;
+        newData.forEach((item, _index_) => {
+            item.styles = [{
+                backgroundColor: "#FFFFFF"
+            }]
+        });
+        this.setState({
+            isShowNextPick: false
+        });
+    }
+
 
   render() {
 
@@ -172,24 +209,20 @@ export default class PickingPopUp extends Component {
         cardViewStyle: {
           width: '95%',
           margin: 10,
-          // marginBottom: 20,
         },
         cardViewStyle1: {
           paddingTop: 10,
           alignItems: 'center',
           flexDirection: 'row',
           width: '95%',
-          //height: 150,
         },
         article: {
-          //alignItems: 'center',
           margin: 20,
           width: '100%'
         },
         ic_and_details: {
           flexDirection: 'row',
           margin: 3,
-          //alignItems: 'center',
         },
         aname: {
           width: '80%',
@@ -197,7 +230,6 @@ export default class PickingPopUp extends Component {
         articlename: {
           color: '#00AAFF',
           fontSize: 20,
-          //marginBottom: 15,
         },
         aref: {
           width: '20%',
@@ -230,8 +262,8 @@ export default class PickingPopUp extends Component {
           // alignContent: "center",
           // alignItems: "center",
           // padding: 20,
-          margin: 20,
-          marginBottom: 70,
+          margin: 10,
+          // marginBottom: 70,
           // position: 'absolute',
         },
         addPopUpCard_body : {
@@ -240,16 +272,9 @@ export default class PickingPopUp extends Component {
         },
         addPopUpCard_title : {
           color: "#00AAFF",
-          fontSize: 30,
+          fontSize: 25,
           fontWeight: "bold",
-          margin: 20
         },
-        // prepareModeStyleSaisi: {
-        //   backgroundColor: (this.state.prepareMode.saisi ? "#dbdbdb" : null)
-        // },
-        // prepareModeStyleBarecode: {
-        //   backgroundColor: (this.state.prepareMode.barecode ? "#dbdbdb" : null)
-        // },
         lastCard: {
           height: 70,
           width: '95%',
@@ -276,138 +301,175 @@ export default class PickingPopUp extends Component {
       });
 
     return (
-      <View>
+    <View>
         <Modal 
             visible={this.props.settings.isPopUpVisible} 
             transparent={true} >
             <View style={{height: "100%", width: "100%", justifyContent: "center"}}>
                 <CardView cardElevation={25} cornerRadius={5} style={[styles.addPopUpCard, {}]}>
-                <View style={styles.addPopUpCard_body}>
-                <LinearGradient
-                    start={{x: 0.0, y: 1}} end={{x: 0.5, y: 1}}
-                    colors={['#00AAFF', '#706FD3']}
-                    style={{width: "100%", flexDirection: "row", justifyContent: "flex-end", }}>
+                    <View style={styles.addPopUpCard_body}>
+                        <LinearGradient
+                            start={{x: 0.0, y: 1}} end={{x: 0.5, y: 1}}
+                            colors={['#00AAFF', '#706FD3']}
+                            style={{width: "100%", flexDirection: "row", justifyContent: "flex-end", }}>
 
-                    <TouchableOpacity
-                        style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 5, borderWidth: 1, borderColor: "#706FD3"}}
-                        onPress={() => {this.picking_Cancel()}}>
-                        <Text style={{fontSize: 20, fontWeight: "bold", color: "#706FD3"}}>Annuler</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 5, borderWidth: 1, borderColor: "#706FD3"}}
-                        onPress={() => this.picking_OK(this.state.pickingDataSelected.product)}>
-                        <Text style={{fontSize: 20, fontWeight: "bold", color: "#706FD3"}}>Ok</Text>
-                    </TouchableOpacity>
-                </LinearGradient>
+                            <TouchableOpacity
+                                style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 5, borderWidth: 1, borderColor: "#706FD3"}}
+                                onPress={() => {this.picking_Cancel()}}>
+                                <Text style={{fontSize: 20, fontWeight: "bold", color: "#706FD3"}}>Annuler</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 5, borderWidth: 1, borderColor: "#706FD3"}}
+                                onPress={() => this.picking_OK(this.state.pickingDataSelected.product)}>
+                                <Text style={{fontSize: 20, fontWeight: "bold", color: "#706FD3"}}>Ok</Text>
+                            </TouchableOpacity>
+                        </LinearGradient>
 
-                    <View style={{padding: 20,}}>
+                        <View style={{padding: 10,}}>
 
-                    <View style={{paddingBottom: 50, width: "100%", flexDirection: "row", justifyContent: "space-between", alignItems: "center"}}>
-                        <Text style={styles.addPopUpCard_title}>Préparation du <Text style={{color: "#000", fontSize: 20, textDecorationLine: 'underline'}}>{this.state.pickingDataSelected.product.barcode}</Text></Text>
-                        {/* <TouchableOpacity
-                            style={[styles.prepareModeStyleSaisi, {flexDirection: "row", justifyContent: "center", alignItems: "center",  borderWidth: 1, borderColor: "#00AAFF", borderTopLeftRadius: 10, borderBottomLeftRadius: 10, width: "15%", height: 50,}]}
-                            onPress={() => this.activeSaisiMode() }>
-                            <Text style={{fontSize: 20, fontWeight: "bold", color: "#00AAFF"}}>Saisi</Text>
-                            <Icon name="edit" size={20} style={{color: "#00AAFF", marginLeft: 10}}/>
-                        </TouchableOpacity> */}
-                        <View style={{backgroundColor: "#dbdbdb", borderRadius: 5, height: 80, width: 150}}>
-                            <ScrollView 
-                                style={{flex: 1}} 
-                                horizontal= {true}
-                                decelerationRate={0}
-                                snapToInterval={150} //your element width
-                                snapToAlignment={"center"}
-                                onScroll={this.handlePrepareScrollOptions}>
-                                {this.state.pickingDataOptions.map((item, index) => (
-                                    <View style={{width: 150, alignItems: "center"}}>
-                                    <Text style={{color: "#00AAFF", fontSize: 25, fontWeight: "bold", margin: 20}}>{item.label}</Text>
+                            <View style={{width: "100%", }}>
+                                <Text style={styles.addPopUpCard_title}>Préparation du <Text style={{color: "#000", fontSize: 20, textDecorationLine: 'underline'}}>{this.state.pickingDataSelected.product.barcode}</Text></Text>
+                                
+                                {this.state.pickingDataSelected.product.productLotDlcDluoData != null ?
+                                    <View style={{height: 170, marginTop: 20, marginBottom: 20 }}>
+                                        <Text style={{color: "#00AAFF", fontSize: 20, fontWeight: "bold"}}>Sélectionner un entrepot</Text>
+                                        <ScrollView
+                                            style={{
+                                                borderWidth: 2,
+                                                borderColor: "#000",
+                                                borderRadius: 2,}}>
+                                            {this.state.pickingDataSelected.product.productLotDlcDluoData.map((item, index) => (
+                                                <View key={index}>
+                                                    <TouchableOpacity
+                                                        style={[{
+                                                            borderWidth: 2,
+                                                            borderColor: "#dbdbdb",
+                                                            borderRadius: 5,
+                                                            padding: 5,
+                                                            margin: 5,}, item.styles
+                                                        ]}
+                                                        onPress={() => this.selectProductWarehouse(item, index)} onLongPress={() => this.unSelectProductWarehouse(item, index)}>
+                                                        <Text style={{fontSize: 15, color: "#00AAFF", fontWeight: "bold",}}>Entrepot : <Text style={{color: "#000", fontSize: 15, fontWeight: "bold",}}>{item.entrepot}</Text></Text>
+                                                        <Text style={{fontSize: 15, color: "#00AAFF", fontWeight: "bold",}}>Lot : <Text style={{color: "#000", fontSize: 15, fontWeight: "bold",}}>{item.batch}</Text></Text>
+                                                        <Text style={{fontSize: 15, color: "#00AAFF", fontWeight: "bold",}}>DLC : <Text style={{color: "#000", fontSize: 15, fontWeight: "bold",}}>{item.eatby}</Text></Text>
+                                                        <Text style={{fontSize: 15, color: "#00AAFF", fontWeight: "bold",}}>DLUO : <Text style={{color: "#000", fontSize: 15, fontWeight: "bold",}}>{item.sellby}</Text></Text>
+                                                        <Text style={{fontSize: 15, color: "#00AAFF", fontWeight: "bold",}}>Stock : <Text style={{color: "#000", fontSize: 15, fontWeight: "bold",}}>{item.stock}</Text></Text>
+                                                    </TouchableOpacity>
+                                                </View>
+                                            ))}
+                                        </ScrollView>
                                     </View>
-                                ))}
-                            </ScrollView>
-                        </View>
-                    </View>
+                                :
+                                    null
+                                }
 
-                    <View style={{width: "100%", alignItems: "center"}}>
-                        
-                    <Text style={{color: "#000", fontWeight: "bold", fontSize: 25, width: 75, marginLeft: 5,  marginRight: 5, textAlign: "center"}}>{this.state.addRemoveNothing} / {this.state.pickingDataSelected.product.qty}</Text>
-                        
-                        <View style={{width: "100%", marginTop: "10%"}}>
-                        {/* <View style={{flexDirection: "row", justifyContent: "center", alignItems: "center"}}>
-                        </View> */}
-
-                        {this.state.pickingDataOptionSelected == 2 ? 
-                                <View style={{flexDirection: "row", justifyContent: "center", alignItems: "center"}}>
-                                    <TouchableOpacity
-                                        style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 100, borderWidth: 1, borderColor: "#00AAFF"}}
-                                        onPress={() => this.remove_100_ToTextInput(this.state.pickingDataSelected.product)}>
-                                        <Icon name="minus" size={20} style={{color: "#00AAFF", marginRight: 10}}/>
-                                        <Text style={{fontSize: 20}}>100</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity
-                                        style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 100, borderWidth: 1, borderColor: "#00AAFF"}}
-                                        onPress={() => this.remove_50_ToTextInput(this.state.pickingDataSelected.product)}>
-                                        <Icon name="minus" size={20} style={{color: "#00AAFF", marginRight: 10}}/>
-                                        <Text style={{fontSize: 20}}>50</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity
-                                        style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 100, borderWidth: 1, borderColor: "#00AAFF"}}
-                                        onPress={() => this.remove_10_ToTextInput(this.state.pickingDataSelected.product)}>
-                                        <Icon name="minus" size={20} style={{color: "#00AAFF", marginRight: 10}}/>
-                                        <Text style={{fontSize: 20}}>10</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity
-                                        style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 100, borderWidth: 1, borderColor: "#00AAFF"}}
-                                        onPress={() => this.remove_1_ToTextInput(this.state.pickingDataSelected.product)}>
-                                        <Icon name="minus" size={20} style={{color: "#00AAFF", marginRight: 10}}/>
-                                        <Text style={{fontSize: 20}}>1</Text>
-                                    </TouchableOpacity>
+                                {this.state.isShowNextPick ? 
+                                    <View style={{width: "100%", flexDirection: "row", justifyContent: "flex-start", marginBottom: 20 }}>
+                                    
+                                    <View style={{height: 35, justifyContent: "center"}}>
+                                        <Text style={{fontSize: 25, color: "#00AAFF", fontWeight: "bold", justifyContent: "center"}}>Mode : </Text>
+                                    </View>
+                                    <View style={{backgroundColor: "#dbdbdb", borderRadius: 5, height: 35, width: 100}}>
+                                        <ScrollView 
+                                            style={{flex: 1}} 
+                                            horizontal= {true}
+                                            decelerationRate={0}
+                                            snapToInterval={100} //your element width
+                                            snapToAlignment={"center"}
+                                            onScroll={this.handlePrepareScrollOptions}>
+                                            {this.state.pickingDataOptions.map((item, index) => (
+                                                <View key={index} style={{width: 100, alignItems: "center"}}>
+                                                    <Text style={{color: "#000000", fontSize: 20, fontWeight: "bold", margin: 1}}>{item.label}</Text>
+                                                </View>
+                                            ))}
+                                        </ScrollView>
+                                    </View>
                                 </View>
-                            : 
+                            :
                                 null
                             }
+                                
+                            </View>
 
-                            {/* <Text style={{color: "#000", fontSize: 20, width: 75, marginLeft: 5,  marginRight: 5, textAlign: "center"}}>{this.state.addRemoveNothing} / {this.state.pickingDataSelected.product.qty}</Text> */}
+                            {this.state.isShowNextPick ? 
+                                <View style={{width: "100%", alignItems: "center"}}>
+                                    
+                                    <Text style={{color: "#000", fontWeight: "bold", fontSize: 25, width: "100%", marginLeft: 5,  marginRight: 5, textAlign: "center"}}>{this.state.addRemoveNothing} / {this.state.pickingDataSelected.product.qty}</Text>
+                                        
+                                    <View style={{width: "100%", marginTop: "10%"}}>
 
-                            {this.state.pickingDataOptionSelected == 1 ? 
-                                <View style={{flexDirection: "row", justifyContent: "center", alignItems: "center"}}>
-                                    <TouchableOpacity
-                                        style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 100, borderWidth: 1, borderColor: "#00AAFF"}}
-                                        onPress={() => this.add_1_ToTextInput(this.state.pickingDataSelected.product)}>
-                                        <Icon name="plus" size={20} style={{color: "#00AAFF", marginRight: 10}}/>
-                                        <Text style={{fontSize: 20}}>1</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity
-                                        style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 100, borderWidth: 1, borderColor: "#00AAFF"}}
-                                        onPress={() => this.add_10_ToTextInput(this.state.pickingDataSelected.product)}>
-                                        <Icon name="plus" size={20} style={{color: "#00AAFF", marginRight: 10}}/>
-                                        <Text style={{fontSize: 20}}>10</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity
-                                        style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 100, borderWidth: 1, borderColor: "#00AAFF"}}
-                                        onPress={() => this.add_50_ToTextInput(this.state.pickingDataSelected.product)}>
-                                        <Icon name="plus" size={20} style={{color: "#00AAFF", marginRight: 10}}/>
-                                        <Text style={{fontSize: 20}}>50</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity
-                                        style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 100, borderWidth: 1, borderColor: "#00AAFF"}}
-                                        onPress={() => this.add_100_ToTextInput(this.state.pickingDataSelected.product)}>
-                                        <Icon name="plus" size={20} style={{color: "#00AAFF", marginRight: 10}}/>
-                                        <Text style={{fontSize: 20}}>100</Text>
-                                    </TouchableOpacity>
+                                        {this.state.pickingDataOptionSelected == 2 ? 
+                                            <View style={{flexDirection: "row", justifyContent: "center", alignItems: "center"}}>
+                                                <TouchableOpacity
+                                                    style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 100, borderWidth: 1, borderColor: "#00AAFF"}}
+                                                    onPress={() => this.remove_100_ToTextInput(this.state.pickingDataSelected.product)}>
+                                                    <Icon name="minus" size={20} style={{color: "#00AAFF", marginRight: 10}}/>
+                                                    <Text style={{fontSize: 20}}>100</Text>
+                                                </TouchableOpacity>
+                                                <TouchableOpacity
+                                                    style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 100, borderWidth: 1, borderColor: "#00AAFF"}}
+                                                    onPress={() => this.remove_50_ToTextInput(this.state.pickingDataSelected.product)}>
+                                                    <Icon name="minus" size={20} style={{color: "#00AAFF", marginRight: 10}}/>
+                                                    <Text style={{fontSize: 20}}>50</Text>
+                                                </TouchableOpacity>
+                                                <TouchableOpacity
+                                                    style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 100, borderWidth: 1, borderColor: "#00AAFF"}}
+                                                    onPress={() => this.remove_10_ToTextInput(this.state.pickingDataSelected.product)}>
+                                                    <Icon name="minus" size={20} style={{color: "#00AAFF", marginRight: 10}}/>
+                                                    <Text style={{fontSize: 20}}>10</Text>
+                                                </TouchableOpacity>
+                                                <TouchableOpacity
+                                                    style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 100, borderWidth: 1, borderColor: "#00AAFF"}}
+                                                    onPress={() => this.remove_1_ToTextInput(this.state.pickingDataSelected.product)}>
+                                                    <Icon name="minus" size={20} style={{color: "#00AAFF", marginRight: 10}}/>
+                                                    <Text style={{fontSize: 20}}>1</Text>
+                                                </TouchableOpacity>
+                                            </View>
+                                        : 
+                                            null
+                                        }
+
+                                        {this.state.pickingDataOptionSelected == 1 ? 
+                                            <View style={{flexDirection: "row", justifyContent: "center", alignItems: "center"}}>
+                                                <TouchableOpacity
+                                                    style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 100, borderWidth: 1, borderColor: "#00AAFF"}}
+                                                    onPress={() => this.add_1_ToTextInput(this.state.pickingDataSelected.product)}>
+                                                    <Icon name="plus" size={20} style={{color: "#00AAFF", marginRight: 10}}/>
+                                                    <Text style={{fontSize: 20}}>1</Text>
+                                                </TouchableOpacity>
+                                                <TouchableOpacity
+                                                    style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 100, borderWidth: 1, borderColor: "#00AAFF"}}
+                                                    onPress={() => this.add_10_ToTextInput(this.state.pickingDataSelected.product)}>
+                                                    <Icon name="plus" size={20} style={{color: "#00AAFF", marginRight: 10}}/>
+                                                    <Text style={{fontSize: 20}}>10</Text>
+                                                </TouchableOpacity>
+                                                <TouchableOpacity
+                                                    style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 100, borderWidth: 1, borderColor: "#00AAFF"}}
+                                                    onPress={() => this.add_50_ToTextInput(this.state.pickingDataSelected.product)}>
+                                                    <Icon name="plus" size={20} style={{color: "#00AAFF", marginRight: 10}}/>
+                                                    <Text style={{fontSize: 20}}>50</Text>
+                                                </TouchableOpacity>
+                                                <TouchableOpacity
+                                                    style={{flexDirection: "row", alignItems: "center", backgroundColor: "#dbdbdb", paddingLeft: 13, paddingTop: 10, paddingBottom: 10, paddingRight: 13, margin: 5, borderRadius: 100, borderWidth: 1, borderColor: "#00AAFF"}}
+                                                    onPress={() => this.add_100_ToTextInput(this.state.pickingDataSelected.product)}>
+                                                    <Icon name="plus" size={20} style={{color: "#00AAFF", marginRight: 10}}/>
+                                                    <Text style={{fontSize: 20}}>100</Text>
+                                                </TouchableOpacity>
+                                            </View>
+                                        : 
+                                            null
+                                        }
+                                    </View>
                                 </View>
-                            : 
+                            :
                                 null
                             }
-                        
-
                         </View>
                     </View>
-                    </View>
-                </View>
                 </CardView>
             </View>
         </Modal>
-      </View>
+    </View>
     );
   }
 }

@@ -16,6 +16,7 @@ import MyFooter_v2 from '../footers/MyFooter_v2';
 import ShipmentsButton from '../dashbord-screens/assets/ShipmentsButton';
 import SettingsManager from '../../Database/SettingsManager';
 import OrderManager from '../../Database/OrderManager';
+import ShipmentsManager from '../../Database/ShipmentsManager';
 import Statut from '../../utilities/Statut';
 import moment from "moment";
 
@@ -93,28 +94,37 @@ export default class Expeditions extends Component {
     }
     
     async _getPickingData(){
-        await this.setState({isLoading: true});
-        let data_ = [];
-    
-        console.log("this.state.filterConfig : ", await Object.keys(this.state.filterConfig).length);
-        if(await Object.keys(this.state.filterConfig).length == 0){
-          const om = new OrderManager();
-          await om.initDB();
-          data_ = await om.GET_ORDER_LIST_BETWEEN_v2(this.state.limit.from, this.state.limit.to).then(async (val) => {
-            //console.log("Order data : ", val);
-            return await val;
-          });
-    
-        }else{
-          const om = new OrderManager();
-          await om.initDB();
-          data_ = await om.GET_ORDER_LIST_BETWEEN_FILTER_v2(this.state.limit.from, this.state.limit.to, this.state.filterConfig).then(async (val) => {
-            //console.log("Order data filtered : ", val);
-            return await val;
-          });
-        }
-    
-        await this.setState({ data: data_, isLoading: false});
+      await this.setState({isLoading: true});
+      let data_ = [];
+  
+      /*
+      console.log("this.state.filterConfig : ", await Object.keys(this.state.filterConfig).length);
+      if(await Object.keys(this.state.filterConfig).length == 0){
+        const om = new OrderManager();
+        await om.initDB();
+        data_ = await om.GET_ORDER_LIST_BETWEEN_v2(this.state.limit.from, this.state.limit.to).then(async (val) => {
+          //console.log("Order data : ", val);
+          return await val;
+        });
+  
+      }else{
+        const om = new OrderManager();
+        await om.initDB();
+        data_ = await om.GET_ORDER_LIST_BETWEEN_FILTER_v2(this.state.limit.from, this.state.limit.to, this.state.filterConfig).then(async (val) => {
+          //console.log("Order data filtered : ", val);
+          return await val;
+        });
+      }
+      */
+
+      const sm = new ShipmentsManager();
+      await sm.initDB();
+      const test_data = await sm.GET_SHIPMENTS_LIST().then(async (val) => {
+        return val;
+      });
+      console.log('test_data: ', test_data);
+  
+      await this.setState({ data: data_, isLoading: false});
     }
 
     

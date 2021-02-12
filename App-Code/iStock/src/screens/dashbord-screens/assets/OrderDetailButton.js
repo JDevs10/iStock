@@ -73,7 +73,7 @@ export default class OrderDetailButton extends Component {
 
     action_1 = () => {
         console.log('action_1');
-        this.props.navigation.navigate("Dashboard");
+        this.props.navigation.goBack();
         this.default__();
     }
     action_2 = () => {

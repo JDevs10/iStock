@@ -17,6 +17,7 @@ const DATABASE_SIZE = DatabaseInfo.DATABASE_SIZE;
 
 const TABLE_NAME = "products";
 const COLUMN_ID = "id";
+const COLUMN_PRODUCT_ID = "product_id";
 const COLUMN_REF = "ref";
 const COLUMN_LABEL = "label";
 const COLUMN_CODEBARRE = "barcode";
@@ -27,6 +28,7 @@ const COLUMN_IMAGE = "image";
 
 const create = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "(" +
     COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+    COLUMN_PRODUCT_ID + " INTEGER(255)," +
     COLUMN_REF + " VARCHAR(255)," +
     COLUMN_LABEL + " VARCHAR(255)," +
     COLUMN_CODEBARRE + " VARCHAR(255)," +
@@ -39,12 +41,14 @@ const create = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "(" +
 
 // create a component
 class ProductsManager extends Component {
-    _TABLE_NAME_ = "products";
+    _TABLE_NAME_ = TABLE_NAME;
     _COLUMN_ID_ = COLUMN_ID;
-    _COLUMN_REF_ = "ref";
-    _COLUMN_CODEBARRE_ = "barcode";
-    _COLUMN_EMPLACEMENT_ = "emplacement";
-    _COLUMN_STOCK_ = "stock";
+    _COLUMN_PRODUCT_ID_ = COLUMN_PRODUCT_ID;
+    _COLUMN_REF_ = COLUMN_REF;
+    _COLUMN_DESCRIPTION_ = COLUMN_DESCRIPTION;
+    _COLUMN_CODEBARRE_ = COLUMN_CODEBARRE;
+    _COLUMN_EMPLACEMENT_ = COLUMN_EMPLACEMENT;
+    _COLUMN_STOCK_ = COLUMN_STOCK;
 
     //Init database
     async initDB() {
@@ -123,7 +127,7 @@ class ProductsManager extends Component {
                     console.log("data_ : ", data_[x]);
 
                     await db.transaction(async (tx) => {
-                        await tx.executeSql("INSERT INTO " + TABLE_NAME + " ("+COLUMN_ID+", "+COLUMN_REF+", "+COLUMN_LABEL+", "+COLUMN_CODEBARRE+", "+COLUMN_DESCRIPTION+", "+COLUMN_EMPLACEMENT+", "+COLUMN_STOCK+", "+COLUMN_IMAGE+") VALUES (NULL, '"+data_[x].ref+"', '"+data_[x].label.replace(/'/g, "''")+"', '"+(data_[x].barcode == null ? "" : data_[x].barcode)+"', "+(data_[x].description == null ? null : "'"+data_[x].description.replace(/'/g, "''")+"'" )+", '"+(data_[x].fk_default_warehouse == null ? "" : data_[x].fk_default_warehouse)+"', '"+data_[x].stock_reel+"', '"+data_[x].image+"')", []);
+                        await tx.executeSql("INSERT INTO " + TABLE_NAME + " ("+COLUMN_ID+", "+COLUMN_PRODUCT_ID+", "+COLUMN_REF+", "+COLUMN_LABEL+", "+COLUMN_CODEBARRE+", "+COLUMN_DESCRIPTION+", "+COLUMN_EMPLACEMENT+", "+COLUMN_STOCK+", "+COLUMN_IMAGE+") VALUES (NULL, "+data_[x].id+", '"+data_[x].ref+"', '"+data_[x].label.replace(/'/g, "''")+"', '"+(data_[x].barcode == null ? "" : data_[x].barcode)+"', "+(data_[x].description == null ? null : "'"+data_[x].description.replace(/'/g, "''")+"'" )+", '"+(data_[x].fk_default_warehouse == null ? "" : data_[x].fk_default_warehouse)+"', '"+data_[x].stock_reel+"', '"+data_[x].image+"')", []);
                     });
 
                     if(data_[x].Lot_DLC_DLUO_Batch != null && data_[x].Lot_DLC_DLUO_Batch.length > 0){

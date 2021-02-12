@@ -8,6 +8,7 @@ import NavbarHome from '../../navbar/navbar-home';
 import MyFooter_v2 from '../footers/MyFooter_v2';
 import DeviceInfo, { isLandscape } from 'react-native-device-info';
 import MainButton from '../dashbord-screens/assets/MainButton';
+import CheckConnections from '../../services/CheckConnections';
 
 
 export default class Dashboard extends Component {
@@ -77,6 +78,8 @@ export default class Dashboard extends Component {
         start={{ x: 0.0, y: 1 }} end={{ x: 0.5, y: 1 }}
         colors={['#00AAFF', '#706FD3']}
         style={styles.container}>
+
+        <CheckConnections/>
 
         <NavbarHome _navigation={this.props} />
         

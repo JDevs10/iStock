@@ -101,6 +101,7 @@ class ShipmentLinesManager extends Component {
                 });
                 return await resolve(true);
             } catch(error){
+                console.log("error: ", error);
                 return await resolve(false);
             }
         });
@@ -222,8 +223,8 @@ class ShipmentLinesManager extends Component {
     }
 
     //Delete
-    async DELETE_SHIPMENTS_LIST(){
-        console.log("##### DELETE_SHIPMENTS_LIST #########################");
+    async DELETE_SHIPMENTS_LINES_LIST(){
+        console.log("##### DELETE_SHIPMENTS_LINES_LIST #########################");
 
         return await new Promise(async (resolve) => {
             await db.transaction(async (tx) => {

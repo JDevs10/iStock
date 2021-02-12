@@ -108,7 +108,7 @@ class ProductsLotDlcDluoManager extends Component {
             try{
                 for(let x = 0; x < data_.length; x++){
                     await db.transaction(async (tx) => {
-                        await tx.executeSql("INSERT INTO " + TABLE_NAME + " ("+COLUMN_ID+", "+COLUMN_ENTREPOT_ID+", "+COLUMN_BATCH+", "+COLUMN_FK_PRODUCT+", "+COLUMN_EAT_BY+", "+COLUMN_SELL_BY+", "+COLUMN_STOCK+") VALUES (1, '"+data_[x].entrepot+"', '"+data_[x].batch+"', '"+data_[x].fk_product+"', '"+data_[x].eatby+"', '"+data_[x].sellby+"', '"+data_[x].reel+"')", []);
+                        await tx.executeSql("INSERT INTO " + TABLE_NAME + " ("+COLUMN_ID+", "+COLUMN_ENTREPOT_ID+", "+COLUMN_BATCH+", "+COLUMN_FK_PRODUCT+", "+COLUMN_EAT_BY+", "+COLUMN_SELL_BY+", "+COLUMN_STOCK+") VALUES (null, '"+data_[x].fk_entrepot+"', '"+data_[x].batch+"', '"+data_[x].fk_product+"', '"+data_[x].eatby+"', '"+data_[x].sellby+"', '"+data_[x].reel+"')", []);
                     });
                 }
                 return await resolve(true);
@@ -123,15 +123,19 @@ class ProductsLotDlcDluoManager extends Component {
         console.log("##### GET_ProductsLotDlcDluo_BY_PRODUCT_ID #########################");
 
         return await new Promise(async (resolve) => {
-            let productsLotDlcDluo = null;
+            let productsLotDlcDluo = [];
             await db.transaction(async (tx) => {
-                await tx.executeSql("SELECT s."+COLUMN_IS_USE_IMAGES+", s."+COLUMN_IS_USE_DETAILED_CMD+", s."+COLUMN_IS_USE_DETAILED_CMD_LINES+" FROM "+TABLE_NAME+" s WHERE s."+COLUMN_ID+" = "+id, []).then(async ([tx,results]) => {
+                await tx.executeSql("SELECT "+COLUMN_ID+", "+COLUMN_ENTREPOT_ID+", "+COLUMN_BATCH+", "+COLUMN_FK_PRODUCT+", "+COLUMN_EAT_BY+", "+COLUMN_SELL_BY+", "+COLUMN_STOCK+" FROM "+TABLE_NAME+" WHERE "+COLUMN_FK_PRODUCT+" = "+id, []).then(async ([tx,results]) => {
                     console.log("Query completed");
-                    productsLotDlcDluo = results.rows;
+
+                    var len = results.rows.length;
+                    for (let i = 0; i < len; i++) {
+                        let row = results.rows.item(i);
+                        productsLotDlcDluo.push(row);
+                    }
+                    console.log(productsLotDlcDluo);
                 });
             }).then(async (result) => {
-                // await this.closeDatabase(db);
-                // console.log('token: ', token);
                 await resolve(productsLotDlcDluo);
             }).catch(async (err) => {
                 console.log(err);

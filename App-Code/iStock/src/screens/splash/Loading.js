@@ -11,6 +11,7 @@ import {
 } from 'react-native/Libraries/NewAppScreen';
 import FindServers from '../../services/FindServers';
 import TokenManager from '../../Database/TokenManager';
+import CheckConnections from '../../services/CheckConnections';
 import Scanner from '../../utilities/Scanner';
 const BG = require('../../../img/waiting_bg.png');
 
@@ -81,7 +82,8 @@ class Loading extends Component {
 
     return (
       <View style={styles.container}>
-        <Scanner />
+        {/* <Scanner /> */}
+        <CheckConnections/>
 
         <View style={styles.backgroundContainer}>
           <Image source={BG} style={styles.backdrop} />

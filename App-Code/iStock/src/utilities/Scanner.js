@@ -271,13 +271,14 @@ export default class Scanner extends React.Component {
     this.state.scans.unshift({ data: scannedData, decoder: scannedType, timeAtDecode: timeOfScan });
     console.log(this.state.scans);
     this.setState(this.state);
-    _SCANNER_RESULT_ = scannedData;
+
+    this.props.onScan({ barcode: scannedData, decoder: scannedType, timeAtDecode: timeOfScan });
   }
 
   render() {
     return (
       <View>
-          <Text></Text>
+          {null}
       </View>
     );
   }

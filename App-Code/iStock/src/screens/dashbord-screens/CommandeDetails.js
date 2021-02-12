@@ -23,7 +23,7 @@ import Scanner from '../../utilities/Scanner';
 let PICKING_ACTION = 1;
 
 // create a component
-class CommandeDetails extends Scanner{
+class CommandeDetails extends React.Component{
   
     constructor(props){
         super(props);
@@ -69,16 +69,13 @@ class CommandeDetails extends Scanner{
         });
     }
 
-    async  componentDidMount(){
+    async componentDidMount(){
 
       this.setState({opneScanner: false});
       this.setState({addRemoveNothing: 0});
 
       await this._settings();
       await this._orderLinesData();
-      //await this._shipmentData();
-
-      this.scannerEnable();
 
       this.listener = await this.props.navigation.addListener('focus', async () => {
         // Prevent default action
@@ -89,7 +86,6 @@ class CommandeDetails extends Scanner{
         this.setState({data: []});
         await this._orderLinesData();
 
-        this.scannerEnable();
         return;
       });
     }
@@ -99,32 +95,35 @@ class CommandeDetails extends Scanner{
     }
 
     prepareProduct(product){
-      console.log('prepareProduct: ', product);
-      this.setState({
-        isPopUpVisible: true,
-        pickingDataSelected: {product: product, _opacity_: 0, pickingMaxLimit: product.qty, pickingMimLimit: 0}
-      });
-      //this.setState({isPopUpVisible: true, _opacity_: 0, pickingMaxLimit: product.qty, pickingMimLimit: 0});
+      if(product.qty != product.prepare_shipping_qty){
+        console.log('prepareProduct: ', product);
+        this.setState({
+          isPopUpVisible: true,
+          pickingDataSelected: {product: product, _opacity_: 0, pickingMaxLimit: product.qty, pickingMimLimit: 0}
+        });
+      }
     }
 
     _onPickingClose(product){
       this.setState({
         isPopUpVisible: false,
-        // pickingDataSelected: {product: product, _opacity_: 1, pickingMaxLimit: product.qty, pickingMimLimit: 0}
       });
     }
 
     async _onPickingOk(product){
-
-      console.log("cmd : ", this.props.route.params.order);
+      // console.log("cmd : ", this.props.route.params.order);
       console.log("product : ", product);
       const cmd_header = this.props.route.params.order;
 
       // check if shipment obj exist in db
       const sm = new ShipmentsManager();
+      const slm = new ShipmentLinesManager();
       await sm.initDB();
+      await slm.initDB();
+      await sm.DELETE_SHIPMENTS_LIST();
+      await slm.DELETE_SHIPMENTS_LINES_LIST();
       const isShipment = await sm.GET_SHIPMENTS_BY_ORIGIN(cmd_header.commande_id).then(async (val) => {
-          return val;
+        return val;
       });
 
       if(isShipment == null){
@@ -263,61 +262,6 @@ class CommandeDetails extends Scanner{
       this.setState({data: data, isLoading: false});
     }
 
-    async _shipmentData(){
-      const tm = new TokenManager();
-      await tm.initDB();
-
-      const token = await tm.GET_TOKEN_BY_ID(1).then(async (val) => {
-        return val;
-      });
-
-      const sm = new ShipmentsManager();
-      await sm.initDB();
-
-      const data = await sm.GET_SHIPMENTS_BY_ORIGIN(this.state.orderId).then(async (val) => {
-        return val;
-      });
-
-      if(data == null){
-        
-        const shipmentHeader = {
-          id: null,
-          origin: "commande",
-          origin_id: ""+this.state.orderId,
-          ref: "SHxxxx-xxxx", // idont know yet
-          socid: this.props.route.params.order.socid,
-          brouillon: null,
-          entrepot_id: null,
-          tracking_number: "",
-          tracking_url: "",
-          date_creation: moment(),
-          date_shipping: "",
-          date_expedition: "",
-          date_delivery: "",
-          statut: "",
-          shipping_method_id: null,
-          total_ht: 0.0,
-          total_tva: 0.0,
-          total_ttc: 0.0,
-          user_author_id: ""+token.userId+"",
-          shipping_method: null,
-          multicurrency_code: "EUR",
-          multicurrency_total_ht: "",
-          multicurrency_total_tva: "",
-          multicurrency_total_ttc: ""
-        };
-
-        const newShipment = await sm.INSERT_SHIPMENTS([shipmentHeader]).then(async (val) => {
-          return val;
-        });
-
-        return await sm.GET_SHIPMENTS_BY_ORIGIN(this.state.orderId).then(async (val) => {
-          return val;
-        });
-      }
-      //this.setState({isSavedShipment: (data == null ? false : true)});
-    }
-
     _onFilterPressed(data){
       console.log("_onFilterPressed : ", data);
       this.setState({isFilter: data.isFilter});
@@ -336,12 +280,45 @@ class CommandeDetails extends Scanner{
       //await this._getPickingData();
     }
 
-    
+    //called after te successful scanning of Barcode
+    async _onScannerDone(data){
+      console.log("_onScannerDone => ", data);
+
+      if(data.barcode != null){
+        let isFound = false;
+        let product = null;
+        const data_ = this.state.data;
+        for(let x=0; x<data_.length; x++){
+          //console.log('barcode : '+data_[x].barcode+' || qrvalue : '+qrvalue);
+
+          if(data_[x].barcode == data.barcode){
+            console.log('barcode found !: ', data_[x].barcode);
+            console.log('produit : ', data_[x]);
+            isFound = true;
+            product = data_[x];
+            break;
+          }
+        }
+
+        if(isFound){
+          this.prepareProduct(product);
+        }
+        else{
+          Alert.alert(
+            "Scanner",
+            "Le scanner n'a pas pu trouver le code-barres \""+data.barcode+"\" du produit dans la commande à préparer.",
+            [
+              {text: 'Ok', onPress: () => true},
+            ],
+            { cancelable: false });
+        }
+      }
+    }
 
 
     render() {
 
-      console.log("Scanner res => ", this.getScannerResult());
+      // console.log("Scanner res => ", this.getScannerResult());
       
         const styles = StyleSheet.create({
           container: {
@@ -471,6 +448,7 @@ class CommandeDetails extends Scanner{
 
         return (
           <View style={styles.container}>
+
             <LinearGradient
                 start={{x: 0.0, y: 1}} end={{x: 0.5, y: 1}}
                 colors={['#00AAFF', '#706FD3']}
@@ -479,6 +457,7 @@ class CommandeDetails extends Scanner{
                 <NavbarOrdersLines navigation={ this.props } textTittleValue={"" + this.props.route.params.order.ref_commande}/>
                 <View style={styles.mainBody}>
 
+                <Scanner onScan={this._onScannerDone.bind(this)}/>
                 <OrderLinesFilter onDataToFilter={this._onDataToFilter.bind(this)} settings={{isFilter: this.state.isFilter}}/>
 
                   {this.state.isPopUpVisible ? 
@@ -488,12 +467,12 @@ class CommandeDetails extends Scanner{
                       <ScrollView>
                         {
                           this.state.data.map((item, index) => (
-                              <View key={index} >
+                            <View key={index} >
 
                               <TouchableOpacity onPress={() => this.prepareProduct(item)} onLongPress={() => this.productDetails(item)}>
 
                                 {this.state.settings.isUseDetailedCMDLines ? 
-                                  <CardView cardElevation={10} cornerRadius={5} style={[styles.cardViewStyle,]}>
+                                  <CardView cardElevation={10} cornerRadius={5} style={[styles.cardViewStyle,{backgroundColor: item.qty == item.prepare_shipping_qty ? "#dbdbdb" : "#FFFFFF"}]}>
                                     <View style={styles.cardViewStyle1}>
                                       <View style={[styles.article, { flexDirection: "row" }]}>
                                         <View>

@@ -143,6 +143,7 @@ class ShipmentsManager extends Component {
                 });
                 return await resolve(true);
             } catch(error){
+                console.log("error: ", error);
                 return await resolve(false);
             }
         });
