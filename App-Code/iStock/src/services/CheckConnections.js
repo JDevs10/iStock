@@ -34,6 +34,16 @@ class CheckConnections extends Component {
         });
     };
 
+    async CheckConnectivity_noNotification(){
+        return await new Promise(async (resolve) => {
+            await NetInfo.fetch().then(async (state) => {
+                console.log('state ', state);
+                await resolve(state.isConnected);
+            });
+        });
+        
+    };
+
     notifyMessage(msg) {
         if (Platform.OS === 'android') {
             ToastAndroid.show(msg, ToastAndroid.SHORT)

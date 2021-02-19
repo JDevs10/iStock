@@ -15,31 +15,38 @@ const DATABASE_SIZE = DatabaseInfo.DATABASE_SIZE;
 
 const TABLE_NAME = "Shipment_lines";
 const COLUMN_ID = "id";
+const COLUMN_SHIPMENT_ID = "shipment_id";
 const COLUMN_ORIGIN_LINE_ID = "origin_line_id";
 const COLUMN_FK_EXPEDITION = "fk_expedition";
 const COLUMN_ENTREPOT_ID = "entrepot_id";
 const COLUMN_QTY = "qty";
 const COLUMN_RANG = "rang";
+const COLUMN_DETAIL_BATCH = "detail_batch";
 
 
 const create = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "(" +
-    COLUMN_ID + " INTEGER(255)," +
+    COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+    COLUMN_SHIPMENT_ID + " INTEGER(255)," +
     COLUMN_ORIGIN_LINE_ID + " VARCHAR(255)," +
     COLUMN_FK_EXPEDITION + " VARCHAR(255)," +
     COLUMN_ENTREPOT_ID + " VARCHAR(255)," +
     COLUMN_QTY + " VARCHAR(255)," +
-    COLUMN_RANG + " VARCHAR(255)" +
+    COLUMN_RANG + " VARCHAR(255)," +
+    COLUMN_DETAIL_BATCH + " VARCHAR(255)" +
 ")";
 
 
 // create a component
 class ShipmentLinesManager extends Component {
+    _COLUMN_ID_ = COLUMN_ID;
     _TABLE_NAME_ = TABLE_NAME;
+    _COLUMN_SHIPMENT_ID_ = COLUMN_SHIPMENT_ID;
     _COLUMN_ORIGIN_LINE_ID_ = COLUMN_ORIGIN_LINE_ID;
     _COLUMN_FK_EXPEDITION_ = COLUMN_FK_EXPEDITION;
     _COLUMN_ENTREPOT_ID_ = COLUMN_ENTREPOT_ID;
     _COLUMN_QTY_ = COLUMN_QTY;
     _COLUMN_RANG_ = COLUMN_RANG;
+    _COLUMN_DETAIL_BATCH_ = COLUMN_DETAIL_BATCH;
 
     //Init database
     async initDB() {
@@ -114,8 +121,8 @@ class ShipmentLinesManager extends Component {
         return await new Promise(async (resolve) => {
             try{
                 for(let x = 0; x < data_.length; x++){
-                    const SQL_INSERT = "INSERT INTO " + TABLE_NAME + " ("+COLUMN_ID+", "+COLUMN_ORIGIN_LINE_ID+", "+COLUMN_FK_EXPEDITION+", "+COLUMN_ENTREPOT_ID+", "+COLUMN_QTY+", "+COLUMN_RANG+") "+
-                        "VALUES ("+data_[x].id+", '"+data_[x].origin_line_id+"', '"+data_[x].fk_expedition+"', '"+data_[x].entrepot_id+"', '"+data_[x].qty+"', '"+data_[x].rang+"')";
+                    const SQL_INSERT = "INSERT INTO " + TABLE_NAME + " ("+COLUMN_ID+", "+COLUMN_SHIPMENT_ID+", "+COLUMN_ORIGIN_LINE_ID+", "+COLUMN_FK_EXPEDITION+", "+COLUMN_ENTREPOT_ID+", "+COLUMN_QTY+", "+COLUMN_RANG+", "+COLUMN_DETAIL_BATCH+") "+
+                        "VALUES ("+data_[x].id+", '"+data_[x].shipment_id+"', '"+data_[x].origin_line_id+"', '"+data_[x].fk_expedition+"', '"+data_[x].entrepot_id+"', '"+data_[x].qty+"', '"+data_[x].rang+"', '"+data_[x].detail_batch+"')";
 
                     await db.transaction(async (tx) => {
                         await tx.executeSql(SQL_INSERT, []);
@@ -123,36 +130,38 @@ class ShipmentLinesManager extends Component {
                 }
                 return await resolve(true);
             } catch(error){
+                console.log("error: ", error);
                 return await resolve(false);
             }
         });
     }
 
     //Get by ref
-    async GET_SHIPMENT_LINES_BY_ID(fk_expedition){
+    async GET_SHIPMENT_LINES_BY_SHIPMENT_ID(id){
         console.log("##### GET_SHIPMENT_LINES_BY_ID #########################");
 
         return await new Promise(async (resolve) => {
-            let shipment_line = null;
+            let shipment_line = [];
             await db.transaction(async (tx) => {
-                const SQL_GET_ = "SELECT "+COLUMN_ID+", "+COLUMN_ORIGIN_LINE_ID+", "+COLUMN_FK_EXPEDITION+", "+COLUMN_ENTREPOT_ID+", "+COLUMN_QTY+", "+COLUMN_RANG+" "+
-                        "FROM "+TABLE_NAME+" WHERE "+COLUMN_FK_EXPEDITION+" = '"+fk_expedition+"'";
+                const SQL_GET_ = "SELECT "+COLUMN_ID+", "+COLUMN_SHIPMENT_ID+", "+COLUMN_ORIGIN_LINE_ID+", "+COLUMN_FK_EXPEDITION+", "+COLUMN_ENTREPOT_ID+", "+COLUMN_QTY+", "+COLUMN_RANG+", "+COLUMN_DETAIL_BATCH+" "+
+                        "FROM "+TABLE_NAME+" WHERE "+COLUMN_SHIPMENT_ID+" = '"+id+"'";
 
                 await tx.executeSql(SQL_GET_, []).then(async ([tx,results]) => {
                     console.log("Query completed");
                     var len = results.rows.length;
                     for (let i = 0; i < len; i++) {
                         let row = results.rows.item(i);
-                        shipment_line = row;
+                        console.log('row: ', row);
+                        shipment_line.push(row);
                     }
+                    await resolve(shipment_line);
                 });
             }).then(async (result) => {
                 // await this.closeDatabase(db);
                 // console.log('token: ', token);
-                await resolve(shipment_line);
             }).catch(async (err) => {
                 console.log(err);
-                await resolve(null);
+                await resolve([]);
             });
         });
     }
@@ -163,7 +172,7 @@ class ShipmentLinesManager extends Component {
         return await new Promise(async (resolve) => {
             let shipment_line = null;
             await db.transaction(async (tx) => {
-                const SQL_GET_ = "SELECT "+COLUMN_ID+", "+COLUMN_ORIGIN_LINE_ID+", "+COLUMN_FK_EXPEDITION+", "+COLUMN_ENTREPOT_ID+", "+COLUMN_QTY+", "+COLUMN_RANG+" "+
+                const SQL_GET_ = "SELECT "+COLUMN_ID+", "+COLUMN_ORIGIN_LINE_ID+", "+COLUMN_FK_EXPEDITION+", "+COLUMN_ENTREPOT_ID+", "+COLUMN_QTY+", "+COLUMN_RANG+", "+COLUMN_DETAIL_BATCH+" "+
                         "FROM "+TABLE_NAME+" WHERE "+COLUMN_ORIGIN_LINE_ID+" = '"+origin_line_id+"'";
 
                 await tx.executeSql(SQL_GET_, []).then(async ([tx,results]) => {
@@ -185,6 +194,32 @@ class ShipmentLinesManager extends Component {
         });
     }
 
+    async GET_SHIPMENT_LINES(){
+        console.log("##### GET_SHIPMENT_LINES #########################");
+
+        return await new Promise(async (resolve) => {
+            let shipment_line = [];
+            await db.transaction(async (tx) => {
+                const SQL_GET_ = "SELECT * FROM "+TABLE_NAME+" ";
+
+                await tx.executeSql(SQL_GET_, []).then(async ([tx,results]) => {
+                    console.log("Query completed");
+                    var len = results.rows.length;
+                    for (let i = 0; i < len; i++) {
+                        let row = results.rows.item(i);
+                        shipment_line.push({row});
+                    }
+                });
+            }).then(async (result) => {
+                // await this.closeDatabase(db);
+                // console.log('token: ', token);
+                await resolve(shipment_line);
+            }).catch(async (err) => {
+                console.log(err);
+                await resolve([]);
+            });
+        });
+    }
 
     //Update
     async UPDATE_SHIPMENT_LINE(data_){
@@ -196,7 +231,8 @@ class ShipmentLinesManager extends Component {
                     const SQL_UPDATE = "UPDATE " + TABLE_NAME + " SET " +
                     ""+COLUMN_ENTREPOT_ID+" = '"+data_[x].entrepot_id+"', " +
                     ""+COLUMN_QTY+" = '"+data_[x].qty+"', " +
-                    ""+COLUMN_RANG+" = '"+data_[x].rang+"' " +
+                    ""+COLUMN_RANG+" = '"+data_[x].rang+"', " +
+                    ""+COLUMN_DETAIL_BATCH+" = '"+data_[x].detail_batch+"' " +
                     "WHERE "+COLUMN_FK_EXPEDITION+" = '"+data_[x].fk_expedition+"'";
 
                     await db.transaction(async (tx) => {
@@ -235,8 +271,8 @@ class ShipmentLinesManager extends Component {
     }
 
     //Delete
-    async DROP_SHIPMENTS(){
-        console.log("##### DROP_SHIPMENTS #########################");
+    async DROP_SHIPMENTS_LINES(){
+        console.log("##### DROP_SHIPMENTS_LINES #########################");
 
         return await new Promise(async (resolve) => {
             await db.transaction(async function (txn) {

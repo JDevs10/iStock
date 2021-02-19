@@ -19,9 +19,14 @@ import ServerManager from '../../Database/ServerManager';
 import ThirdPartiesManager from '../../Database/ThirdPartiesManager';
 import TokenManager from '../../Database/TokenManager';
 import FindImages from '../../services/FindImages';
-
+import UserManager from '../../Database/UserManager';
 import FindThirdParties from '../../services/FindThirdParties';
 import FindCommandes from '../../services/FindCommandes';
+import ShipmentsManager from '../../Database/ShipmentsManager';
+import ShipmentLinesManager from '../../Database/ShipmentLinesManager';
+
+import Strings from "../../utilities/Strings";
+const STRINGS = new Strings();
 
 
 const iconStyle = {
@@ -30,47 +35,31 @@ const iconStyle = {
 };
 
 export function DrawerContent(props) {
-
+    
     componentWillMount = () => {
         BackHandler.addEventListener('hardwareBackPress', disconnection);
+        getCurrentUserInfo();
     }
       
     componentWillUnmount = () => {
         BackHandler.removeEventListener('hardwareBackPress', disconnection);
     }
 
-    const download_tiers = async () => {
+    const getCurrentUserInfo = async () => {
         //find token
         const tm = new TokenManager();
         await tm.initDB();
         const token = await tm.GET_TOKEN_BY_ID(1).then(async (val) => {
             return await val;
         });
-        console.log('token : ', token);
 
-        const findThirdParties = new FindThirdParties();
-        const res4 = await findThirdParties.getAllThirdPartiesFromServer(token).then(async (val) => {
-            console.log('findThirdParties.getAllThirdPartiesFromServer : ');
-            console.log(val);
+        const userManager = new UserManager();
+        const res = await userManager.GET_USER_BY_ID(token.userId).then(async (val) => {
             return val;
         });
-    }
 
-    const download_orders = async () => {
-        //find token
-        const tm = new TokenManager();
-        await tm.initDB();
-        const token = await tm.GET_TOKEN_BY_ID(1).then(async (val) => {
-            return await val;
-        });
-        console.log('token : ', token);
-
-        const findCommandes = new FindCommandes();
-        const res4 = await findCommandes.getAllOrdersFromServer(token).then(async (val) => {
-            console.log('findCommandes.getAllOrdersFromServer : ');
-            console.log(val);
-            return val;
-        });
+        this._CURRENT_USER_NAME_ = res.lastname + " " + res.firstname;
+        this._CURRENT_USER_COMPANY_ = token.company;
     }
 
     const disconnection = async () => {
@@ -106,14 +95,26 @@ export function DrawerContent(props) {
             return await val;
         });
 
+        const shipmentLinesManager = new ShipmentLinesManager();
+        await shipmentLinesManager.initDB();
+        const res_6 = await shipmentLinesManager.DROP_SHIPMENTS().then(async (val) => {
+            return await val;
+        });
+
+        const shipmentsManager = new ShipmentsManager();
+        await shipmentsManager.initDB();
+        const res_7 = await shipmentsManager.DROP_SHIPMENTS().then(async (val) => {
+            return await val;
+        });
+
         const tokenManager = new TokenManager();
         await tokenManager.initDB();
-        const res_6 = await tokenManager.DROP_TOKEN().then(async (val) => {
+        const res_8 = await tokenManager.DROP_TOKEN().then(async (val) => {
             return await val;
         });
 
         const findImages = new FindImages();
-        const res_7 = findImages.deleteAll().then(async (val) => {
+        const res_9 = findImages.deleteAll().then(async (val) => {
             return await val;
         });
         
@@ -133,8 +134,8 @@ export function DrawerContent(props) {
                                 size={100}
                             />
                             <View style={{marginLeft:15, flexDirection:'column'}}>
-                                <Title style={styles.title}>John Doe</Title>
-                                <Caption style={styles.caption}>BDC</Caption>
+                                <Title style={styles.title}>iStock</Title>
+                                {/* <Caption style={styles.caption}>iStock © Tous droits réservés - Développer par BDC</Caption> */}
                             </View>
                         </View>
 
@@ -148,6 +149,10 @@ export function DrawerContent(props) {
                                 <Caption style={styles.caption}>Followers</Caption>
                             </View>
                         </View> */}
+
+                        <View style={styles.row}>
+                            <Caption style={styles.caption}>iStock © Tous droits réservés - Développer par BDC</Caption>
+                        </View>
                     </View>
 
                     <Drawer.Section style={{marginTop: 30}}></Drawer.Section>
@@ -160,7 +165,7 @@ export function DrawerContent(props) {
                                 size={iconStyle.size}
                                 />
                             )}
-                            label="Accueil"
+                            label={STRINGS._HOME_SIDEBAR_TITTLE_}
                             onPress={() => {props.navigation.navigate('Dashboard')}}
                         />
                         <DrawerItem 
@@ -171,7 +176,7 @@ export function DrawerContent(props) {
                                 size={iconStyle.size}
                                 />
                             )}
-                            label="Configuration"
+                            label={STRINGS._CONFIGURATION_SIDEBAR_TITTLE_}
                             onPress={() => {props.navigation.navigate('Settings')}}
                         />
                         <DrawerItem 
@@ -182,8 +187,20 @@ export function DrawerContent(props) {
                                 size={iconStyle.size}
                                 />
                             )}
-                            label="Synchronisation Client"
-                            onPress={() => {}}
+                            label={STRINGS._SYNCHRO_USER_SIDEBAR_TITTLE_}
+                            onPress={() => {
+                                Alert.alert(
+                                    STRINGS._SYNCHRO_USER_TITTLE_, 
+                                    STRINGS._SYNCHRO_USER_TEXT_,
+                                    [
+                                      {text: "Oui", onPress: () => {
+                                        props.navigation.navigate('UsersSync');
+                                      }},
+                                      {text: "Non"}
+                                    ],
+                                    { cancelable: false }
+                                );
+                            }}
                         />
                         <DrawerItem 
                             icon={() => (
@@ -193,8 +210,20 @@ export function DrawerContent(props) {
                                 size={iconStyle.size}
                                 />
                             )}
-                            label="Synchronisation Commandes"
-                            onPress={() => {props.navigation.navigate('OrdersSync');}}
+                            label={STRINGS._SYNCHRO_COMMANDE_SIDEBAR_TITTLE_}
+                            onPress={() => {
+                                Alert.alert(
+                                    STRINGS._SYNCHRO_COMMANDE_TITTLE_, 
+                                    STRINGS._SYNCHRO_COMMANDE_TEXT_,
+                                    [
+                                      {text: "Oui", onPress: () => {
+                                        props.navigation.navigate('OrdersSync');
+                                      }},
+                                      {text: "Non"}
+                                    ],
+                                    { cancelable: false }
+                                );
+                            }}
                         />
                         <DrawerItem 
                             icon={() => (
@@ -204,8 +233,20 @@ export function DrawerContent(props) {
                                 size={iconStyle.size}
                                 />
                             )}
-                            label="Synchronisation Produits"
-                            onPress={() => {props.navigation.navigate('ProductSync');}}
+                            label={STRINGS._SYNCHRO_PRODUIT_SIDEBAR_TITTLE_}
+                            onPress={() => {
+                                Alert.alert(
+                                    STRINGS._SYNCHRO_PRODUIT_TITTLE_, 
+                                    STRINGS._SYNCHRO_PRODUIT_TEXT_,
+                                    [
+                                      {text: "Oui", onPress: () => {
+                                        props.navigation.navigate('ProductSync');
+                                      }},
+                                      {text: "Non"}
+                                    ],
+                                    { cancelable: false }
+                                );
+                            }}
                         />
                         <DrawerItem 
                             icon={() => (
@@ -215,8 +256,20 @@ export function DrawerContent(props) {
                                 size={iconStyle.size}
                                 />
                             )}
-                            label="Synchronisation Expeditions"
-                            onPress={() => {props.navigation.navigate('ShipmentsSync');}}
+                            label={STRINGS._SYNCHRO_IMAGE_SIDEBAR_TITTLE_}
+                            onPress={() => {
+                                Alert.alert(
+                                    STRINGS._SYNCHRO_IMAGE_TITTLE_, 
+                                    STRINGS._SYNCHRO_IMAGE_TEXT_,
+                                    [
+                                      {text: "Oui", onPress: () => {
+                                        props.navigation.navigate('ImagesSync');
+                                      }},
+                                      {text: "Non"}
+                                    ],
+                                    { cancelable: false }
+                                );
+                            }}
                         />
                         <DrawerItem 
                             icon={() => (
@@ -226,8 +279,43 @@ export function DrawerContent(props) {
                                 size={iconStyle.size}
                                 />
                             )}
-                            label="Synchronisation Entrepots"
-                            onPress={() => {props.navigation.navigate('WarehousesSync');}}
+                            label={STRINGS._SYNCHRO_SHIPMENT_SIDEBAR_TITTLE_}
+                            onPress={() => {
+                                Alert.alert(
+                                    STRINGS._SYNCHRO_SHIPMENT_TITTLE_, 
+                                    STRINGS._SYNCHRO_SHIPMENT_TEXT_,
+                                    [
+                                      {text: "Oui", onPress: () => {
+                                        props.navigation.navigate('ShipmentsSync');
+                                      }},
+                                      {text: "Non"}
+                                    ],
+                                    { cancelable: false }
+                                );
+                            }}
+                        />
+                        <DrawerItem 
+                            icon={() => (
+                                <Icon 
+                                name="sync" 
+                                color={iconStyle.color}
+                                size={iconStyle.size}
+                                />
+                            )}
+                            label={STRINGS._SYNCHRO_WAREHOUSE_SIDEBAR_TITTLE_}
+                            onPress={() => {
+                                Alert.alert(
+                                    STRINGS._SYNCHRO_WAREHOUSE_TITTLE_, 
+                                    STRINGS._SYNCHRO_WAREHOUSE_TEXT_,
+                                    [
+                                      {text: "Oui", onPress: () => {
+                                        props.navigation.navigate('WarehousesSync');
+                                      }},
+                                      {text: "Non"}
+                                    ],
+                                    { cancelable: false }
+                                );
+                            }}
                         />
                         <DrawerItem 
                             icon={() => (

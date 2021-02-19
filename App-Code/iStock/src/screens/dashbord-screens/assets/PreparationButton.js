@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import {StyleSheet, View, Text, Image, TouchableHighlight, Animated, Alert} from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/FontAwesome5';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import DeviceInfo from 'react-native-device-info';
 import Strings from '../../../utilities/Strings';
 const STRINGS = new Strings();

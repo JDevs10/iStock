@@ -6,6 +6,8 @@ import OrderManager from '../Database/OrderManager';
 import ProductsManager from '../Database/ProductsManager';
 import ServerManager from '../Database/ServerManager';
 import SettingsManager from '../Database/SettingsManager';
+import ShipmentsManager from '../Database/ShipmentsManager';
+import ShipmentLinesManager from '../Database/ShipmentLinesManager';
 import ThirdPartiesManager from '../Database/ThirdPartiesManager';
 import UserManager from '../Database/UserManager';
 import WarehouseManager from '../Database/WarehouseManager';
@@ -87,6 +89,7 @@ class CheckData extends Component {
             }
 
             // 6
+            /*
             if(settings != null && settings.isUseImages){
                 const findImages = new FindImages();
                 const fi = await findImages.getLocalImages().then(async (val) => {
@@ -99,6 +102,7 @@ class CheckData extends Component {
                     isChecked.push({task: "FindImages", status: false});
                 }
             }
+            */
 
             // 7
             const userManager = new UserManager();
@@ -114,6 +118,34 @@ class CheckData extends Component {
             }
 
             // 8
+            /*
+            const shipmentsManager = new ShipmentsManager();
+            await shipmentsManager.initDB();
+            const sm = await shipmentsManager.GET_SHIPMENTS_LIST().then(async (val) => {
+                return val;
+            });
+            
+            if(sm.length > 0){
+                isChecked.push({task: "ShipmentLinesManager", status: true});
+            }else{
+                isChecked.push({task: "ShipmentLinesManager", status: false});
+            }
+
+            // 9
+            const shipmentLinesManager = new ShipmentLinesManager();
+            await shipmentLinesManager.initDB();
+            const sml = await shipmentLinesManager.GET_SHIPMENT_LINES().then(async (val) => {
+                return val;
+            });
+            
+            if(sml.length > 0){
+                isChecked.push({task: "ShipmentLinesManager", status: true});
+            }else{
+                isChecked.push({task: "ShipmentLinesManager", status: false});
+            }
+            */
+
+            // 10
             const warehouseManager = new WarehouseManager();
             await warehouseManager.initDB();
             const wm = await warehouseManager.GET_WAREHOUSE_LIST().then(async (val) => {
@@ -125,7 +157,6 @@ class CheckData extends Component {
             }else{
                 isChecked.push({task: "WarehousesManager", status: false});
             }
-
 
 
             let res = false;

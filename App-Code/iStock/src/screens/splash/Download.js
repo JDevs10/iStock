@@ -13,7 +13,12 @@ import FindShipments from '../../services/FindShipments';
 import SettingsManager from '../../Database/SettingsManager';
 import TokenManager from '../../Database/TokenManager';
 import CheckData from '../../services/CheckData';
+import CheckConnections from '../../services/CheckConnections';
+import Strings from "../../utilities/Strings";
+import DefaultSettings from '../../utilities/DefaultSettings';
 
+const DEFAULT_SETTINGS = new DefaultSettings();
+const STRINGS = new Strings();
 const BG = require('../../../img/waiting_bg.png');
 
 
@@ -59,9 +64,12 @@ class Download extends Component {
     await sm.initDB();
     await sm.CREATE_SETTINGS_TABLE();
     const settings = {
-      isUseImages: false,
-      isUseDetailedCMD: true,
-      isUseDetailedCMDLines: true
+      isUseImages: DEFAULT_SETTINGS.SETTINGS.isUseImages,
+      isUseDetailedCMD: DEFAULT_SETTINGS.SETTINGS.isUseDetailedCMD,
+      isUseDetailedCMDLines: DEFAULT_SETTINGS.SETTINGS.isUseDetailedCMDLines,
+      isUseDetailedShipment: DEFAULT_SETTINGS.SETTINGS.isUseDetailedShipment,
+      limitOrdersDownload: DEFAULT_SETTINGS.SETTINGS.limitOrdersDownload,
+      limitShipmentsDownload: DEFAULT_SETTINGS.SETTINGS.limitShipmentsDownload,
     };
     const res_sm = await sm.INSERT_SETTINGS(settings).then(async (val) => {
       console.log('INSERT_SETTINGS => val: ', val);
@@ -87,6 +95,9 @@ class Download extends Component {
       this.props.navigation.navigate('login');
       return;
     }
+
+
+    
 
     
     let currentStep = 1;

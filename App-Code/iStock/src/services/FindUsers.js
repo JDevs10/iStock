@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import axios from 'axios';
 import UserManager from '../Database/UserManager';
-
+import CheckConnections from '../services/CheckConnections';
 
 // create a component
 class FindUsers extends Component {
@@ -12,6 +12,16 @@ class FindUsers extends Component {
     }
 
     async getAllUsersFromServer(token){
+      //check for internet connection
+      const conn = new CheckConnections();
+      if(await conn.CheckConnectivity_noNotification()){
+        console.log('CheckConnectivity_noNotification ', 'true');
+      }
+      else{
+        console.log('CheckConnectivity_noNotification ', 'false');
+        return;
+      }
+      
         const userManager = new UserManager();
         await userManager.initDB();
         await userManager.CREATE_USER_TABLE();

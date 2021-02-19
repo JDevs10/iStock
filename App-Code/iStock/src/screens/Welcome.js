@@ -1,16 +1,6 @@
 import React, { Component } from 'react';
-import { StyleSheet, View, Text, StatusBar, Image, Footer, Animated } from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
+import { StyleSheet, View, Text, StatusBar, Image } from 'react-native';
 import MyFooter from './footers/MyFooter';
-import {
-  Header,
-  LearnMoreLinks,
-  Colors,
-  DebugInstructions,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-import { color } from 'react-native-reanimated';
-
 const IMG_SRC = require('../../img/bg.png');
 const LOGO = require('../../img/logo_istock.png');
 

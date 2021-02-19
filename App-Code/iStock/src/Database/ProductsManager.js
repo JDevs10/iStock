@@ -49,6 +49,7 @@ class ProductsManager extends Component {
     _COLUMN_CODEBARRE_ = COLUMN_CODEBARRE;
     _COLUMN_EMPLACEMENT_ = COLUMN_EMPLACEMENT;
     _COLUMN_STOCK_ = COLUMN_STOCK;
+    _COLUMN_IMAGE_ = COLUMN_IMAGE;
 
     //Init database
     async initDB() {

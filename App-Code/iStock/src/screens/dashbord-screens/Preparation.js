@@ -396,9 +396,9 @@ class Preparation extends Component {
                                   </View>
                                   <View style={{ borderBottomColor: '#00AAFF', borderBottomWidth: 1, marginRight: 10 }} />
                                   <View style={styles.pricedetails}>
-                                    <View style={styles.price}>
+                                    {/* <View style={styles.price}>
                                       <Text>Total TTC : {item.total_ttc > 0 ? (parseFloat(item.total_ttc)).toFixed(2) : '0'} €</Text>
-                                    </View>
+                                    </View> */}
                                     <View style={[styles.billedstate, {backgroundColor: _statut_.getOrderStatutColorStyles(item.statut)}]}>
                                       <Text style={{color: "#000"}}>{_statut_.getOrderStatut(item.statut)}</Text>
                                     </View>

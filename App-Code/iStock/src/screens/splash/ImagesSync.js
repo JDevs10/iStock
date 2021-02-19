@@ -1,56 +1,71 @@
 import React, { Component } from 'react';
-import { StyleSheet, View, Text, Image, StatusBar, Alert } from 'react-native';
-import ShipmentsManager from '../../Database/ShipmentsManager';
+import { StyleSheet, View, Text, Image, Alert, StatusBar } from 'react-native';
 import TokenManager from '../../Database/TokenManager';
-import FindShipments from '../../services/FindShipments';
-import SendShipments from '../../services/SendShipments';
+import FindImages from '../../services/FindImages';
+import SettingsManager from '../../Database/SettingsManager';
 import Strings from "../../utilities/Strings";
 const STRINGS = new Strings();
 const BG = require('../../../img/waiting_bg.png');
 
 
-export default class ShipmentsSync extends Component {
+export default class ImagesSync extends Component {
   constructor(props) {
     super(props);
     this.state = {
-        loadingNotify: "Synchronisation des Expeditions...\nVeuillez ne pas éteindre l'application."
+        loadingNotify: "Synchronisation des Images...\nVeuillez ne pas éteindre l'application."
     };
   }
 
   async componentDidMount(){
-
     await this.sync();
 
     this.listener = await this.props.navigation.addListener('focus', async () => {
       await this.sync();
       return;
     });
-
   }
 
   async sync(){
-    const tm = new TokenManager();
-    await tm.initDB();
-    const token = await tm.GET_TOKEN_BY_ID(1).then(async (val) => {
-      return await val;
-    });
-
-    const sendShipments = new SendShipments();
-    const res = await sendShipments.send_Unsync_Shipments_To_Server().then(async (val) => {
-      console.log('sendShipments.send_Unsync_Shipments_To_Server : ', val);
+    const settingsManager = new SettingsManager();
+    await settingsManager.initDB();
+    const settings = await settingsManager.GET_SETTINGS_BY_ID(1).then(async (val)=> {
       return val;
     });
-    
 
-    if(res){
-      console.log("Remove loading screen!");
-      this.props.navigation.navigate("Dashboard");
+    if(settings.isUseImages){
+      const tm = new TokenManager();
+      await tm.initDB();
+      const token = await tm.GET_TOKEN_BY_ID(1).then(async (val) => {
+        return await val;
+      });
+
+      const findImages = new FindImages();
+      const res = await findImages.getAllProduitsImagesFromServer(token).then(async (val) => {
+          console.log('findImages.getAllProduitsImagesFromServer : ');
+          console.log(val);
+          return val;
+      });
+      
+      if(res){
+        console.log("Remove loading screen!");
+        this.props.navigation.navigate("Dashboard");
+      }else{
+        Alert.alert(
+          STRINGS._SYNCHRO_IMAGE_TITTLE_, 
+          STRINGS._SYNCHRO_IMAGE_ERROR_,
+          [
+            {text: "Support", onPress: () => {this.support()}},
+            {text: "Ok", onPress: () => {this.props.navigation.navigate("Dashboard")}}
+          ],
+          { cancelable: false }
+        );
+      }
+
     }else{
       Alert.alert(
-        STRINGS._SYNCHRO_SHIPMENT_TITTLE_, 
-        STRINGS._SYNCHRO_SHIPMENT_ERROR_,
+        STRINGS._SETTINGS_IMAGE_TITTLE_, 
+        STRINGS._SETTINGS_IMAGE_DISABLE_,
         [
-          {text: "Support", onPress: () => {this.support()}},
           {text: "Ok", onPress: () => {this.props.navigation.navigate("Dashboard")}}
         ],
         { cancelable: false }

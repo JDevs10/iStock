@@ -324,7 +324,7 @@ class modIStock extends DolibarrModules
             'user'=>2, // 0=Menu for internal users, 1=external users, 2=both
         );
         /* END MODULEBUILDER TOPMENU */
-         //BEGIN MODULEBUILDER LEFTMENU AUTHENTIFICATION
+        // BEGIN MODULEBUILDER LEFTMENU AUTHENTIFICATION
         $this->menu[$r++]=array(
             'fk_menu'=>'fk_mainmenu=istock',      // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
             'type'=>'left',                          // This is a Top menu entry
@@ -342,7 +342,7 @@ class modIStock extends DolibarrModules
         $this->menu[$r++]=array(
             'fk_menu'=>'fk_mainmenu=istock,fk_leftmenu=authentification',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
             'type'=>'left',			                // This is a Left menu entry
-            'titre'=>'New Authentification',
+            'titre'=>'New Utilisateur',
             'mainmenu'=>'istock',
             'leftmenu'=>'istock_authentification_new',
             'url'=>'/istock/authentification_card.php?action=create',
@@ -356,7 +356,7 @@ class modIStock extends DolibarrModules
         $this->menu[$r++]=array(
             'fk_menu'=>'fk_mainmenu=istock,fk_leftmenu=authentification',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
             'type'=>'left',			                // This is a Left menu entry
-            'titre'=>'List Authentification',
+            'titre'=>'List Utilisateur',
             'mainmenu'=>'istock',
             'leftmenu'=>'istock_authentification_list',
             'url'=>'/istock/authentification_list.php',

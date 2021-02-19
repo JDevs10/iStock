@@ -20,8 +20,6 @@ import moment from "moment";
 import Scanner from '../../utilities/Scanner';
 
 
-let PICKING_ACTION = 1;
-
 // create a component
 class CommandeDetails extends React.Component{
   
@@ -49,7 +47,7 @@ class CommandeDetails extends React.Component{
           prepareMode: {saisi: true, barecode: false},
           isLoading: true,
           orderId: this.props.route.params.order.commande_id,
-          data: [{"barcode": "5000112554359P", "emplacement": null, "fk_commande": "385", "id": 58, "libelle": "COCA ZERO 33CL DEN PALETTE", "prepare_shipping_qty": 0, "price": "950.4", "qty": "1", "ref": "00000002P", "stock": "1", "total_ht": "950.40000000", "total_ttc": "1002.67000000", "total_tva": "52.27000000", "tva_tx": "5.500"}],
+          data: [],
           settings: {},
           filterConfig: {},
           pickingDataSelected: {
@@ -117,11 +115,7 @@ class CommandeDetails extends React.Component{
 
       // check if shipment obj exist in db
       const sm = new ShipmentsManager();
-      const slm = new ShipmentLinesManager();
       await sm.initDB();
-      await slm.initDB();
-      await sm.DELETE_SHIPMENTS_LIST();
-      await slm.DELETE_SHIPMENTS_LINES_LIST();
       const isShipment = await sm.GET_SHIPMENTS_BY_ORIGIN(cmd_header.commande_id).then(async (val) => {
         return val;
       });
@@ -129,18 +123,19 @@ class CommandeDetails extends React.Component{
       if(isShipment == null){
         // create shipment obj & array lines
         const SHIPMENT = {
-          id: null,
+          id: "null",
+          shipment_id: "null",
           ref: "SH-PROV-"+moment(),
-          project_id: null,
+          project_id: "null",
           socid: cmd_header.socId,
           origin_id: cmd_header.commande_id,
           origin:"commande",
-          entrepot_id: null,
-          projectid: null,
+          entrepot_id: "null",
+          projectid: "null",
           shipping_method_id: 2,
           shipping_method: "Génerict Transport", 
           user_author_id: 1, // need current user token id
-          origin_type: (product.origin_type == null ? "" : product.origin_type),
+          origin_type: (product.origin_type == null ? "null" : product.origin_type),
           weight: (product.weight == null ? "0" : product.weight),
           weight_units: (product.weight_units == null ? "0" : product.weight_units),
           size_w: (product.sizeW == null ? "0" : product.sizeW),
@@ -150,38 +145,51 @@ class CommandeDetails extends React.Component{
           size_s: (product.sizeS == null ? "0" : product.sizeS),
           depth_units: (product.depth_units == null ? "0" : product.depth_units),
           true_size: "xx",
+          date_creation: parseInt(new Date().getTime()/1000), // get current timestamp in seconds
           date_delivery: (cmd_header.date_livraison == null ? "null" : cmd_header.date_livraison),
-          tracking_number: (product.tracking_number == null ? "" : product.tracking_number),
-          tracking_url: (product.tracking_url == null ? "" : product.tracking_url),
+          tracking_number: (product.tracking_number == null ? "null" : product.tracking_number),
+          tracking_url: (product.tracking_url == null ? "null" : product.tracking_url),
           statut: 0, //brouillion / draft
-          lines: [
-            {
-              id: null,
-              fk_expedition: product.fk_expedition,
-              entrepot_id: product.entrepot_id,
-              origin_line_id: product.origin_line_id,
-              qty: product.qty,
-              rang: product.rang,
-              array_options: []
-            }
-          ]
+          is_synchro: "false", // 0 => false | 1 => true
         };
 
         console.log('SHIPMENT', SHIPMENT);
 
-        //insert to db header + lines
+        //insert to db header
         await sm.initDB();
         const isShipment_ = await sm.INSERT_SHIPMENTS([SHIPMENT]).then(async (val) => {
             return val;
         });
 
-        if(isShipment_){
+        const insertedShipment = await sm.GET_SHIPMENTS_BY_ORIGIN(cmd_header.commande_id).then(async (val) => {
+          return val;
+        });
+        SHIPMENT.lines = {
+          id: "null",
+          detail_batch: product.detail_batch,
+          shipment_id: insertedShipment.id,
+          fk_expedition: product.fk_expedition,
+          entrepot_id: product.entrepot_id,
+          origin_line_id: product.origin_line_id,
+          qty: product.qty,
+          rang: product.rang,
+          array_options: []
+        };
+
+         //insert to db lines
+         const sml = new ShipmentLinesManager();
+         await sml.initDB();
+         const isShipmentLines_ = await sml.INSERT_SHIPMENT_LINES([SHIPMENT.lines]).then(async (val) => {
+             return val;
+         });
+
+        if(isShipment_ && isShipmentLines_){
           alert("Expédition créé !");
         }else{
           alert("Expédition non créé !");
         }
 
-      } else{
+      } else {
         //shipment existe so check picked line
         const slm = new ShipmentLinesManager();
         await slm.initDB();
@@ -190,7 +198,9 @@ class CommandeDetails extends React.Component{
         });
 
         const SHIPMENT_LINE = {
-          id: null,
+          id: "null",
+          detail_batch: product.detail_batch,
+          shipment_id: isShipment.id,
           fk_expedition: product.fk_expedition,
           entrepot_id: product.entrepot_id,
           origin_line_id: product.origin_line_id,
@@ -475,9 +485,16 @@ class CommandeDetails extends React.Component{
                                   <CardView cardElevation={10} cornerRadius={5} style={[styles.cardViewStyle,{backgroundColor: item.qty == item.prepare_shipping_qty ? "#dbdbdb" : "#FFFFFF"}]}>
                                     <View style={styles.cardViewStyle1}>
                                       <View style={[styles.article, { flexDirection: "row" }]}>
-                                        <View>
-                                          <Image style={{ width: DeviceInfo.isTablet() ? 125 : 50, height: DeviceInfo.isTablet() ? 125 : 50 }} source={require('../../../img/no_image.jpeg')} />
-                                        </View>
+                                        {this.state.settings.isUseImages ? 
+                                          <View>
+                                            <Image style={{ width: DeviceInfo.isTablet() ? 125 : 50, height: DeviceInfo.isTablet() ? 125 : 50 }} source={{uri: `file://${item.image}`}} />
+                                            {/* <Image style={{ width: DeviceInfo.isTablet() ? 125 : 50, height: DeviceInfo.isTablet() ? 125 : 50 }} source={{uri: 'data:'+item.image}} /> */}
+                                          </View>
+                                        :
+                                          <View>
+                                            <Image style={{ width: DeviceInfo.isTablet() ? 125 : 50, height: DeviceInfo.isTablet() ? 125 : 50 }} source={require('../../../img/no_image.jpeg')} />
+                                          </View>
+                                        }
                                         <View style={{ flex: 1, marginLeft: 10 }}>
                                           <View style={styles.ic_and_details}>
                                             <View style={styles.aname}>
@@ -505,13 +522,13 @@ class CommandeDetails extends React.Component{
                                               <Text>{item.prepare_shipping_qty == null ? "0 Préparé": item.prepare_shipping_qty+" Préparé"}</Text>
                                           </View>
 
-                                          <View style={{ borderBottomColor: '#00AAFF', borderBottomWidth: 1, marginRight: 10 }} />
+                                          {/* <View style={{ borderBottomColor: '#00AAFF', borderBottomWidth: 1, marginRight: 10 }} />
 
                                           <View style={styles.pricedetails}>
                                             <View style={styles.price}>
                                               <Text>Total TTC : {item.total_ttc > 0 ? (parseFloat(item.total_ttc)).toFixed(2) : '0'} €</Text>
                                             </View>
-                                          </View>
+                                          </View> */}
                                         </View>
                                         
                                       </View>

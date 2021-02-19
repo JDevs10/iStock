@@ -2,8 +2,11 @@
 import React, { Component } from 'react';
 import {StyleSheet, View, Text, Image, Animated, Alert} from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
+import Icon from 'react-native-vector-icons/FontAwesome5';
 import DeviceInfo from 'react-native-device-info';
 import SettingsManager from '../../../Database/SettingsManager';
+import Strings from "../../../utilities/Strings";
+const STRINGS = new Strings();
 
 // Main bouton
 const MAIN_BTN_HEIGHT_TABLETTE = 125;
@@ -77,8 +80,8 @@ class SettingsDetailButton extends Component {
         action_2 = () => {
             console.log('action_2');
             Alert.alert(
-                "Information",
-                "Les configurations ci-dessous affectent le fonctionnement de l'application ...",
+                STRINGS._INFORMATION_SETTINGS_HEADER_INFO_,
+                STRINGS._INFORMATION_SETTINGS_TEXT_INFO_,
                 [
                   {text: 'Ok', onPress: () => true},
                 ],
@@ -94,10 +97,14 @@ class SettingsDetailButton extends Component {
 
         async save(){
             console.log('this.props.parentData : ', this.props.parentData);
+            const settings = this.props.parentData.settings;
             const data = {
-                isUseImages: this.props.parentData.isUseImages,
-                isUseDetailedCMD: this.props.parentData.isUseDetailedCMD,
-                isUseDetailedCMDLines: this.props.parentData.isUseDetailedCMDLines
+                isUseImages: settings.isUseImages,
+                isUseDetailedCMD: settings.isUseDetailedCMD,
+                isUseDetailedCMDLines: settings.isUseDetailedCMDLines,
+                isUseDetailedShipment: settings.isUseDetailedShipment,
+                limitOrdersDownload: settings.dataList_limitDownloadOrders_selected.value,
+                limitShipmentsDownload: settings.dataList_limitDownloadShipments_selected.value
             };
 
             const sm = new SettingsManager();
@@ -157,7 +164,7 @@ class SettingsDetailButton extends Component {
                 <Animated.View style={{position: 'relative', left: btn_1X, top: btn_1Y }}>
                     <View style={styles.secondaryButtons}>
                         <TouchableOpacity onPress={this.action_1}>
-                        <Image style={{width: DeviceInfo.isTablet() ? 50 : 25, height: DeviceInfo.isTablet() ? 80 : 40 }} source={require('../../../../img/return-button-v1.png')}/>
+                            <Icon name="chevron-left" size={DeviceInfo.isTablet() ? 60 : 40} style={{color: "#fff"}} />
                         </TouchableOpacity>
                     </View>
                 </Animated.View>
@@ -165,16 +172,14 @@ class SettingsDetailButton extends Component {
                 <Animated.View style={{position: 'relative', left: btn_2X, top: btn_2Y }}>
                     <View style={styles.secondaryButtons}>
                         <TouchableOpacity onPress={this.action_2}>
-                            <Image style={{width: DeviceInfo.isTablet() ? 60 : 40, height: DeviceInfo.isTablet() ? 60 : 40 }} source={require('../../../../img/Info.png')}/>
+                            <Icon name="info" size={DeviceInfo.isTablet() ? 60 : 40} style={{color: "#fff"}} />
                         </TouchableOpacity>
                     </View>
                 </Animated.View>
                 <Animated.View style={{position: 'relative', left: btn_3X, top: btn_3Y }}>
                     <View style={styles.secondaryButtons}>
                         <TouchableOpacity onPress={this.action_3}>
-                            {/* <FontAwesome name="key" color="#05375a" size={60} />  */}
-                            <Image style={{width: DeviceInfo.isTablet() ? 60 : 40, height: DeviceInfo.isTablet() ? 60 : 40 }} source={require('../../../../img/save-white.png')}/>
-                            {/* <Text>inventory</Text> */}
+                            <Icon name="save" size={DeviceInfo.isTablet() ? 60 : 40} style={{color: "#fff"}} />
                         </TouchableOpacity>
                     </View>
                 </Animated.View>

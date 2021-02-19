@@ -261,12 +261,6 @@ class OrderManager extends Component {
         const userManager = new UserManager();
         const orderContactManager = new OrderContactManager();
 
-        const tokenManager = new TokenManager();
-        await tokenManager.initDB();
-        const token = await tokenManager.GET_TOKEN_BY_ID(1).then(async (val) => {
-            return val;
-        });
-
         return await new Promise(async (resolve) => {
             const orders = [];
             const sql = "SELECT c." + COLUMN_ID + ", c."+COLUMN_COMMANDE_ID+", c." + COLUMN_IS_SYNC + ", c." + COLUMN_STATUT + ", c." +COLUMN_SOCID + ", c." +COLUMN_USER_AUTHOR_ID + ", c." +COLUMN_REF_COMMANDE + ", c." +COLUMN_DATE_CREATION + ", c." +COLUMN_DATE_COMMANDE + ", c." +COLUMN_DATE_LIVRAISON + ", c." +COLUMN_NOTE_PUBLIC + ", c." +COLUMN_NOTE_PRIVEE + ", c." +COLUMN_TOTAL_HT + ", c." +COLUMN_TOTAL_TVA + ", c." +COLUMN_TOTAL_TTC + ", c." +COLUMN_BROUILLION + ", c." +COLUMN_REMISE_ABSOLUE + ", c." +COLUMN_REMISE_PERCENT + ", c." +COLUMN_REMISE +", t."+thirdPartiesManager._COLUMN_NAME_+" as client_name, (u."+userManager._COLUMN_FIRSTNAME_+" || ' ' || u."+userManager._COLUMN_LASTNAME_+") as user, (SELECT COUNT(*) FROM "+olm._TABLE_NAME_+" as l WHERE l."+olm._COLUMN_ORDER_ID_+" = c."+COLUMN_COMMANDE_ID+" ) as lines_nb FROM " + TABLE_NAME + " as c, "+thirdPartiesManager._TABLE_NAME_+" as t, "+userManager._TABLE_NAME_+" as u, "+orderContactManager._TABLE_NAME_+" as oc WHERE c."+COLUMN_SOCID+" = t."+thirdPartiesManager._COLUMN_REF_+" AND c."+COLUMN_COMMANDE_ID+" = oc."+orderContactManager._COLUMN_ELEMENT_ID_+" AND oc."+orderContactManager._COLUMN_FK_SOPEOPLE_+" = u."+userManager._COLUMN_REF_+" ORDER BY c."+COLUMN_COMMANDE_ID+" DESC";

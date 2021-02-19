@@ -110,7 +110,7 @@ if($ISTOCK_KEY == ""){
 ?>
 
 <form id="form_istock_key" name="form_istock_key" method="POST" action="setup.php">
-	<h3>Création de la clé lience : </h3>
+	<h3>Création de la clé licence : </h3>
 	<div style="display: flex;">
 		<input type="hidden" name="action_1" value="update">
 		<input type="hidden" name="action_2" value="add_key">

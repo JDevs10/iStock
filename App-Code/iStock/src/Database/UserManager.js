@@ -155,6 +155,33 @@ class UserManager extends Component {
     }
 
 
+    //Get by id
+    async GET_USER_BY_ID(id){
+        console.log("##### GET_USER_BY_ID #########################");
+
+        return await new Promise(async (resolve) => {
+            let user = null;
+            await db.transaction(async (tx) => {
+                await tx.executeSql("SELECT u."+COLUMN_ID+", u."+COLUMN_REF+", u."+COLUMN_FIRSTNAME+", u."+COLUMN_LASTNAME+", u."+COLUMN_ADMIN+ ", u."+COLUMN_EMAIL+ ", u."+COLUMN_JOB+ " FROM "+TABLE_NAME+" u WHERE u."+COLUMN_ID+" = "+id, []).then(async ([tx,results]) => {
+                    console.log("Query completed");
+                    var len = results.rows.length;
+                    for (let i = 0; i < len; i++) {
+                        let row = results.rows.item(i);
+                        user = row;
+                    }
+                });
+            }).then(async (result) => {
+                // await this.closeDatabase(db);
+                // console.log('token: ', token);
+                await resolve(user);
+            }).catch(async (err) => {
+                console.log(err);
+                await resolve(null);
+            });
+        });
+    }
+
+
     //Get list
     async GET_USER_LIST(){
         console.log("##### GET_USER_LIST #########################");

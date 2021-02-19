@@ -32,67 +32,123 @@ export default class FindImages extends Component {
             return await new Promise(async (resolve) => {
                 let imagesDownloaded = 0;
                 console.log('IMAGE_PATH : ', IMAGE_PATH);
+                // console.log('IMAGE_PATH : ', RNFS);
             
                 await RNFS.unlink(IMAGE_PATH)
-                    .then(async () => {
-                        console.log('OLD Repertory deleted');
-                    })
-                    .catch(async (err) => {
-                        console.log(err.message);
-                    });
-                await RNFS.mkdir(IMAGE_PATH).then(async (success) => {
-                    let lg = productList.length;
-                    for (let i = (lg-20); i < lg; i++) {
-                        let expectedBytes__ = 0;
-                        console.log(`url => ${token.server}/api/ryimg/product_v2.php?server=${token.server}&DOLAPIKEY=${token.token}&modulepart=product&ref=${productList[i].ref}`);
+                .then(async () => {
+                    console.log('OLD Repertory deleted');
+                })
+                .catch(async (err) => {
+                    console.log(err.message);
+                });
 
-                        await RNBackgroundDownloader.download({
-                            id: String(i),
-                            url: `${token.server}/api/ryimg/product_v2.php?server=${token.server}&DOLAPIKEY=${token.token}&modulepart=product&ref=${productList[i].ref}`,
-                            destination: `${IMAGE_PATH}/${productList[i].ref}.${PREFIX}`,
-                            headers: {
-                                DOLAPIKEY: token.token,
-                                Accept: 'application/json',
-                            }
-                        }).begin(async (expectedBytes) => {
-                            expectedBytes__ = expectedBytes;
-                            console.log(`Going to download ${expectedBytes} bytes!`);
+                try{
+                    await RNFS.mkdir(IMAGE_PATH).then(async (success) => {
+                        let lg = productList.length;
+                        console.log('lg => ', lg);
 
-                            if (expectedBytes <= 25) {
-                                console.log('Image : ' + i + ' - ' + productList[i].ref + ' => EMPTY [WILL BE DELETED]');
-                                await RNFS.unlink(IMAGE_PATH+'/' + productList[i].ref + '.${PREFIX}');
-                            }else{
-                                imagesDownloaded++;
-                            }
-                        }).done(async () => {
-                            productList[i].image = `${IMAGE_PATH}/${productList[i].ref}.${PREFIX}`;
-                            console.log('Image : ' + i + ' - ' + productList[i].ref + ' => DOWNLOADED');
+                        for (let i = 0; i < lg; i++) {
+                            let expectedBytes__ = 0;
                             
-                            // Update image path on device in db
-                            const res = await productsManager.UPDATE_IMAGE(productList[i]).then(async (value) => {
-                                return await value;
+                            const url = `${token.server}/custom/istock/backend/download_product.php?server=${token.server}&DOLAPIKEY=${token.token}&modulepart=product&ref=${productList[i].ref}`;
+                            console.log(`url => ${url}`);
+    
+                            await RNFS.downloadFile({
+                                fromUrl: url,
+                                toFile: `${IMAGE_PATH}/${productList[i].ref}.${PREFIX}`,
+                                begin: async (res: DownloadBeginCallbackResult) => {
+                                    console.log("===================================================");
+                                    console.log("=== Response begin ================================");
+                                    console.log(res, "\n");
+                                },
+                                progress: async (res: DownloadProgressCallbackResult) => {
+                                    //here you can calculate your progress for file download
+                                    console.log("===================================================");
+                                    console.log("=== Response written ==============================");
+
+                                    let progressPercent = (res.bytesWritten / res.contentLength) * 100; // to calculate in percentage
+                                    console.log("=== progress ======================================");
+                                    console.log("Percent : ", progressPercent);
+                                    console.log(res, "\n\n");
+                                },
+                            }).promise.then(async (r) => {
+                                // Update image path on device in db
+                                const res = await productsManager.UPDATE_IMAGE(productList[i]).then(async (value) => {
+                                    return await value;
+                                });
+    
+                                console.log("i => " +(i+1) +" == "+lg);
+                                if((i+1) == lg){
+                                    console.log("DOWNLOADS DONE!");
+                                    console.log(imagesDownloaded + "/" + productList.length + " downloaded.");
+                                    await resolve(true);
+                                }
                             });
 
-                            console.log("i => " +(i+1) +" == "+lg);
-                            if((i+1) == lg){
-                                console.log("DOWNLOADS DONE!");
-                                console.log(imagesDownloaded + "/" + productList.length + " downloaded.");
-                                return await resolve(true);
-                            }
-                        }).error(async (error) => {
-                            console.log('error => ', error);
-                            if ((lg - 1) === i) {
-                                result = true;
-                                console.log('telechargement complet');
-                                return await resolve(result);
-                            }
-                        });
-                    }
-                });
+                            /*
+                            await RNBackgroundDownloader.download({
+                                id: String(i),
+                                url: `${url}`,
+                                destination: `${IMAGE_PATH}/${productList[i].ref}.${PREFIX}`,
+                                headers: {
+                                    DOLAPIKEY: token.token,
+                                    Accept: 'application/json',
+                                }
+                            }).begin(async (expectedBytes) => {
+                                expectedBytes__ = expectedBytes;
+                                console.log(`Going to download ${expectedBytes} bytes!`);
+    
+                                if (expectedBytes <= 25) {
+                                    console.log('Image : ' + i + ' - ' + IMAGE_PATH+'/' + productList[i].ref + ' => EMPTY [WILL BE DELETED]');
+                                    await RNFS.unlink(IMAGE_PATH+'/' + productList[i].ref + '.${PREFIX}');
+                                }else{
+                                    imagesDownloaded++;
+                                }
+                            }).done(async () => {
+                                productList[i].image = `${IMAGE_PATH}/${productList[i].ref}.${PREFIX}`;
+                                console.log('Image : ' + i + ' - ' + productList[i].ref + ' => DOWNLOADED');
+                                
+                                // Update image path on device in db
+                                const res = await productsManager.UPDATE_IMAGE(productList[i]).then(async (value) => {
+                                    return await value;
+                                });
+    
+                                console.log("i => " +(i+1) +" == "+lg);
+                                if((i+1) == lg){
+                                    console.log("DOWNLOADS DONE!");
+                                    console.log(imagesDownloaded + "/" + productList.length + " downloaded.");
+                                    return await resolve(true);
+                                }
+                            }).error(async (error) => {
+                                console.log('error => ', error);
+                                if ((lg - 1) === i) {
+                                    result = true;
+                                    console.log('telechargement complet');
+                                    return await resolve(result);
+                                }
+                                return await resolve(false);
+                            });
+                            */
+                        }
+                        console.log(`No download`);
+                        return await resolve(false);
+
+                    }).catch(async (err) => {
+                        console.log("err mkdir : ", err);
+                        return await resolve(false);
+                    });
+                }catch(error){
+                    console.log("catch error : ", error);
+                    return await resolve(false);
+                }
             });
         }
 
         return await result;
+    }
+
+    downloadProgressCallbackResult(res){
+
     }
 
     async getLocalImages(){
@@ -100,7 +156,7 @@ export default class FindImages extends Component {
 
             const RNFS = require('react-native-fs');
             // get a list of files and directories in the main bundle
-            await RNFS.readDir(RNFS.DocumentDirectoryPath + '/iScreen/produits/images')
+            await RNFS.readDir(IMAGE_PATH)
                 .then(async (result) => {
                     const paths = [];
 

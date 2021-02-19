@@ -18,12 +18,18 @@ const COLUMN_ID = "id";
 const COLUMN_IS_USE_IMAGES = "isUseImages";
 const COLUMN_IS_USE_DETAILED_CMD = "isUseDetailedCMD";
 const COLUMN_IS_USE_DETAILED_CMD_LINES = "isUseDetailedCMDLines";
+const COLUMN_IS_USE_DETAILED_SHIPMENTS = "isUseDetailedShipment";
+const COLUMN_LIMIT_ORDER_DOWNLOAD = "limitOrdersDownload";
+const COLUMN_LIMIT_SHIPMENT_DOWNLOAD = "limitShipmentsDownload";
 
 const create = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "(" +
     COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
     COLUMN_IS_USE_IMAGES + " VARCHAR(255)," +
     COLUMN_IS_USE_DETAILED_CMD + " VARCHAR(255)," +
-    COLUMN_IS_USE_DETAILED_CMD_LINES + " VARCHAR(255)" +
+    COLUMN_IS_USE_DETAILED_CMD_LINES + " VARCHAR(255)," +
+    COLUMN_IS_USE_DETAILED_SHIPMENTS + " VARCHAR(255)," +
+    COLUMN_LIMIT_ORDER_DOWNLOAD + " VARCHAR(255)," +
+    COLUMN_LIMIT_SHIPMENT_DOWNLOAD + " VARCHAR(255)" +
 ")";
 
 
@@ -101,7 +107,7 @@ class SettingsManager extends Component {
         return await new Promise(async (resolve) => {
             try{
                 await db.transaction(async (tx) => {
-                    await tx.executeSql("INSERT INTO " + TABLE_NAME + " ("+COLUMN_ID+", "+COLUMN_IS_USE_IMAGES+", "+COLUMN_IS_USE_DETAILED_CMD+", "+COLUMN_IS_USE_DETAILED_CMD_LINES+") VALUES (1, '"+(data_.isUseImages == true ? 'true' : 'false')+"', '"+(data_.isUseDetailedCMD == true ? 'true' : 'false')+"', '"+(data_.isUseDetailedCMDLines == true ? 'true' : 'false')+"')", []);
+                    await tx.executeSql("INSERT INTO " + TABLE_NAME + " ("+COLUMN_ID+", "+COLUMN_IS_USE_IMAGES+", "+COLUMN_IS_USE_DETAILED_CMD+", "+COLUMN_IS_USE_DETAILED_CMD_LINES+", "+COLUMN_IS_USE_DETAILED_SHIPMENTS+", "+COLUMN_LIMIT_ORDER_DOWNLOAD+", "+COLUMN_LIMIT_SHIPMENT_DOWNLOAD+") VALUES (1, '"+(data_.isUseImages == true ? 'true' : 'false')+"', '"+(data_.isUseDetailedCMD == true ? 'true' : 'false')+"', '"+(data_.isUseDetailedCMDLines == true ? 'true' : 'false')+"', '"+(data_.isUseDetailedShipment == true ? 'true' : 'false')+"', '"+data_.limitOrdersDownload+"', '"+data_.limitShipmentsDownload+"')", []);
                 });
                 return await resolve(true);
             } catch(error){
@@ -115,25 +121,28 @@ class SettingsManager extends Component {
         console.log("##### GET_SETTINGS_BY_ID #########################");
 
         return await new Promise(async (resolve) => {
-            let token = null;
+            let settings = null;
             await db.transaction(async (tx) => {
-                await tx.executeSql("SELECT s."+COLUMN_IS_USE_IMAGES+", s."+COLUMN_IS_USE_DETAILED_CMD+", s."+COLUMN_IS_USE_DETAILED_CMD_LINES+" FROM "+TABLE_NAME+" s WHERE s."+COLUMN_ID+" = "+id, []).then(async ([tx,results]) => {
+                await tx.executeSql("SELECT s."+COLUMN_IS_USE_IMAGES+", s."+COLUMN_IS_USE_DETAILED_CMD+", s."+COLUMN_IS_USE_DETAILED_CMD_LINES+", s."+COLUMN_IS_USE_DETAILED_SHIPMENTS+", s."+COLUMN_LIMIT_ORDER_DOWNLOAD+", s."+COLUMN_LIMIT_SHIPMENT_DOWNLOAD+" FROM "+TABLE_NAME+" s WHERE s."+COLUMN_ID+" = "+id, []).then(async ([tx,results]) => {
                     console.log("Query completed");
                     var len = results.rows.length;
                     for (let i = 0; i < len; i++) {
                         let row = results.rows.item(i);
-                        console.log('token => row: ', row);
-                        token = {
+                        console.log('settings => row: ', row);
+                        settings = {
                             isUseImages: (row.isUseImages == 'true' ? true : false),
                             isUseDetailedCMD: (row.isUseDetailedCMD == 'true' ? true : false),
                             isUseDetailedCMDLines: (row.isUseDetailedCMDLines == 'true' ? true : false),
+                            isUseDetailedShipment: (row.isUseDetailedShipment == 'true' ? true : false),
+                            limitOrdersDownload: row.limitOrdersDownload,
+                            limitShipmentsDownload: row.limitShipmentsDownload,
                         };
                     }
                 });
             }).then(async (result) => {
                 // await this.closeDatabase(db);
                 // console.log('token: ', token);
-                await resolve(token);
+                await resolve(settings);
             }).catch(async (err) => {
                 console.log(err);
                 await resolve(null);
@@ -147,7 +156,14 @@ class SettingsManager extends Component {
 
         return await new Promise(async (resolve) => {
             await db.transaction(async (tx) => {
-                await tx.executeSql("UPDATE "+TABLE_NAME+" SET "+COLUMN_IS_USE_IMAGES+" = '"+(data.isUseImages == true ? 'true' : 'false')+"', "+COLUMN_IS_USE_DETAILED_CMD+" = '"+(data.isUseDetailedCMD == true ? 'true' : 'false')+"', "+COLUMN_IS_USE_DETAILED_CMD_LINES+" = '"+(data.isUseDetailedCMDLines == true ? 'true' : 'false')+"' WHERE "+COLUMN_ID+" = 1", []);
+                const sql = "UPDATE "+TABLE_NAME+" SET "+
+                ""+COLUMN_IS_USE_IMAGES+" = '"+(data.isUseImages == true ? 'true' : 'false')+"', "+
+                ""+COLUMN_IS_USE_DETAILED_CMD+" = '"+(data.isUseDetailedCMD == true ? 'true' : 'false')+"', "+
+                ""+COLUMN_IS_USE_DETAILED_CMD_LINES+" = '"+(data.isUseDetailedCMDLines == true ? 'true' : 'false')+"', "+
+                ""+COLUMN_IS_USE_DETAILED_SHIPMENTS+" = '"+(data.isUseDetailedShipment == true ? 'true' : 'false')+"', "+
+                ""+COLUMN_LIMIT_ORDER_DOWNLOAD+" = '"+data.limitOrdersDownload+"', "+
+                ""+COLUMN_LIMIT_SHIPMENT_DOWNLOAD+" = '"+data.limitShipmentsDownload+"' WHERE "+COLUMN_ID+" = 1";
+                await tx.executeSql(sql, []);
 
             }).then(async (result) => {
                 await resolve(true);

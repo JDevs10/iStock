@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
-import { StyleSheet, View, Text, Image, StatusBar } from 'react-native';
+import { StyleSheet, View, Text, Image, Alert, StatusBar } from 'react-native';
 import TokenManager from '../../Database/TokenManager';
 import FindWarehouses from '../../services/FindWarehouses';
-
+import Strings from "../../utilities/Strings";
+const STRINGS = new Strings();
 const BG = require('../../../img/waiting_bg.png');
 
 
@@ -15,6 +16,16 @@ export default class WarehousesSync extends Component {
   }
 
   async componentDidMount(){
+    await this.sync();
+
+    this.listener = await this.props.navigation.addListener('focus', async () => {
+      await this.sync();
+      return;
+    });
+
+  }
+
+  async sync(){
     const tm = new TokenManager();
     await tm.initDB();
     const token = await tm.GET_TOKEN_BY_ID(1).then(async (val) => {
@@ -33,18 +44,17 @@ export default class WarehousesSync extends Component {
       this.props.navigation.navigate("Dashboard");
     }else{
       Alert.alert(
-        "Synchronisation des Entrepots", 
-        "Une erreur s'est produite l'hors de la synchronisation des entrepots!\nSi le problème persiste veuillez envoyer un ticket à notre support technique.",
+        STRINGS._SYNCHRO_WAREHOUSE_TITTLE_, 
+        STRINGS._SYNCHRO_WAREHOUSE_ERROR_,
         [
           {text: "Support", onPress: () => {this.support()}},
-          {text: "Ok"}
+          {text: "Ok", onPress: () => {this.props.navigation.navigate("Dashboard")}}
         ],
         { cancelable: false }
       );
     }
-
-
   }
+
 
   render() {
     return (

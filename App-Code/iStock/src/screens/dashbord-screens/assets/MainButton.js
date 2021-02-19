@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import {StyleSheet, View, Text, Image, TouchableHighlight, Animated} from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import Icon from 'react-native-vector-icons/FontAwesome5';
 import DeviceInfo from 'react-native-device-info';
 
 // Main bouton
@@ -75,11 +75,11 @@ export default class MainButton extends Component {
         this.props.navigation.navigate("Preparation");
         this.default__();
     }
-    // navigateTo_2 = () => {
-    //     console.log('Preparation');
-    //     this.props.navigation.navigate("Preparation");
-    //     this.default__();
-    // }
+    navigateTo_2 = () => {
+        console.log('Expeditions');
+        this.props.navigation.navigate("Expeditions");
+        this.default__();
+    }
     navigateTo_3 = () => {
         console.log('Inventory');
         this.props.navigation.navigate("Inventory");
@@ -134,26 +134,23 @@ export default class MainButton extends Component {
             <Animated.View style={{position: 'relative', left: btn_1X, top: btn_1Y }}>
                 <View style={styles.secondaryButtons}>
                     <TouchableOpacity onPress={this.navigateTo_1}>
-                        {/* <FontAwesome name="home" color="#05375a" size={DeviceInfo.isTablet() ? 60 : 30} /> */}
-                        <Text>Préparation</Text>
+                        <Icon name="clipboard-list" size={DeviceInfo.isTablet() ? 60 : 30} style={{color: "#fff"}} />
                     </TouchableOpacity>
                 </View>
             </Animated.View>
 
-            {/* <Animated.View style={{position: 'relative', left: btn_2X, top: btn_2Y }}>
+            <Animated.View style={{position: 'relative', left: btn_2X, top: btn_2Y }}>
                 <View style={styles.secondaryButtons}>
                     <TouchableOpacity onPress={this.navigateTo_2}>
-                        <FontAwesome name="home" color="#05375a" size={DeviceInfo.isTablet() ? 60 : 30} />
-                        <Text>préparation</Text>
+                        <Icon name="truck" size={DeviceInfo.isTablet() ? 60 : 30} style={{color: "#fff"}} />
                     </TouchableOpacity>
                 </View>
-            </Animated.View> */}
+            </Animated.View>
+
             <Animated.View style={{position: 'relative', left: btn_3X, top: btn_3Y }}>
                 <View style={styles.secondaryButtons}>
                     <TouchableOpacity onPress={this.navigateTo_3}>
-                        {/* <FontAwesome name="key" color="#05375a" size={60} />  */}
-                        {/* <Image style={{width: DeviceInfo.isTablet() ? 60 : 30, height: DeviceInfo.isTablet() ? 60 : 30 }} source={require('../../../../img/power-off.png')}/> */}
-                        <Text>Inventaire</Text>
+                        <Icon name="boxes" size={DeviceInfo.isTablet() ? 60 : 30} style={{color: "#fff"}} />
                     </TouchableOpacity>
                 </View>
             </Animated.View>

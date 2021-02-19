@@ -12,11 +12,13 @@ import {
 import ButtonSpinner from 'react-native-button-spinner';
 import LinearGradient from 'react-native-linear-gradient';
 import NavbarPreparation from '../../navbar/navbar-preparation';
+import NavbarShipment from '../../navbar/navbar-shipment';
 import MyFooter_v2 from '../footers/MyFooter_v2';
 import ShipmentsButton from '../dashbord-screens/assets/ShipmentsButton';
 import SettingsManager from '../../Database/SettingsManager';
 import OrderManager from '../../Database/OrderManager';
 import ShipmentsManager from '../../Database/ShipmentsManager';
+import ShipmentLinesManager from '../../Database/ShipmentLinesManager';
 import Statut from '../../utilities/Statut';
 import moment from "moment";
 
@@ -55,7 +57,7 @@ export default class Expeditions extends Component {
         isLoadingMoreData: false,
         filterConfig: {},
         data: [],
-        settings: {},
+        settings: {isUseDetailedShipment: true},
         limit: {from: 0, to: 10},
         orientation: isPortrait() ? 'portrait' : 'landscape'
       };
@@ -71,14 +73,14 @@ export default class Expeditions extends Component {
 
     async  componentDidMount(){
         await this._settings();
-        await this._getPickingData();
+        await this._getShipmentData();
     
         this.listener = await this.props.navigation.addListener('focus', async () => {
           // Prevent default action
           await this._settings();
           await console.log('Done settings update!');
           console.log('new settings : ', this.state.settings);
-          await this._getPickingData();
+          await this._getShipmentData();
           return;
         });
     }
@@ -93,7 +95,7 @@ export default class Expeditions extends Component {
         this.setState({settings: settings});
     }
     
-    async _getPickingData(){
+    async _getShipmentData(){
       await this.setState({isLoading: true});
       let data_ = [];
   
@@ -117,12 +119,23 @@ export default class Expeditions extends Component {
       }
       */
 
-      const sm = new ShipmentsManager();
-      await sm.initDB();
-      const test_data = await sm.GET_SHIPMENTS_LIST().then(async (val) => {
-        return val;
-      });
-      console.log('test_data: ', test_data);
+      console.log("filterConfig : ", await Object.keys(this.state.filterConfig).length);
+      if(await Object.keys(this.state.filterConfig).length == 0){
+        const sm = new ShipmentsManager();
+        await sm.initDB();
+        data_ = await sm.GET_SHIPMENT_LIST_BETWEEN(this.state.limit.from, this.state.limit.to).then(async (val) => {
+          //console.log("Order data : ", val);
+          return await val;
+        });
+ 
+      }else{
+        const sm = new ShipmentsManager();
+        await sm.initDB();
+        data_ = await sm.GET_SHIPMENT_LIST_BETWEEN_FILTER(this.state.limit.from, this.state.limit.to, this.state.filterConfig).then(async (val) => {
+          //console.log("Order data filtered : ", val);
+          return await val;
+        });
+      }
   
       await this.setState({ data: data_, isLoading: false});
     }
@@ -169,10 +182,20 @@ export default class Expeditions extends Component {
         await this.setState({isLoadingMoreData: false, data: newData});
     }
 
-    _ShowShipment(value) {
+    async _ShowShipment(value) {
         console.log(value);
-        //alert('Obj: \n' + JSON.stringify(value));
-        this.props.navigation.navigate("CommandeDetails", { order: value });
+        // alert('Obj: \n' + JSON.stringify(value));
+        //this.props.navigation.navigate("CommandeDetails", { order: value });
+        // const sm = new ShipmentsManager();
+        // const slm = new ShipmentLinesManager();
+        // sm.initDB();
+        // slm.initDB();
+        // const m = await sm.DELETE_SHIPMENTS_LIST().then(async (val) => {
+        //   return val;
+        // });
+        // const l = await slm.DELETE_SHIPMENTS_LINES_LIST().then(async (val) => {
+        //   return val;
+        // });
     }
 
     render() {
@@ -194,14 +217,14 @@ export default class Expeditions extends Component {
             },
             cardViewStyle: {
               width: '95%',
-              // height: 320,
+              height: 240,
               margin: 10,
               // marginBottom: 20,
             },
             cardViewStyle1: {
               // paddingTop: 20,
               width: '100%',
-              //height: 150,
+              // height: 150,
             },
             listItemBody: {
               width: '100%',
@@ -237,7 +260,7 @@ export default class Expeditions extends Component {
               width: '95%',
               //height: 150,
             },
-            order: {
+            shipment: {
               //alignItems: 'center',
               margin: 20,
               width: '100%'
@@ -255,8 +278,19 @@ export default class Expeditions extends Component {
               fontSize: 20,
               //marginBottom: 15,
             },
+            cref: {
+              width: 190,
+              marginLeft: 'auto'
+            },
             cdate: {
-              width: '20%',
+              width: 150,
+              textAlign: 'center',
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginLeft: 'auto'
+            },
+            sdate: {
+              width: '45%',
               textAlign: 'center',
               justifyContent: 'center',
               alignItems: 'center',
@@ -277,7 +311,7 @@ export default class Expeditions extends Component {
             },
             refDetails: {
               flexDirection: "row-reverse",
-              width: '100%',
+              width: '95%',
             },
             ref: {
               fontWeight: "bold",
@@ -312,6 +346,18 @@ export default class Expeditions extends Component {
               width: '100%',
               // marginTop: 30,
             },
+            notif_icon: {
+              color: '#E1B12C',
+              borderRadius: 5,
+              padding: 5,
+            },
+            notif: {
+              position: 'absolute',
+              right: 10,
+              justifyContent: 'center',
+              alignItems: 'center',
+              paddingLeft: 10,
+            },
           });
       
       
@@ -322,7 +368,7 @@ export default class Expeditions extends Component {
             colors={['#00AAFF', '#706FD3']}
             style={styles.container}>
     
-            <NavbarPreparation _navigation={this.props} textTittleValue={"Expéditions"} />
+            <NavbarShipment _navigation={this.props} textTittleValue={"Expéditions"} />
             <View style={styles.mainBody}>
               
               {/* <OrderFilter onDataToFilter={this._onDataToFilter.bind(this)} settings={{isFilter: this.state.isFilter}}/> */}
@@ -332,85 +378,113 @@ export default class Expeditions extends Component {
                 onScroll={({nativeEvent}) => {
                   if (isAtToBottom(nativeEvent)) {
                     console.log("Reach at the end!");
-                    //this.loadMoreData();
                   }
                 }}
                 scrollEventThrottle={400}
                 style={{ flex: 1 }}>
                 {
                   this.state.data.map((item, index) => (
-                    <View>
+                    <View key={index}>
                       {/* {item.statut === 1 ? */}
                         {!this.state.isLoading ? 
                           <View>
-    
-                            <CardView key={index} cardElevation={5} cornerRadius={5} style={[styles.cardViewStyle, {height: 120}]}>
-                                <View style={[styles.cardViewStyle1, {paddingTop: 0}]}>
-                                    <View style={styles.order}>
-                                        <TouchableOpacity onPress={() => this._ShowShipment(item)}>
-                                        <View style={styles.ic_and_details}>
-                                            <View style={styles.cname}>
-                                              <Text style={styles.entreprisename}>{item.client_name}</Text>
-                                            </View>
-                                            {/* <View style={styles.cdate}>
-                                              {item.id == 0 ? (<Text>Nouvelle commande</Text>) : (<Text style={styles.ref}>{item.ref_commande}</Text>)}
-                                            </View> */}
-                                            <View style={styles.cdate}>
-                                              <Text style={styles.date}>Livré Le {moment(new Date(new Number(item.date_livraison+"000"))).format('DD-MM-YYYY')}</Text>
-                                            </View>
-                                        </View>
-                                        <View style={styles.ic_and_details}>
-                                          <Icon name="boxes" size={15} style={styles.iconDetails} />
-                                          <Text>{item.lines_nb} Produit(s)</Text>
-                                        </View>
-                                        <View style={styles.refDetails}>
-                                          {/* <View style={styles.cdate}> */}
-                                            {item.id == 0 ? (<Text>Nouvelle commande</Text>) : (<Text style={styles.ref}>{item.ref_commande}</Text>)}
-                                          {/* </View> */}
-                                        </View>
-                                          <View style={{ borderBottomColor: '#00AAFF', borderBottomWidth: 1, marginRight: 10 }} />
-                                        </TouchableOpacity>
-                                        <View style={styles.butons_commande}>
-                                          {/* {1 === 0 ? (<Text style={styles.notif}><Icon name="cloud-upload-alt" size={20} style={styles.notif_icon} /></Text>) : (<Text style={styles.notif}></Text>)} */}
-                                        </View>
-                                    </View>
-                                </View>
-                            </CardView>
+                            {this.state.settings.isUseDetailedShipment ? 
 
-                            <CardView key={index} cardElevation={10} cornerRadius={5} style={[styles.cardViewStyle, {height: 120}]}>
-                                <View style={styles.cardViewStyle1}>
-                                <View style={[styles.article, {flexDirection: "row"}]}>
-                                    <View style={{flex: 1, marginLeft: 10}}>
+                            <CardView cardElevation={10} cornerRadius={5} style={[styles.cardViewStyle, {height: 200}]}>
+                              <View style={styles.cardViewStyle1}>
+                                <View style={styles.shipment}>
+                                  <TouchableOpacity onPress={() => this._ShowShipment(item)}>
                                     <View style={styles.ic_and_details}>
-                                        <View style={styles.aname}>
-                                            <Text style={styles.articlename}>{item.libelle}</Text>
-                                        </View>
-                                        <View style={styles.aref}>
-                                            <Text style={styles.ref}>{item.ref}</Text>
-                                        </View>
+                                      <View style={styles.cname}>
+                                        <Text style={styles.entreprisename}>{item.client_name}</Text>
+                                      </View>
+                                      {/* <View style={styles.cref}>
+                                        {item.id == 0 ? (<Text>Nouvelle expédition</Text>) : (<Text style={styles.ref}>{item.ref}</Text>)}
+                                      </View> */}
                                     </View>
-                                    <View style={[styles.ic_and_details, {width: "100%", justifyContent: "space-between"}]}>
-                                        <View style={{width: "30%", flexDirection: "row", justifyContent: "flex-start"}}>
-                                            <Icon name="boxes" size={15} style={styles.iconDetails} />
-                                        <Text>{item.stock} en Stock</Text>
-                                        </View>
-                                        <View style={{width: "30%", flexDirection: "row", justifyContent: "center", marginRight: 20}}>
-                                            <Icon name="boxes" size={15} style={styles.iconDetails} />
-                                        <Text>{item.qty} Commandé</Text>
-                                        </View>
-                                        <View style={{width: "30%", flexDirection: "row", justifyContent: "flex-end", marginRight: 20}}>
-                                            <Icon name="truck-loading" size={15} style={styles.iconDetails} />
-                                        <Text>{this.state.addRemoveNothing} Préparé</Text>
-                                        </View>
+                                    <View style={styles.ic_and_details}>
+                                      <View style={styles.cref, {margin: 0, flexDirection: "row"}}>
+                                        <Icon name="tag" size={15} style={styles.iconDetails} />
+                                        {item.id == 0 ? (<Text>Nouvelle expédition</Text>) : (<Text style={styles.ref}>{item.ref}</Text>)}
+                                      </View>
                                     </View>
-
+                                    <View style={styles.ic_and_details}>
+                                      <Icon name="user" size={15} style={styles.iconDetails}/>
+                                      <Text>Créé par : <Text style={{fontWeight: "bold"}}>{item.user_author_id}</Text></Text>
+                                    </View>
+                                    <View style={styles.ic_and_details}>
+                                      <Icon name="boxes" size={15} style={styles.iconDetails}/>
+                                      <Text>{item.lines} Produit(s)</Text>
+                                    </View>
+                                    <View style={styles.ic_and_details}>
+                                      <View style={{flexDirection: "row", width: "50%"}}>
+                                        <Icon name="calendar-alt" size={15} style={styles.iconDetails} />
+                                        <Text>Faite le : <Text style={{fontWeight: "bold"}}>{moment(new Date(new Number(item.date_creation+"000"))).format('DD-MM-YYYY')}</Text></Text>
+                                      </View>
+                                      <View style={styles.cdate}>
+                                        <Text style={styles.date}>Livré pour {moment(new Date(new Number(item.date_delivery+"000"))).format('DD-MM-YYYY')}</Text>
+                                      </View>
+                                    </View>
                                     <View style={{ borderBottomColor: '#00AAFF', borderBottomWidth: 1, marginRight: 10 }} />
+                                    <View style={styles.pricedetails}>
+                                      {/* <View style={styles.price}>
+                                        <Text>Total TTC : {item.total_ttc > 0 ? (parseFloat(item.total_ttc)).toFixed(2) : '0'} €</Text>
+                                      </View> */}
+                                      <View style={[styles.billedstate, {backgroundColor: _statut_.getOrderStatutColorStyles(item.statut)}]}>
+                                        <Text style={{color: "#000"}}>{_statut_.getOrderStatut(item.statut)}</Text>
+                                      </View>
                                     </View>
-                                    
+                                  </TouchableOpacity>
+                                  <View style={styles.butons_commande}>
+                                    {/* <ButtonSpinner style={styles.submit_on} positionSpinner={'right'} onPress={() => this._relance_commande(item.ref_commande)} styleSpinner={{ color: '#FFFFFF' }}>
+                                      <Icon name="sync" size={20} style={styles.iconValiderpanier} />
+                                      <Text style={styles.iconPanier}> Relancer la commande</Text>
+                                    </ButtonSpinner> */}
+                                    {/* {0 === 0 ? (<Text style={styles.notif}><Icon name="cloud-upload-alt" size={20} style={styles.notif_icon} /></Text>) : (<Text style={styles.notif}></Text>)} */}
+                                    {item.is_synchro === 'false' ? (<Text style={styles.notif}><Icon name="cloud-upload-alt" size={20} style={styles.notif_icon} /></Text>) : (<Text style={styles.notif}></Text>)}
+                                  </View>
                                 </View>
-                                </View>
+                              </View>
                             </CardView>
-                            
+                            : 
+                            <CardView cardElevation={5} cornerRadius={5} style={[styles.cardViewStyle, {height: 140}]}>
+                              <View style={[styles.cardViewStyle1, {paddingTop: 0}]}>
+                                  <View style={styles.shipment}>
+                                      <TouchableOpacity onPress={() => this._Showcommande(item)}>
+                                      <View style={styles.ic_and_details}>
+                                          <View style={styles.cname}>
+                                            <Text style={styles.entreprisename}>{item.client_name}</Text>
+                                          </View>
+                                          {/* <View style={styles.cdate}>
+                                            {item.id == 0 ? (<Text>Nouvelle commande</Text>) : (<Text style={styles.ref}>{item.ref_commande}</Text>)}
+                                          </View> */}
+                                          {/* <View style={styles.cdate}>
+                                            <Text style={styles.date}>Livré pour {moment(new Date(new Number(item.date_delivery+"000"))).format('DD-MM-YYYY')}</Text>
+                                          </View> */}
+                                      </View>
+                                      <View style={styles.ic_and_details}>
+                                        <View style={{width: '54%', flexDirection: "row"}}>
+                                          <Icon name="boxes" size={15} style={styles.iconDetails} />
+                                          <Text>{item.lines} Produit(s)</Text>
+                                        </View>
+                                        <View style={styles.sdate}>
+                                          <Text style={styles.date}>Livré pour {moment(new Date(new Number(item.date_delivery+"000"))).format('DD-MM-YYYY')}</Text>
+                                        </View>
+                                      </View>
+                                      <View style={styles.refDetails}>
+                                        {/* <View style={styles.cdate}> */}
+                                          {item.id == null || item.id == 0 ? (<Text style={styles.ref}>Nouvelle commande</Text>) : (<Text style={styles.ref}>{item.ref}</Text>)}
+                                        {/* </View> */}
+                                      </View>
+                                        <View style={{ borderBottomColor: '#00AAFF', borderBottomWidth: 1, marginRight: 10 }} />
+                                      </TouchableOpacity>
+                                      <View style={styles.butons_commande}>
+                                        {item.is_synchro === 'false' ? (<Text style={styles.notif}><Icon name="cloud-upload-alt" size={20} style={styles.notif_icon} /></Text>) : (<Text style={styles.notif}></Text>)}
+                                      </View>
+                                  </View>
+                              </View>
+                            </CardView>
+                            }
                           </View>
                         : 
                            null

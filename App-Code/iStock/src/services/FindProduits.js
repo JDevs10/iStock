@@ -4,6 +4,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import axios from 'axios';
 import ProductsManager from '../Database/ProductsManager';
 import ProductsLotDlcDluoManager from '../Database/ProductsLotDlcDluoManager';
+import CheckConnections from '../services/CheckConnections';
 
 const LIMIT = "50";
 
@@ -15,6 +16,16 @@ class FindProduits extends Component {
         
     
     async getAllProductsFromServer(token){
+        //check for internet connection
+        const conn = new CheckConnections();
+        if(await conn.CheckConnectivity_noNotification()){
+          console.log('CheckConnectivity_noNotification ', 'true');
+        }
+        else{
+          console.log('CheckConnectivity_noNotification ', 'false');
+          return false;
+        }
+      
         const productsManager = new ProductsManager();
         await productsManager.initDB();
         await productsManager.CREATE_PRODUCT_TABLE();

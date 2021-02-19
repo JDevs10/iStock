@@ -95,7 +95,7 @@ class Authentification extends CommonObject
 		'rowid' => array('type'=>'integer', 'label'=>'TechnicalID', 'enabled'=>1, 'position'=>1, 'notnull'=>1, 'visible'=>0, 'index'=>1,),
 		'date_creation' => array('type'=>'datetime', 'label'=>'DateCreation', 'enabled'=>1, 'position'=>4, 'notnull'=>1, 'visible'=>1,),
 		'identifiant' => array('type'=>'varchar(255)', 'label'=>'Identifiant', 'enabled'=>1, 'position'=>2, 'notnull'=>1, 'visible'=>1,),
-		'last_connexion' => array('type'=>'datetime', 'label'=>'LastConnexion', 'enabled'=>1, 'position'=>5, 'notnull'=>1, 'visible'=>1,),
+		'last_connexion' => array('type'=>'datetime', 'label'=>'Derniere Connection', 'enabled'=>1, 'position'=>5, 'notnull'=>1, 'visible'=>1,),
 		'device_platform' => array('type'=>'varchar(255)', 'label'=>'DevicePlatform', 'enabled'=>1, 'position'=>6, 'notnull'=>-1, 'visible'=>0,),
 		'device_type' => array('type'=>'varchar(255)', 'label'=>'DeviceType', 'enabled'=>1, 'position'=>7, 'notnull'=>-1, 'visible'=>0,),
 		'fk_user' => array('type'=>'integer:User:user/class/user.class.php', 'label'=>'Utilisateur', 'enabled'=>1, 'position'=>8, 'notnull'=>1, 'visible'=>1,),

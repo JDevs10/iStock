@@ -11,8 +11,10 @@ import {
 } from 'react-native/Libraries/NewAppScreen';
 import FindServers from '../../services/FindServers';
 import TokenManager from '../../Database/TokenManager';
-import CheckConnections from '../../services/CheckConnections';
 import Scanner from '../../utilities/Scanner';
+import CheckConnections from '../../services/CheckConnections';
+import Strings from "../../utilities/Strings";
+const STRINGS = new Strings();
 const BG = require('../../../img/waiting_bg.png');
 
 
@@ -46,6 +48,30 @@ class Loading extends Component {
     //check if tocken exist already
     if (token != null) {
       this.props.navigation.navigate('download');
+      return;
+    }
+
+    //check for internet connection
+    const conn = new CheckConnections();
+    if(await conn.CheckConnectivity_noNotification()){
+      console.log('CheckConnectivity_noNotification ', 'true');
+    }
+    else{
+      console.log('CheckConnectivity_noNotification ', 'false');
+      Alert.alert(
+        STRINGS._NO_INTERNET_TITTLE,
+        STRINGS._NO_INTERNET_TEXT,
+        [
+          { text: 'Ok', onPress: () => {
+            this.setState({loadingNotify: "Fermeture...."});
+            setTimeout(() => { 
+              BackHandler.exitApp(); 
+            }, 3000);
+            } 
+          },
+        ],
+        { cancelable: false }
+      );
       return;
     }
 

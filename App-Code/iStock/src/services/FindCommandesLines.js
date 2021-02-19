@@ -4,13 +4,23 @@ import { View, Text, StyleSheet } from 'react-native';
 import axios from 'axios';
 import OrderManager from '../Database/OrderManager';
 import OrderLinesManager from '../Database/OrderLinesManager';
-
+import CheckConnections from '../services/CheckConnections';
 
 
 // create a component
 class FindCommandesLines extends Component {
     
     async getCommandesLines(token){
+        //check for internet connection
+        const conn = new CheckConnections();
+        if(await conn.CheckConnectivity_noNotification()){
+          console.log('CheckConnectivity_noNotification ', 'true');
+        }
+        else{
+          console.log('CheckConnectivity_noNotification ', 'false');
+          return false;
+        }
+        
         const orderManager = new OrderManager();
         console.log('orderManager', 'getAllOrdersFromServer()');
         console.log('token', token);

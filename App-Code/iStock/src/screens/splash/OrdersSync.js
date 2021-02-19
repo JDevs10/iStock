@@ -3,7 +3,8 @@ import { StyleSheet, View, Text, Image, StatusBar } from 'react-native';
 import TokenManager from '../../Database/TokenManager';
 import FindCommandes from '../../services/FindCommandes';
 import FindCommandesLines from '../../services/FindCommandesLines';
-
+import Strings from "../../utilities/Strings";
+const STRINGS = new Strings();
 const BG = require('../../../img/waiting_bg.png');
 
 
@@ -16,6 +17,15 @@ export default class OrdersSync extends Component {
   }
 
   async componentDidMount(){
+    await this.sync();
+
+    this.listener = await this.props.navigation.addListener('focus', async () => {
+      await this.sync();
+      return;
+    });
+  }
+
+  async sync(){
     const tm = new TokenManager();
     await tm.initDB();
     const token = await tm.GET_TOKEN_BY_ID(1).then(async (val) => {
@@ -43,17 +53,15 @@ export default class OrdersSync extends Component {
       this.props.navigation.navigate("Preparation");
     }else{
       Alert.alert(
-        "Synchronisation des Commandes", 
-        "Une erreur s'est produite l'hors de la synchronisation des commandes!\nSi le problème persiste veuillez envoyer un ticket à notre support technique.",
+        STRINGS._SYNCHRO_COMMANDE_TITTLE_, 
+        STRINGS._SYNCHRO_COMMANDE_ERROR_,
         [
           {text: "Support", onPress: () => {this.support()}},
-          {text: "Ok"}
+          {text: "Ok", onPress: () => {this.props.navigation.navigate("Dashboard")}}
         ],
         { cancelable: false }
       );
     }
-
-
   }
 
   render() {

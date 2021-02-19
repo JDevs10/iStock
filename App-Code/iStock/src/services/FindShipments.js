@@ -3,8 +3,13 @@ import { View, Text, AsyncStorage } from 'react-native';
 import axios from 'axios';
 import ShipmentsManager from '../Database/ShipmentsManager';
 import ShipmentsLinesManager from '../Database/ShipmentLinesManager';
+import CheckConnections from '../services/CheckConnections';
+import SettingsManager from '../Database/SettingsManager';
+import DefaultSettings from '../utilities/DefaultSettings';
 
 const LIMIT = "20"; //Limite of orders in each page
+const DEFAULT_SETTINGS = new DefaultSettings();
+
 
 class FindShipments extends Component {
   constructor(props) {
@@ -13,6 +18,34 @@ class FindShipments extends Component {
 
 
   async getAllShipmentsFromServer(token){
+
+    //check for internet connection
+    const conn = new CheckConnections();
+    if(await conn.CheckConnectivity_noNotification()){
+      console.log('CheckConnectivity_noNotification ', 'true');
+    }
+    else{
+      console.log('CheckConnectivity_noNotification ', 'false');
+      return false;
+    }
+
+    // Limit of Shipments downloaded
+    const settingsManager = new SettingsManager();
+    await settingsManager.initDB();
+    const settings = await settingsManager.GET_SETTINGS_BY_ID(1).then(async (val)=> {
+      return val;
+    });
+
+    if(settings == null){
+      return false;
+    }
+    const sqlfilters = DEFAULT_SETTINGS.get_Shipments_Bigger_than_date_from_value(settings.limitOrdersDownload);
+
+    if(sqlfilters == null){
+      return false;
+    }
+    // END Limit of Shipments downloaded
+
     const shipmentsManager = new ShipmentsManager();
     await shipmentsManager.initDB();
     await shipmentsManager.CREATE_SHIPMENTS_TABLE();
@@ -21,8 +54,8 @@ class FindShipments extends Component {
     await shipmentsLinesManager.initDB();
     await shipmentsLinesManager.CREATE_SHIPMENT_LINES_TABLE();
 
-    return true;
-    /*
+    // return true;
+    
     console.log('shipmentsManager', 'ShipmentsManager()');
     console.log('token', token);
     
@@ -31,8 +64,11 @@ class FindShipments extends Component {
 
     return await new Promise(async (resolve)=> {
       while(i_ < 600){
-        console.log(`${token.server}/api/index.php/shipments?sortfield=t.rowid&sortorder=ASC&limit=${LIMIT}&page=${i_}&DOLAPIKEY=${token.token}`);
-        await axios.get(`${token.server}/api/index.php/shipments?sortfield=t.rowid&sortorder=ASC&limit=${LIMIT}&page=${i_}`, 
+        const url_v1 = `${token.server}/api/index.php/shipments?sortfield=t.rowid&sortorder=ASC&limit=${LIMIT}&page=${i_}`;
+        const url_v2 = `${token.server}/api/index.php/shipments?sortfield=t.rowid&sortorder=ASC&limit=${LIMIT}&page=${i_}&sqlfilters=${sqlfilters}&DOLAPIKEY=${token.token}`;
+        console.log(url_v2);
+
+        await axios.get(url_v2, 
             { headers: { 'DOLAPIKEY': token.token, 'Accept': 'application/json' } })
         .then(async (response) => {
             if(response.status == 200){
@@ -67,7 +103,6 @@ class FindShipments extends Component {
         });
       }
     });
-    */
 
   }
 

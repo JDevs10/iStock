@@ -4,6 +4,8 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import DeviceInfo from 'react-native-device-info';
 import Strings from '../../../utilities/Strings';
+import ShipmentsManager from '../../../Database/ShipmentsManager';
+import ShipmentLinesManager from '../../../Database/ShipmentLinesManager';
 const STRINGS = new Strings();
 
 // Main bouton
@@ -82,17 +84,56 @@ export default class ShipmentsButton extends Component {
             this.setState({isFilter: !this.state.isFilter});
             //this.default__();
         }
-        action_3 = () => {
+        action_3 = async () => {
             console.log('action_3');
-            //this.default__();
-    
-            Alert.alert(
-                STRINGS._INFO_PREPARATION_LIST_TITLE,
-                STRINGS._INFO_PREPARATION_LIST_TEXT,
-                [
-                  {text: 'Ok', onPress: () => true},
-                ],
-                { cancelable: false });
+            this.default__();
+            // Alert.alert(
+            //     STRINGS._INFO_SHIPMENT_LIST_TITLE,
+            //     STRINGS._INFO_SHIPMENT_LIST_TEXT,
+            //     [
+            //       {text: 'Ok', onPress: () => true},
+            //     ],
+            //     { cancelable: false }
+            // );
+
+            const shipmentLinesManager = new ShipmentLinesManager();
+            await shipmentLinesManager.initDB();
+            const res_6 = await shipmentLinesManager.DELETE_SHIPMENTS_LINES_LIST().then(async (val) => {
+                return await val;
+            });
+
+            const shipmentsManager = new ShipmentsManager();
+            await shipmentsManager.initDB();
+            const res_7 = await shipmentsManager.DELETE_SHIPMENTS_LIST().then(async (val) => {
+                return await val;
+            });
+
+
+            // const shipmentLinesManager = new ShipmentLinesManager();
+            // await shipmentLinesManager.initDB();
+            // const res_6 = await shipmentLinesManager.CREATE_SHIPMENT_LINES_TABLE().then(async (val) => {
+            //     return await val;
+            // });
+
+            // const shipmentsManager = new ShipmentsManager();
+            // await shipmentsManager.initDB();
+            // const res_7 = await shipmentsManager.CREATE_SHIPMENTS_TABLE().then(async (val) => {
+            //     return await val;
+            // });
+
+
+            // const shipmentLinesManager = new ShipmentLinesManager();
+            // await shipmentLinesManager.initDB();
+            // const res_6 = await shipmentLinesManager.DROP_SHIPMENTS_LINES().then(async (val) => {
+            //     return await val;
+            // });
+
+            // const shipmentsManager = new ShipmentsManager();
+            // await shipmentsManager.initDB();
+            // const res_7 = await shipmentsManager.DROP_SHIPMENTS().then(async (val) => {
+            //     return await val;
+            // });
+
         }
     
       render() {

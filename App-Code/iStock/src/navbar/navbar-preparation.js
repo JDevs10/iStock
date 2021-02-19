@@ -1,14 +1,9 @@
 import React, { Component } from 'react';
 import {StyleSheet, View, Text, Image, ImageBackground, TouchableOpacity, Dimensions, Alert} from  'react-native';
-import {
-  Header,
-  LearnMoreLinks,
-  Colors,
-  DebugInstructions,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
 import DeviceInfo from 'react-native-device-info';
 import Icon from 'react-native-vector-icons/FontAwesome5';
+import Strings from "../utilities/Strings";
+const STRINGS = new Strings();
 const IMG_SRC = require('../../img/banner.png');
 
 
@@ -46,7 +41,17 @@ export default class NavbarPreparation extends Component {
 
   // sync all orders from server
   async syncOrders(){
-    this.props._navigation.navigation.navigate('OrdersSync');
+    Alert.alert(
+      STRINGS._SYNCHRO_COMMANDE_TITTLE_, 
+      STRINGS._SYNCHRO_COMMANDE_TEXT_,
+      [
+        {text: "Support", onPress: () => {
+          this.props._navigation.navigation.navigate('OrdersSync');
+        }},
+        {text: "Ok"}
+      ],
+      { cancelable: false }
+    );
   }
 
   async support(){
@@ -58,14 +63,6 @@ export default class NavbarPreparation extends Component {
   }
 
   render() {
-    // if (this.state.orientation === 'portrait') {
-    //   console.log('orientation : ', this.state.orientation);
-    // }
-    // else {
-    //   console.log('orientation : ', this.state.orientation);
-    // }
-
-
     const styles = StyleSheet.create({
       body: {
         height: 250,
