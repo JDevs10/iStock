@@ -57,7 +57,7 @@ class FindProduits extends Component {
                     }
                 }else{
                     console.log('Status != 200');
-                    console.log(response.data);
+                    // console.log(response.data);
                 }
     
             }).catch(async (error) => {

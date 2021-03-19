@@ -45,10 +45,10 @@ export default class NavbarPreparation extends Component {
       STRINGS._SYNCHRO_COMMANDE_TITTLE_, 
       STRINGS._SYNCHRO_COMMANDE_TEXT_,
       [
-        {text: "Support", onPress: () => {
+        {text: "Oui", onPress: () => {
           this.props._navigation.navigation.navigate('OrdersSync');
         }},
-        {text: "Ok"}
+        {text: "Non"}
       ],
       { cancelable: false }
     );

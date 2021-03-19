@@ -29,6 +29,8 @@ class FindShipments extends Component {
       return false;
     }
 
+    return;
+
     // Limit of Shipments downloaded
     const settingsManager = new SettingsManager();
     await settingsManager.initDB();
@@ -54,7 +56,7 @@ class FindShipments extends Component {
     await shipmentsLinesManager.initDB();
     await shipmentsLinesManager.CREATE_SHIPMENT_LINES_TABLE();
 
-    // return true;
+    return true;
     
     console.log('shipmentsManager', 'ShipmentsManager()');
     console.log('token', token);

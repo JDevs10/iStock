@@ -16,20 +16,24 @@ const DATABASE_SIZE = DatabaseInfo.DATABASE_SIZE;
 const TABLE_NAME = "products_lot_dlc_dluo";
 const COLUMN_ID = "id";
 const COLUMN_ENTREPOT_ID = "entrepot";
+const COLUMN_ENTREPOT_LABEL = "entrepot_label";
 const COLUMN_BATCH = "batch";
 const COLUMN_FK_PRODUCT = "fk_product";
 const COLUMN_EAT_BY = "eatby";
 const COLUMN_SELL_BY = "sellby";
 const COLUMN_STOCK = "stock";
+const COLUMN_FK_ORIGIN_STOCK = "fk_origin_stock";
 
 const create = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "(" +
     COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
     COLUMN_ENTREPOT_ID + " VARCHAR(255)," +
+    COLUMN_ENTREPOT_LABEL + " VARCHAR(255)," +
     COLUMN_BATCH + " VARCHAR(255)," +
     COLUMN_FK_PRODUCT + " VARCHAR(255)," +
     COLUMN_EAT_BY + " VARCHAR(255)," +
     COLUMN_SELL_BY + " VARCHAR(255)," +
-    COLUMN_STOCK + " VARCHAR(255)" +
+    COLUMN_STOCK + " INTEGER(255)," +
+    COLUMN_FK_ORIGIN_STOCK + " VARCHAR(255)" +
 ")";
 
 
@@ -108,7 +112,7 @@ class ProductsLotDlcDluoManager extends Component {
             try{
                 for(let x = 0; x < data_.length; x++){
                     await db.transaction(async (tx) => {
-                        await tx.executeSql("INSERT INTO " + TABLE_NAME + " ("+COLUMN_ID+", "+COLUMN_ENTREPOT_ID+", "+COLUMN_BATCH+", "+COLUMN_FK_PRODUCT+", "+COLUMN_EAT_BY+", "+COLUMN_SELL_BY+", "+COLUMN_STOCK+") VALUES (null, '"+data_[x].fk_entrepot+"', '"+data_[x].batch+"', '"+data_[x].fk_product+"', '"+data_[x].eatby+"', '"+data_[x].sellby+"', '"+data_[x].reel+"')", []);
+                        await tx.executeSql("INSERT INTO " + TABLE_NAME + " ("+COLUMN_ID+", "+COLUMN_ENTREPOT_ID+", "+COLUMN_ENTREPOT_LABEL+", "+COLUMN_BATCH+", "+COLUMN_FK_PRODUCT+", "+COLUMN_EAT_BY+", "+COLUMN_SELL_BY+", "+COLUMN_STOCK+", "+COLUMN_FK_ORIGIN_STOCK+") VALUES (null, '"+data_[x].fk_entrepot+"', '"+data_[x].entrepot_label+"', '"+data_[x].batch+"', '"+data_[x].fk_product+"', '"+data_[x].eatby+"', '"+data_[x].sellby+"', "+data_[x].qty+", '"+data_[x].fk_origin_stock+"')", []);
                     });
                 }
                 return await resolve(true);
@@ -125,12 +129,13 @@ class ProductsLotDlcDluoManager extends Component {
         return await new Promise(async (resolve) => {
             let productsLotDlcDluo = [];
             await db.transaction(async (tx) => {
-                await tx.executeSql("SELECT "+COLUMN_ID+", "+COLUMN_ENTREPOT_ID+", "+COLUMN_BATCH+", "+COLUMN_FK_PRODUCT+", "+COLUMN_EAT_BY+", "+COLUMN_SELL_BY+", "+COLUMN_STOCK+" FROM "+TABLE_NAME+" WHERE "+COLUMN_FK_PRODUCT+" = "+id, []).then(async ([tx,results]) => {
+                await tx.executeSql("SELECT "+COLUMN_ID+", "+COLUMN_ENTREPOT_ID+", "+COLUMN_ENTREPOT_LABEL+", "+COLUMN_BATCH+", "+COLUMN_FK_PRODUCT+", "+COLUMN_EAT_BY+", "+COLUMN_SELL_BY+", "+COLUMN_STOCK+", "+COLUMN_FK_ORIGIN_STOCK+" FROM "+TABLE_NAME+" WHERE "+COLUMN_FK_PRODUCT+" = "+id, []).then(async ([tx,results]) => {
                     console.log("Query completed");
 
                     var len = results.rows.length;
                     for (let i = 0; i < len; i++) {
                         let row = results.rows.item(i);
+                        row.prepare = 0;
                         productsLotDlcDluo.push(row);
                     }
                     console.log(productsLotDlcDluo);

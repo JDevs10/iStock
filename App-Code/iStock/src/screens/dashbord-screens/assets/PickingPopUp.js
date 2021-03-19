@@ -300,7 +300,7 @@ export default class PickingPopUp extends Component {
           // alignItems: "center",
           // alignContent: "center",
         }
-      });
+    });
 
     return (
     <View>
@@ -530,6 +530,7 @@ export default class PickingPopUp extends Component {
 
                             
                         </View>
+                    
                     </View>
                 </CardView>
             </View>

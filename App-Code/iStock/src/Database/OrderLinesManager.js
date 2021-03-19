@@ -229,7 +229,7 @@ class OrderLinesManager extends Component {
             try{
                 const lines = [];
                 await db.transaction(async (tx) => {
-                    await tx.executeSql("SELECT l." + COLUMN_ID + ", l." + COLUMN_ORDER_ID + ", l." + COLUMN_ORDER_LINE_ID + ", p."+pm._COLUMN_PRODUCT_ID_+", l." + COLUMN_LABEL + ", l." + COLUMN_REF + ", l." + COLUMN_RANG + ", l." +COLUMN_QTE + ", l." +COLUMN_PRICE + ", l." +COLUMN_TVA_TX + ", l." +COLUMN_TOTAL_HT + ", l." +COLUMN_TOTAL_TVA + ", l." +COLUMN_TOTAL_TTC + ", (SELECT "+wm._COLUMN_ID_+" from "+wm._TABLE_NAME_+" as w where p."+pm._COLUMN_EMPLACEMENT_+" = w."+wm._COLUMN_ID_+") as emplacement_id, (SELECT "+wm._COLUMN_LABEL_+" from "+wm._TABLE_NAME_+" as w where p."+pm._COLUMN_EMPLACEMENT_+" = w."+wm._COLUMN_ID_+") as emplacement, p."+pm._COLUMN_STOCK_+", p."+pm._COLUMN_CODEBARRE_+", p."+pm._COLUMN_REF_+", p."+pm._COLUMN_DESCRIPTION_+", (SELECT sml."+sml._COLUMN_QTY_+" FROM "+sml._TABLE_NAME_+" as sml WHERE sml."+sml._COLUMN_ORIGIN_LINE_ID_+" = l."+COLUMN_ORDER_LINE_ID+" AND sml."+sml._COLUMN_RANG_+" = l."+COLUMN_RANG+") as prepare_shipping_qty, p."+pm._COLUMN_IMAGE_+" FROM " + TABLE_NAME + " as l, "+pm._TABLE_NAME_+" as p WHERE l." + COLUMN_ORDER_ID + " = " + id + " AND l."+COLUMN_REF+" = p."+pm._COLUMN_REF_, [], async (tx, results) => {
+                    await tx.executeSql("SELECT l." + COLUMN_ID + ", l." + COLUMN_ORDER_ID + ", l." + COLUMN_ORDER_LINE_ID + ", p."+pm._COLUMN_PRODUCT_ID_+", l." + COLUMN_LABEL + ", l." + COLUMN_REF + ", l." + COLUMN_RANG + ", l." +COLUMN_QTE + ", l." +COLUMN_PRICE + ", l." +COLUMN_TVA_TX + ", l." +COLUMN_TOTAL_HT + ", l." +COLUMN_TOTAL_TVA + ", l." +COLUMN_TOTAL_TTC + ", (SELECT "+wm._COLUMN_ID_+" from "+wm._TABLE_NAME_+" as w where p."+pm._COLUMN_EMPLACEMENT_+" = w."+wm._COLUMN_ID_+") as emplacement_id, (SELECT "+wm._COLUMN_LABEL_+" from "+wm._TABLE_NAME_+" as w where p."+pm._COLUMN_EMPLACEMENT_+" = w."+wm._COLUMN_ID_+") as emplacement, p."+pm._COLUMN_STOCK_+", p."+pm._COLUMN_CODEBARRE_+", p."+pm._COLUMN_REF_+", p."+pm._COLUMN_DESCRIPTION_+", (SELECT sum(sml."+sml._COLUMN_QTY_+") FROM "+sml._TABLE_NAME_+" as sml WHERE sml."+sml._COLUMN_ORIGIN_LINE_ID_+" = l."+COLUMN_ORDER_LINE_ID+" AND sml."+sml._COLUMN_RANG_+" = l."+COLUMN_RANG+") as prepare_shipping_qty, p."+pm._COLUMN_IMAGE_+" FROM " + TABLE_NAME + " as l, "+pm._TABLE_NAME_+" as p WHERE l." + COLUMN_ORDER_ID + " = " + id + " AND l."+COLUMN_REF+" = p."+pm._COLUMN_REF_, [], async (tx, results) => {
                         var len = results.rows.length;
                         for (let i = 0; i < len; i++) {
 
@@ -249,7 +249,7 @@ class OrderLinesManager extends Component {
                 });
             } catch(error){
                 console.log("error: ", error);
-                return resolve(null);
+                return resolve([]);
             }
         });
     }

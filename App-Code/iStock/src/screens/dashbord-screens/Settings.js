@@ -26,6 +26,8 @@ import SettingsManager from '../../Database/SettingsManager';
 import TokenManager from '../../Database/TokenManager';
 import SettingsDetailButton from './assets/SettingsDetailButton';
 import moment from 'moment';
+import DefaultSettings from '../../utilities/DefaultSettings';
+const DEFAULT_SETTINGS = new DefaultSettings();
 const IMG_SRC = require('../../../img/bg_login.png');
 
 
@@ -46,20 +48,8 @@ class Settings extends Component {
         dataList_limitDownloadOrders_selected: {id: 1, name: '-\t3 jours', value: 3, selected: true,},
         dataList_limitDownloadShipments_selected: {id: 1, name: '-\t3 jours', value: 3, selected: true,},
       },
-      dataList_limitDownloadOrders: [
-        {id: 1, name: '-\t3 jours', value: 3, selected: true,},
-        {id: 2, name: '-\t5 jours', value: 5, selected: false,},
-        {id: 3, name: '-\t10 jours', value: 10, selected: false,},
-        {id: 4, name: '-\t20 jours', value: 20, selected: false,},
-        {id: 5, name: '-\t40 jours', value: 40, selected: false,},
-      ],
-      dataList_limitDownloadShipments: [
-        {id: 1, name: '-\t3 jours', value: 3, selected: true,},
-        {id: 2, name: '-\t5 jours', value: 5, selected: false,},
-        {id: 3, name: '-\t10 jours', value: 10, selected: false,},
-        {id: 4, name: '-\t20 jours', value: 20, selected: false,},
-        {id: 5, name: '-\t40 jours', value: 40, selected: false,},
-      ]
+      dataList_limitDownloadOrders: DEFAULT_SETTINGS.SETTINGS_LIMIT,
+      dataList_limitDownloadShipments: DEFAULT_SETTINGS.SETTINGS_SHIPMENT_LIMIT
     }
   }
 

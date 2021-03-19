@@ -13,6 +13,7 @@ import SettingsManager from '../../Database/SettingsManager';
 import OrderLinesManager from '../../Database/OrderLinesManager';
 import ShipmentsManager from '../../Database/ShipmentsManager';
 import ShipmentLinesManager from '../../Database/ShipmentLinesManager';
+import ShipmentLineDetailBatchManager from '../../Database/ShipmentLineDetailBatchManager';
 import TokenManager from '../../Database/TokenManager';
 import OrderLinesFilter from './assets/OrderLinesFilter';
 import PickingPopUp from './assets/PickingPopUp';
@@ -69,8 +70,8 @@ class CommandeDetails extends React.Component{
 
     async componentDidMount(){
 
-      this.setState({opneScanner: false});
-      this.setState({addRemoveNothing: 0});
+      // this.setState({opneScanner: false});
+      // this.setState({addRemoveNothing: 0});
 
       await this._settings();
       await this._orderLinesData();
@@ -92,13 +93,47 @@ class CommandeDetails extends React.Component{
       this.props.navigation.navigate("ProductDetails", {product: value});
     }
 
-    prepareProduct(product){
+    async prepareProduct(product){
+      const cmd_header = this.props.route.params.order;
+      console.log('prepareProduct :: ', JSON.stringify(product));
+
+      const sldbm = new ShipmentLineDetailBatchManager();
+      await sldbm.initDB();
+      const selectedProductWarehouse = await sldbm.GET_SHIPMENT_LINE_DETAIL_BATCH_BY_FK_PRODUCT(product.product_id).then(async (val) => {
+        return val;
+      });
+
+      if(selectedProductWarehouse == null){
+        //toast
+        return;
+      }
+
+      product.selectedProductWarehouse = selectedProductWarehouse;
+
       if(product.qty != product.prepare_shipping_qty){
-        console.log('prepareProduct: ', product);
-        this.setState({
-          isPopUpVisible: true,
-          pickingDataSelected: {product: product, _opacity_: 0, pickingMaxLimit: product.qty, pickingMimLimit: 0}
+        console.log('prepareProduct Done: ', JSON.stringify(product));
+
+        // return; 
+        this.props.navigation.navigate("Picking", {
+          isAlreadyShipmentSync: false, 
+          cmd_header: {
+            commande_id: cmd_header.commande_id, 
+            socId: cmd_header.socId, 
+            date_livraison: cmd_header.date_livraison
+          }, 
+          pickingDataSelected: {
+            product: product, 
+            _opacity_: 0, 
+            pickingMaxLimit: product.qty, 
+            pickingMimLimit: 0
+          }
         });
+
+        // this.setState({
+        //   isPopUpVisible: true,
+        //   pickingDataSelected: {product: product, _opacity_: 0, pickingMaxLimit: product.qty, pickingMimLimit: 0}
+        // });
+
       }
     }
 
@@ -189,7 +224,8 @@ class CommandeDetails extends React.Component{
           alert("Expédition non créé !");
         }
 
-      } else {
+      } 
+      else {
         //shipment existe so check picked line
         const slm = new ShipmentLinesManager();
         await slm.initDB();
@@ -265,6 +301,7 @@ class CommandeDetails extends React.Component{
       await this.setState({isLoading: true});
 
       const olm = new OrderLinesManager();
+      await olm.initDB();
       const data = await olm.GET_LINES_BY_ORDER_ID_v2(this.state.orderId).then(async (val) => {
         return await val;
       });

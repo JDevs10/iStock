@@ -21,6 +21,7 @@ import ShipmentsManager from '../../Database/ShipmentsManager';
 import ShipmentLinesManager from '../../Database/ShipmentLinesManager';
 import Statut from '../../utilities/Statut';
 import moment from "moment";
+import ShipmentLineDetailBatchManager from '../../Database/ShipmentLineDetailBatchManager';
 
 
 const _statut_ = new Statut();
@@ -196,6 +197,35 @@ export default class Expeditions extends Component {
         // const l = await slm.DELETE_SHIPMENTS_LINES_LIST().then(async (val) => {
         //   return val;
         // });
+    }
+
+    async _LongPressShipment(){
+      const sm = new ShipmentsManager();
+      const slm = new ShipmentLinesManager();
+      const sldbm = new ShipmentLineDetailBatchManager()
+
+      sm.initDB();
+      slm.initDB();
+      sldbm.initDB();
+
+      const m = await sm.DROP_SHIPMENTS().then(async (val) => {
+        return val;
+      });
+      const mm = await sm.CREATE_SHIPMENTS_TABLE().then(async (val) => {
+        return val;
+      });
+      const l = await slm.DROP_SHIPMENTS_LINES().then(async (val) => {
+        return val;
+      });
+      const ll = await slm.CREATE_SHIPMENT_LINES_TABLE().then(async (val) => {
+        return val;
+      });
+      const k = await sldbm.DROP_SHIPMENT_LINE_DETAIL_BATCH().then(async (val) => {
+        return val;
+      });
+      const kk = await sldbm.CREATE_SHIPMENT_LINE_DETAIL_BATCH_TABLE().then(async (val) => {
+        return val;
+      });
     }
 
     render() {
@@ -393,7 +423,7 @@ export default class Expeditions extends Component {
                             <CardView cardElevation={10} cornerRadius={5} style={[styles.cardViewStyle, {height: 200}]}>
                               <View style={styles.cardViewStyle1}>
                                 <View style={styles.shipment}>
-                                  <TouchableOpacity onPress={() => this._ShowShipment(item)}>
+                                  <TouchableOpacity onPress={() => this._ShowShipment(item)} onLongPress={() => this._LongPressShipment(item)}>
                                     <View style={styles.ic_and_details}>
                                       <View style={styles.cname}>
                                         <Text style={styles.entreprisename}>{item.client_name}</Text>

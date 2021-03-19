@@ -12,16 +12,26 @@ class DefaultSettings extends Component {
         isUseDetailedCMD: true,
         isUseDetailedCMDLines: true,
         isUseDetailedShipment: true,
-        limitOrdersDownload: 3,
-        limitShipmentsDownload: 3,
+        limitOrdersDownload: 1,
+        limitShipmentsDownload: 1,
     };
 
     SETTINGS_LIMIT = [
-        {id: 1, name: '-\t3 jours', value: 3, realValue: "(t.date_creation:>:'"+moment(Date.parse(new Date()) - (86400000 * 4)).format('YYYYMMDD')+"')", selected: true,},
-        {id: 2, name: '-\t5 jours', value: 5, realValue: "(t.date_creation:>:'"+moment(Date.parse(new Date()) - (86400000 * 6)).format('YYYYMMDD')+"')", selected: false,},
-        {id: 3, name: '-\t10 jours', value: 10, realValue: "(t.date_creation:>:'"+moment(Date.parse(new Date()) - (86400000 * 11)).format('YYYYMMDD')+"')", selected: false,},
-        {id: 4, name: '-\t20 jours', value: 20, realValue: "(t.date_creation:>:'"+moment(Date.parse(new Date()) - (86400000 * 21)).format('YYYYMMDD')+"')", selected: false,},
-        {id: 5, name: '-\t40 jours', value: 40, realValue: "(t.date_creation:>:'"+moment(Date.parse(new Date()) - (86400000 * 41)).format('YYYYMMDD')+"')", selected: false,},
+        {id: 1, name: '-\t1 jours', value: 1, realValue: "(t.date_creation:>:'"+moment(Date.parse(new Date()) - (86400000 * 1)).format('YYYYMMDD')+"')", selected: true,},
+        {id: 2, name: '-\t3 jours', value: 3, realValue: "(t.date_creation:>:'"+moment(Date.parse(new Date()) - (86400000 * 4)).format('YYYYMMDD')+"')", selected: true,},
+        {id: 3, name: '-\t5 jours', value: 5, realValue: "(t.date_creation:>:'"+moment(Date.parse(new Date()) - (86400000 * 6)).format('YYYYMMDD')+"')", selected: false,},
+        {id: 4, name: '-\t10 jours', value: 10, realValue: "(t.date_creation:>:'"+moment(Date.parse(new Date()) - (86400000 * 11)).format('YYYYMMDD')+"')", selected: false,},
+        {id: 5, name: '-\t20 jours', value: 20, realValue: "(t.date_creation:>:'"+moment(Date.parse(new Date()) - (86400000 * 21)).format('YYYYMMDD')+"')", selected: false,},
+        {id: 6, name: '-\t40 jours', value: 40, realValue: "(t.date_creation:>:'"+moment(Date.parse(new Date()) - (86400000 * 41)).format('YYYYMMDD')+"')", selected: false,},
+    ];
+
+    SETTINGS_SHIPMENT_LIMIT = [
+        {id: 1, name: '-\t1 jours', value: 1, realValue: "(t.date_creation:>:'"+moment(Date.parse(new Date()) - (86400000 * 1)).format('YYYYMMDD')+"')", selected: true,},
+        {id: 2, name: '-\t3 jours', value: 3, realValue: "(t.date_creation:>:'"+moment(Date.parse(new Date()) - (86400000 * 4)).format('YYYYMMDD')+"')", selected: true,},
+        {id: 3, name: '-\t5 jours', value: 5, realValue: "(t.date_creation:>:'"+moment(Date.parse(new Date()) - (86400000 * 6)).format('YYYYMMDD')+"')", selected: false,},
+        {id: 4, name: '-\t10 jours', value: 10, realValue: "(t.date_creation:>:'"+moment(Date.parse(new Date()) - (86400000 * 11)).format('YYYYMMDD')+"')", selected: false,},
+        {id: 5, name: '-\t20 jours', value: 20, realValue: "(t.date_creation:>:'"+moment(Date.parse(new Date()) - (86400000 * 21)).format('YYYYMMDD')+"')", selected: false,},
+        {id: 6, name: '-\t40 jours', value: 40, realValue: "(t.date_creation:>:'"+moment(Date.parse(new Date()) - (86400000 * 41)).format('YYYYMMDD')+"')", selected: false,},
     ];
 
     get_Orders_Bigger_than_date_from_value(value){

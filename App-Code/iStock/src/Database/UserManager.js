@@ -117,7 +117,7 @@ class UserManager extends Component {
             try{
                 for(let x = 0; x < data_.length; x++){
                     await db.transaction(async (tx) => {
-                        await tx.executeSql("INSERT INTO " + TABLE_NAME + " ("+COLUMN_ID+", "+COLUMN_REF+", "+COLUMN_FIRSTNAME+", "+COLUMN_LASTNAME+", "+COLUMN_ADMIN+", "+COLUMN_EMAIL+", "+COLUMN_JOB+") VALUES (null, '"+data_[x].ref+"', "+(data_[x].firstname == null ? null : "'"+data_[x].firstname.replace(/'/g, "''")+"'")+", '"+data_[x].lastname.replace(/'/g, "''")+"', '"+data_[x].admin+"', '"+data_[x].email+"', '"+data_[x].job+"')", []);
+                        await tx.executeSql("INSERT INTO " + TABLE_NAME + " ("+COLUMN_ID+", "+COLUMN_REF+", "+COLUMN_FIRSTNAME+", "+COLUMN_LASTNAME+", "+COLUMN_ADMIN+", "+COLUMN_EMAIL+", "+COLUMN_JOB+") VALUES (null, '"+data_[x].ref+"', "+(data_[x].firstname == null ? null : "'"+data_[x].firstname.replace(/'/g, "''")+"'")+", "+(data_[x].lastname == null ? "" : "'"+data_[x].lastname.replace(/'/g, "''")+"'")+", '"+data_[x].admin+"', '"+data_[x].email+"', '"+data_[x].job+"')", []);
                     });
                 }
                 return await resolve(true);

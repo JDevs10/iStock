@@ -22,6 +22,7 @@ const STRINGS = new Strings();
 const BG = require('../../../img/waiting_bg.png');
 
 
+
 class Download extends Component {
 
   constructor(props) {
@@ -103,7 +104,8 @@ class Download extends Component {
     let currentStep = 1;
     let allSteps = 8;
     const res = [];
-
+    
+/*
     // 1 // Get all users info from server
     setTimeout(() => {
       this.setState({
@@ -215,7 +217,7 @@ class Download extends Component {
     });
     res.push(res6);
     currentStep++;
-
+*/
 
     // 7 // Get all warehouse lines from server
     setTimeout(() => {
@@ -251,7 +253,7 @@ class Download extends Component {
     });
     res.push(res8);
     currentStep++;
-
+    
 
     let res_ = true;
     for(let x = 0; x<res.length; x++){

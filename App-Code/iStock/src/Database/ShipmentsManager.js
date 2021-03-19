@@ -162,6 +162,9 @@ class ShipmentsManager extends Component {
         console.log("inserting.... ", data_.length);
         return await new Promise(async (resolve) => {
             try{
+                const shipmentLinesManager = new ShipmentLinesManager();
+                await shipmentLinesManager.initDB();
+
                 for(let x = 0; x < data_.length; x++){
                     const SQL_INSERT = "INSERT INTO " + TABLE_NAME + " ("+COLUMN_ID+", "+COLUMN_SHIPMENT_ID+", "+COLUMN_ORIGIN+", "+COLUMN_ORIGIN_ID+", "+COLUMN_ORIGIN_TYPE+", "+COLUMN_REF+", "+COLUMN_SOCID+", "+COLUMN_ENTREPOT_ID+", "+COLUMN_PROJECT_ID+", "+COLUMN_TRACKING_NUMBER+", "+ 
                     ""+COLUMN_TRACKING_URL+", "+COLUMN_DATE_CREATION+", "+COLUMN_DATE_VALID+", "+COLUMN_DATE_SHIPPING+", "+COLUMN_DATE_EXPEDITION+", "+COLUMN_DATE_DELIVERY+", "+COLUMN_STATUT+", "+COLUMN_SHIPPING_METHOD_ID+", "+
@@ -175,8 +178,6 @@ class ShipmentsManager extends Component {
                     });
 
                     if(data_[x].lines != null){
-                        const shipmentLinesManager = new ShipmentLinesManager();
-                        await shipmentLinesManager.initDB();
                         await shipmentLinesManager.INSERT_SHIPMENT_LINES(data_[x].lines);
                     }
                     
@@ -199,7 +200,7 @@ class ShipmentsManager extends Component {
                 const SQL_GET_ = "SELECT "+COLUMN_ID+", "+COLUMN_ORIGIN+", "+COLUMN_ORIGIN_ID+", "+COLUMN_ORIGIN_TYPE+", "+COLUMN_REF+", "+COLUMN_SOCID+", "+COLUMN_ENTREPOT_ID+", "+COLUMN_PROJECT_ID+", "+COLUMN_TRACKING_NUMBER+", "+ 
                 ""+COLUMN_TRACKING_URL+", "+COLUMN_DATE_CREATION+", "+COLUMN_DATE_VALID+", "+COLUMN_DATE_SHIPPING+", "+COLUMN_DATE_EXPEDITION+", "+COLUMN_DATE_DELIVERY+", "+COLUMN_STATUT+", "+COLUMN_SHIPPING_METHOD_ID+", "+
                 ""+COLUMN_SHIPPING_METHOD+", "+COLUMN_USER_AUTHOR_ID+", "+COLUMN_WEIGHT+", "+COLUMN_WEIGHT_UNITS+", "+COLUMN_SIZEW+", "+COLUMN_WIDTH_UNITS+", "+COLUMN_SIZEH+", "+COLUMN_HEIGHT_UNITS+", "+COLUMN_SIZES+", "+COLUMN_DEPTH_UNITS+", "+COLUMN_TRUE_SIZE+" "+
-                "FROM "+TABLE_NAME+" WHERE "+COLUMN_ORIGIN_ID+" = "+origin_id;
+                "FROM "+TABLE_NAME+" WHERE "+COLUMN_ORIGIN_ID+" = "+origin_id+" AND "+COLUMN_STATUT+" = 0";
 
                 await tx.executeSql(SQL_GET_, []).then(async ([tx,results]) => {
                     console.log("Query completed");
@@ -362,7 +363,7 @@ class ShipmentsManager extends Component {
                 await tx.executeSql("SELECT "+COLUMN_ID+", "+COLUMN_ORIGIN+", "+COLUMN_ORIGIN_ID+", "+COLUMN_ORIGIN_TYPE+", "+COLUMN_REF+", "+COLUMN_SOCID+", "+COLUMN_ENTREPOT_ID+", "+COLUMN_PROJECT_ID+", "+COLUMN_TRACKING_NUMBER+", "+ 
                 ""+COLUMN_TRACKING_URL+", "+COLUMN_DATE_CREATION+", "+COLUMN_DATE_VALID+", "+COLUMN_DATE_SHIPPING+", "+COLUMN_DATE_EXPEDITION+", "+COLUMN_DATE_DELIVERY+", "+COLUMN_STATUT+", "+COLUMN_SHIPPING_METHOD_ID+", "+
                 ""+COLUMN_SHIPPING_METHOD+", "+COLUMN_USER_AUTHOR_ID+", "+COLUMN_WEIGHT+", "+COLUMN_WEIGHT_UNITS+", "+COLUMN_SIZEW+" as sizeW, "+COLUMN_WIDTH_UNITS+", "+COLUMN_SIZEH+" as sizeH, "+COLUMN_HEIGHT_UNITS+", "+COLUMN_SIZES+" as sizeS, "+COLUMN_DEPTH_UNITS+", "+COLUMN_TRUE_SIZE+" "+
-                "FROM "+TABLE_NAME + " WHERE "+COLUMN_IS_SYNCHRO+" = 'false'", []).then(async ([tx,results]) => {
+                "FROM "+TABLE_NAME + " WHERE "+COLUMN_IS_SYNCHRO+" = 'false' AND "+COLUMN_STATUT+" = 0", []).then(async ([tx,results]) => {
                     console.log("Query completed");
                     var len = results.rows.length;
                     for (let i = 0; i < len; i++) {
@@ -441,6 +442,7 @@ class ShipmentsManager extends Component {
                 for(let x = 0; x < data_.length; x++){
                     const SQL_UPDATE = "UPDATE " + TABLE_NAME + " SET " +
                     COLUMN_SHIPMENT_ID + " = '"+data_[x].shipment_id+"', "+
+                    COLUMN_STATUT + " = '"+data_[x].status+"', "+
                     COLUMN_IS_SYNCHRO + " = '"+data_[x].is_synchro+"' "+
                     "WHERE "+COLUMN_ID+" = '"+data_[x].id +"'";
 

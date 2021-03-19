@@ -15,6 +15,9 @@ import NavbarPreparation from '../../navbar/navbar-preparation';
 import MyFooter_v2 from '../footers/MyFooter_v2';
 import PreparationButton from '../dashbord-screens/assets/PreparationButton';
 import SettingsManager from '../../Database/SettingsManager';
+import ShipmentsManager from '../../Database/ShipmentsManager';
+import ShipmentLinesManager from '../../Database/ShipmentLinesManager';
+import ShipmentLineDetailBatchManager from '../../Database/ShipmentLineDetailBatchManager';
 import OrderManager from '../../Database/OrderManager';
 import Statut from '../../utilities/Statut';
 import moment from "moment";
@@ -88,6 +91,35 @@ class Preparation extends Component {
     this.props.navigation.navigate("CommandeDetails", { order: value });
   }
 
+  async _LongPressShipment(){
+    const sm = new ShipmentsManager();
+    const slm = new ShipmentLinesManager();
+    const sldbm = new ShipmentLineDetailBatchManager()
+
+    sm.initDB();
+    slm.initDB();
+    sldbm.initDB();
+
+    const m = await sm.DROP_SHIPMENTS().then(async (val) => {
+      return val;
+    });
+    const mm = await sm.CREATE_SHIPMENTS_TABLE().then(async (val) => {
+      return val;
+    });
+    const l = await slm.DROP_SHIPMENTS_LINES().then(async (val) => {
+      return val;
+    });
+    const ll = await slm.CREATE_SHIPMENT_LINES_TABLE().then(async (val) => {
+      return val;
+    });
+    const k = await sldbm.DROP_SHIPMENT_LINE_DETAIL_BATCH().then(async (val) => {
+      return val;
+    });
+    const kk = await sldbm.CREATE_SHIPMENT_LINE_DETAIL_BATCH_TABLE().then(async (val) => {
+      return val;
+    });
+  }
+
   async _settings(){
     const sm = new SettingsManager();
     await sm.initDB();
@@ -107,7 +139,7 @@ class Preparation extends Component {
       const om = new OrderManager();
       await om.initDB();
       data_ = await om.GET_ORDER_LIST_BETWEEN_v2(this.state.limit.from, this.state.limit.to).then(async (val) => {
-        //console.log("Order data : ", val);
+        console.log("Order data : ", val);
         return await val;
       });
 
@@ -368,7 +400,7 @@ class Preparation extends Component {
                           <CardView cardElevation={10} cornerRadius={5} style={styles.cardViewStyle}>
                             <View style={styles.cardViewStyle1}>
                               <View style={styles.order}>
-                                <TouchableOpacity onPress={() => this._Showcommande(item)}>
+                                <TouchableOpacity onPress={() => this._Showcommande(item)} onLongPress={() => this._LongPressShipment(item)}>
                                   <View style={styles.ic_and_details}>
                                     <View style={styles.cname}>
                                       <Text style={styles.entreprisename}>{item.client_name}</Text>

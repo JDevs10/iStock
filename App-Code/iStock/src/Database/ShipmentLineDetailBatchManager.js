@@ -1,9 +1,7 @@
 //import liraries
 import React, { Component } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
 import SQLite from 'react-native-sqlite-storage';
 import DatabaseInfo from './DatabaseInfo';
-import ShipmentLineDetailBatchManager from './ShipmentLineDetailBatchManager';
 SQLite.DEBUG(true);
 SQLite.enablePromise(true);
 
@@ -14,37 +12,46 @@ const DATABASE_VERSION = DatabaseInfo.DATABASE_VERSION;
 const DATABASE_DISPLAY_NAME = DatabaseInfo.DATABASE_DISPLAY_NAME;
 const DATABASE_SIZE = DatabaseInfo.DATABASE_SIZE;
 
-const TABLE_NAME = "Shipment_lines";
+const TABLE_NAME = "Shipment_Line_Detail_Batch";
 const COLUMN_ID = "id";
-const COLUMN_SHIPMENT_ID = "shipment_id";
-const COLUMN_ORIGIN_LINE_ID = "origin_line_id";
-const COLUMN_FK_EXPEDITION = "fk_expedition";
-const COLUMN_ENTREPOT_ID = "entrepot_id";
+const COLUMN_FK_ORIGIN_STOCK = "fk_origin_stock";
+const COLUMN_STOCK = "stock";
+const COLUMN_FK_PRODUCT = "fk_product";
 const COLUMN_QTY = "qty";
-const COLUMN_RANG = "rang";
+const COLUMN_BATCH = "batch";
+const COLUMN_SELLBY = "sellby";
+const COLUMN_EATBY = "eatby";
+const COLUMN_ENTREPOT_LABEL = "entrepot_label";
+const COLUMN_ENTREPOT_ID = "entrepot_id";
+const COLUMN_FK_EXPEDITIONDET = "fk_expeditiondet";
+
 
 
 const create = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "(" +
     COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-    COLUMN_SHIPMENT_ID + " INTEGER(255)," +
-    COLUMN_ORIGIN_LINE_ID + " VARCHAR(255)," +
-    COLUMN_FK_EXPEDITION + " VARCHAR(255)," +
-    COLUMN_ENTREPOT_ID + " VARCHAR(255)," +
+    COLUMN_FK_ORIGIN_STOCK + " VARCHAR(255)," +
+    COLUMN_STOCK + " VARCHAR(255)," +
+    COLUMN_FK_PRODUCT + " VARCHAR(255)," +
     COLUMN_QTY + " INTEGER(255)," +
-    COLUMN_RANG + " VARCHAR(255)" +
+    COLUMN_BATCH + " VARCHAR(255)," +
+    COLUMN_SELLBY + " VARCHAR(255)," +
+    COLUMN_EATBY + " VARCHAR(255)," +
+    COLUMN_ENTREPOT_LABEL + " VARCHAR(255)," +
+    COLUMN_ENTREPOT_ID + " VARCHAR(255)," +
+    COLUMN_FK_EXPEDITIONDET + " VARCHAR(255)" +
 ")";
 
 
 // create a component
-class ShipmentLinesManager extends Component {
+class ShipmentLineDetailBatchManager extends Component {
     _COLUMN_ID_ = COLUMN_ID;
     _TABLE_NAME_ = TABLE_NAME;
-    _COLUMN_SHIPMENT_ID_ = COLUMN_SHIPMENT_ID;
-    _COLUMN_ORIGIN_LINE_ID_ = COLUMN_ORIGIN_LINE_ID;
-    _COLUMN_FK_EXPEDITION_ = COLUMN_FK_EXPEDITION;
+    _COLUMN_FK_ORIGIN_STOCK_ = COLUMN_FK_ORIGIN_STOCK;
+    _COLUMN_STOCK = COLUMN_STOCK;
+    _COLUMN_FK_PRODUCT = COLUMN_FK_PRODUCT;
     _COLUMN_ENTREPOT_ID_ = COLUMN_ENTREPOT_ID;
     _COLUMN_QTY_ = COLUMN_QTY;
-    _COLUMN_RANG_ = COLUMN_RANG;
+    _COLUMN_FK_EXPEDITIONDET_ = COLUMN_FK_EXPEDITIONDET;
 
     //Init database
     async initDB() {
@@ -92,8 +99,8 @@ class ShipmentLinesManager extends Component {
 
 
     //Create
-    async CREATE_SHIPMENT_LINES_TABLE(){
-        console.log("##### CREATE_SHIPMENT_LINES_TABLE #########################");
+    async CREATE_SHIPMENT_LINE_DETAIL_BATCH_TABLE(){
+        console.log("##### CREATE_SHIPMENT_LINE_DETAIL_BATCH_TABLE #########################");
         return await new Promise(async (resolve) => {
             try{
                 await db.transaction(async function (txn) {
@@ -112,87 +119,79 @@ class ShipmentLinesManager extends Component {
         });
     }
 
+//     const COLUMN_ID = "id";
+// const COLUMN_FK_ORIGIN_STOCK = "fk_origin_stock";
+// const COLUMN_STOCK = "stock";
+// const COLUMN_FK_PRODUCT = "fk_product";
+// const COLUMN_QTY = "qty";
+// const COLUMN_BATCH = "batch";
+// const COLUMN_SELLBY = "sellby";
+// const COLUMN_EATBY = "eatby";
+// const COLUMN_ENTREPOT_LABEL = "entrepot_label";
+// const COLUMN_ENTREPOT_ID = "entrepot_id";
+// const COLUMN_FK_EXPEDITIONDET = "fk_expeditiondet";
+
+
     //Insert
-    async INSERT_SHIPMENT_LINES(data_){
-        console.log("##### INSERT_SHIPMENT_LINES #########################");
+    async INSERT_SHIPMENT_LINE_DETAIL_BATCH(inserted_shipment_line_id, data_){
+        console.log("##### INSERT_SHIPMENT_LINE_DETAIL_BATCH #########################");
         console.log("inserting.... ", data_.length);
         return await new Promise(async (resolve) => {
             try{
-                const sldbm = new ShipmentLineDetailBatchManager();
-                await sldbm.initDB();
-
                 for(let x = 0; x < data_.length; x++){
-                    const SQL_INSERT = "INSERT INTO " + TABLE_NAME + " ("+COLUMN_ID+", "+COLUMN_SHIPMENT_ID+", "+COLUMN_ORIGIN_LINE_ID+", "+COLUMN_FK_EXPEDITION+", "+COLUMN_ENTREPOT_ID+", "+COLUMN_QTY+", "+COLUMN_RANG+") "+
-                        "VALUES ("+data_[x].id+", '"+data_[x].shipment_id+"', '"+data_[x].origin_line_id+"', '"+data_[x].fk_expedition+"', '"+data_[x].entrepot_id+"', "+data_[x].qty+", '"+data_[x].rang+"')";
+                    data_[x].fk_expeditiondet = inserted_shipment_line_id;
+                    const SQL_INSERT = "INSERT INTO " + TABLE_NAME + " ("+COLUMN_ID+", "+COLUMN_FK_ORIGIN_STOCK+", "+COLUMN_STOCK+", "+COLUMN_FK_PRODUCT+", "+COLUMN_QTY+", "+COLUMN_BATCH+", "+COLUMN_SELLBY+", "+COLUMN_EATBY+", "+COLUMN_ENTREPOT_LABEL+", "+COLUMN_ENTREPOT_ID+", "+COLUMN_FK_EXPEDITIONDET+") "+
+                        "VALUES ("+data_[x].id+", '"+data_[x].fk_origin_stock+"', '"+data_[x].stock+"', '"+data_[x].fk_product+"', "+data_[x].qty+", '"+data_[x].batch+"', '"+data_[x].sellby+"', '"+data_[x].eatby+"', '"+data_[x].entrepot_label+"', '"+data_[x].entrepot_id+"', '"+data_[x].fk_expeditiondet+"')";
 
                     await db.transaction(async (tx) => {
-                        await tx.executeSql(SQL_INSERT, []).then(async ([tx,results]) => {
-                            console.log("Query completed");
-
-                            var insertedId = results.insertId;
-                            const detail_batch = data_[x].detail_batch;
-                            const isShipmentLineDetailBatch = await sldbm.INSERT_SHIPMENT_LINE_DETAIL_BATCH(insertedId, detail_batch).then(async (val) => {
-                                return val;
-                            });
-                        });
+                        await tx.executeSql(SQL_INSERT, []);
                     });
                 }
-                await resolve(true);
+                return await resolve(true);
             } catch(error){
                 console.log("error: ", error);
-                await resolve(false);
+                return await resolve(false);
             }
         });
     }
 
-    //Get by ref
-    async GET_SHIPMENT_LINES_BY_SHIPMENT_ID(id){
-        console.log("##### GET_SHIPMENT_LINES_BY_ID #########################");
+
+    async GET_SHIPMENT_LINE_DETAIL_BATCH_BY_ENTREPOT_ID(id){ 
+        console.log("##### GET_SHIPMENT_LINE_DETAIL_BATCH_BY_ENTREPOT_ID #########################");
 
         return await new Promise(async (resolve) => {
             let shipment_line = [];
-            const sldbm = new ShipmentLineDetailBatchManager();
-            await sldbm.initDB();
-
             await db.transaction(async (tx) => {
-                const SQL_GET_ = "SELECT "+COLUMN_ID+", "+COLUMN_SHIPMENT_ID+", "+COLUMN_ORIGIN_LINE_ID+", "+COLUMN_FK_EXPEDITION+", "+COLUMN_ENTREPOT_ID+", "+COLUMN_QTY+", "+COLUMN_RANG+" "+
-                        "FROM "+TABLE_NAME+" WHERE "+COLUMN_SHIPMENT_ID+" = '"+id+"'";
+                const SQL_GET_ = "SELECT "+COLUMN_ID+", "+COLUMN_FK_ORIGIN_STOCK+", "+COLUMN_STOCK+", "+COLUMN_FK_PRODUCT+", "+COLUMN_QTY+", "+COLUMN_BATCH+", "+COLUMN_SELLBY+", "+COLUMN_EATBY+", "+COLUMN_ENTREPOT_LABEL+", "+COLUMN_ENTREPOT_ID+", "+COLUMN_FK_EXPEDITIONDET+" "+
+                        "FROM "+TABLE_NAME+" WHERE "+COLUMN_FK_EXPEDITIONDET+" = '"+id+"'";
 
                 await tx.executeSql(SQL_GET_, []).then(async ([tx,results]) => {
                     console.log("Query completed");
                     var len = results.rows.length;
                     for (let i = 0; i < len; i++) {
                         let row = results.rows.item(i);
-                        console.log('row: ', row);
-
-                        // Get detail batch list
-                        const detail_batch = await sldbm.GET_SHIPMENT_LINE_DETAIL_BATCH_BY_FK_EXPEDITIONDET(row.id).then(async (val) => {
-                            return val;
-                        });
-
-                        row.detail_batch = detail_batch;
-                        shipment_line.push(row);
+                        shipment_line = row;
                     }
-                    await resolve(shipment_line);
                 });
             }).then(async (result) => {
                 // await this.closeDatabase(db);
                 // console.log('token: ', token);
+                await resolve(shipment_line);
             }).catch(async (err) => {
                 console.log(err);
-                await resolve([]);
+                await resolve(null);
             });
         });
     }
 
-    async GET_SHIPMENT_LINE_BY_ORIGIN_LINE_ID(origin_line_id){
-        console.log("##### GET_SHIPMENT_LINE_BY_ORIGIN_LINE_ID #########################");
+    async GET_SHIPMENT_LINE_DETAIL_BATCH_BY_FK_PRODUCT(id){
+        console.log("##### GET_SHIPMENT_LINE_DETAIL_BATCH_BY_FK_PRODUCT #########################");
 
         return await new Promise(async (resolve) => {
             let shipment_line = [];
             await db.transaction(async (tx) => {
-                const SQL_GET_ = "SELECT "+COLUMN_ID+", "+COLUMN_ORIGIN_LINE_ID+", "+COLUMN_FK_EXPEDITION+", "+COLUMN_ENTREPOT_ID+", "+COLUMN_QTY+", "+COLUMN_RANG+" "+
-                        "FROM "+TABLE_NAME+" WHERE "+COLUMN_ORIGIN_LINE_ID+" = '"+origin_line_id+"'";
+                const SQL_GET_ = "SELECT "+COLUMN_ID+", "+COLUMN_FK_ORIGIN_STOCK+", "+COLUMN_STOCK+", "+COLUMN_FK_PRODUCT+", "+COLUMN_QTY+", "+COLUMN_BATCH+", "+COLUMN_SELLBY+", "+COLUMN_EATBY+", "+COLUMN_ENTREPOT_LABEL+", "+COLUMN_ENTREPOT_ID+", "+COLUMN_FK_EXPEDITIONDET+" "+
+                        "FROM "+TABLE_NAME+" WHERE "+COLUMN_FK_PRODUCT+" = '"+id+"'";
 
                 await tx.executeSql(SQL_GET_, []).then(async ([tx,results]) => {
                     console.log("Query completed");
@@ -213,20 +212,21 @@ class ShipmentLinesManager extends Component {
         });
     }
 
-    async GET_SHIPMENT_LINES(){
-        console.log("##### GET_SHIPMENT_LINES #########################");
+    async GET_SHIPMENT_LINE_DETAIL_BATCH_BY_FK_EXPEDITIONDET(id){
+        console.log("##### GET_SHIPMENT_LINE_DETAIL_BATCH_BY_FK_EXPEDITIONDET #########################");
 
         return await new Promise(async (resolve) => {
             let shipment_line = [];
             await db.transaction(async (tx) => {
-                const SQL_GET_ = "SELECT * FROM "+TABLE_NAME+" ";
+                const SQL_GET_ = "SELECT "+COLUMN_ID+", "+COLUMN_FK_ORIGIN_STOCK+", "+COLUMN_STOCK+", "+COLUMN_FK_PRODUCT+", "+COLUMN_QTY+", "+COLUMN_BATCH+", "+COLUMN_SELLBY+", "+COLUMN_EATBY+", "+COLUMN_ENTREPOT_LABEL+", "+COLUMN_ENTREPOT_ID+", "+COLUMN_FK_EXPEDITIONDET+" "+
+                    "FROM "+TABLE_NAME+" WHERE "+COLUMN_FK_EXPEDITIONDET+" = '"+id+"'";
 
                 await tx.executeSql(SQL_GET_, []).then(async ([tx,results]) => {
                     console.log("Query completed");
                     var len = results.rows.length;
                     for (let i = 0; i < len; i++) {
                         let row = results.rows.item(i);
-                        shipment_line.push({row});
+                        shipment_line.push(row);
                     }
                 });
             }).then(async (result) => {
@@ -235,62 +235,38 @@ class ShipmentLinesManager extends Component {
                 await resolve(shipment_line);
             }).catch(async (err) => {
                 console.log(err);
-                await resolve([]);
+                await resolve(null);
             });
         });
     }
-
-    //Update
-    async UPDATE_SHIPMENT_LINE(data_){
-        console.log("##### UPDATE_SHIPMENT_LINE #########################");
-        console.log("updating.... ", data_.length);
-        return await new Promise(async (resolve) => {
-            try{
-                for(let x = 0; x < data_.length; x++){
-                    const SQL_UPDATE = "UPDATE " + TABLE_NAME + " SET " +
-                    ""+COLUMN_ENTREPOT_ID+" = '"+data_[x].entrepot_id+"', " +
-                    ""+COLUMN_QTY+" = "+data_[x].qty+", " +
-                    ""+COLUMN_RANG+" = '"+data_[x].rang+"', " +
-                    "WHERE "+COLUMN_FK_EXPEDITION+" = '"+data_[x].fk_expedition+"'";
-
-                    await db.transaction(async (tx) => {
-                        await tx.executeSql(SQL_UPDATE, []);
-                    });
-                }
-                return await resolve(true);
-            } catch(error){
-                return await resolve(false);
-            }
-        });
-    }
-
-    //Delete
-    async DELETE_SHIPMENT_LINES_BY_ORIGIN_LINE_ID(id){
-        console.log("##### DELETE_SHIPMENT_LINES_BY_ORIGIN_LINE_ID #########################");
+    
+    // Delete
+    async DELETE_SHIPMENT_LINE_DETAIL_BATCH_BY_FK_EXPEDITIONDET(id){
+        console.log("##### DELETE_SHIPMENT_LINE_DETAIL_BATCH_BY_FK_EXPEDITIONDET #########################");
 
         return await new Promise(async (resolve) => {
             await db.transaction(async (tx) => {
-                await tx.executeSql("DELETE FROM " + TABLE_NAME +" WHERE "+COLUMN_ORIGIN_LINE_ID+" = '"+id+"'", []);
+                await tx.executeSql("DELETE FROM " + TABLE_NAME + " WHERE "+COLUMN_FK_EXPEDITIONDET+" = "+id, []);
+            });
+            return await resolve(true);
+        });
+    }
+
+    // Delete
+    async DELETE_SHIPMENT_LINE_DETAIL_BATCH_BY_FK_PRODUCT(id){
+        console.log("##### DELETE_SHIPMENT_LINE_DETAIL_BATCH_BY_FK_PRODUCT #########################");
+
+        return await new Promise(async (resolve) => {
+            await db.transaction(async (tx) => {
+                await tx.executeSql("DELETE FROM " + TABLE_NAME + " WHERE "+COLUMN_FK_PRODUCT+" = "+id, []);
             });
             return await resolve(true);
         });
     }
 
     //Delete
-    async DELETE_SHIPMENT_LINES_BY_ID(fk_expedition){
-        console.log("##### DELETE_SHIPMENT_LINES_BY_ORIGIN #########################");
-
-        return await new Promise(async (resolve) => {
-            await db.transaction(async (tx) => {
-                await tx.executeSql("DELETE FROM " + TABLE_NAME +" WHERE "+COLUMN_FK_EXPEDITION+" = '"+fk_expedition+"'", []);
-            });
-            return await resolve(true);
-        });
-    }
-
-    //Delete
-    async DELETE_SHIPMENTS_LINES_LIST(){
-        console.log("##### DELETE_SHIPMENTS_LINES_LIST #########################");
+    async DELETE_SHIPMENT_LINE_DETAIL_BATCH(){
+        console.log("##### DELETE_SHIPMENT_LINE_DETAIL_BATCH #########################");
 
         return await new Promise(async (resolve) => {
             await db.transaction(async (tx) => {
@@ -301,8 +277,8 @@ class ShipmentLinesManager extends Component {
     }
 
     //Delete
-    async DROP_SHIPMENTS_LINES(){
-        console.log("##### DROP_SHIPMENTS_LINES #########################");
+    async DROP_SHIPMENT_LINE_DETAIL_BATCH(){
+        console.log("##### DROP_SHIPMENT_LINE_DETAIL_BATCH #########################");
 
         return await new Promise(async (resolve) => {
             await db.transaction(async function (txn) {
@@ -313,9 +289,8 @@ class ShipmentLinesManager extends Component {
         });
     }
 
-
 }
 
 
 //make this component available to the app
-export default ShipmentLinesManager;
+export default ShipmentLineDetailBatchManager;

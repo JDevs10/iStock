@@ -1,3 +1,4 @@
+//import liraries
 import React, { Component } from 'react';
 import {StyleSheet, View, Text, Image, ImageBackground, TouchableOpacity, Dimensions, Alert} from  'react-native';
 import DeviceInfo from 'react-native-device-info';
@@ -7,10 +8,10 @@ const STRINGS = new Strings();
 const IMG_SRC = require('../../img/banner.png');
 
 // create a component
-class NavbarShipment extends Component {
+class NavbarPicking extends Component {
     constructor(props) {
         super(props);
-
+    
         /**
          * Returns true if the screen is in portrait mode
          */
@@ -18,7 +19,7 @@ class NavbarShipment extends Component {
           const dim = Dimensions.get('screen');
           return dim.height >= dim.width;
         };
-
+    
         /**
         * Returns true of the screen is in landscape mode
         */
@@ -26,11 +27,11 @@ class NavbarShipment extends Component {
           const dim = Dimensions.get('screen');
           return dim.width >= dim.height;
         };
-
+    
         this.state = {
           orientation: isPortrait() ? 'portrait' : 'landscape'
         };
-
+    
         // Event Listener for orientation changes
         Dimensions.addEventListener('change', () => {
           this.setState({
@@ -39,7 +40,7 @@ class NavbarShipment extends Component {
         });
     }
 
-      // sync all orders from server
+    // sync all orders from server
     async syncShipments(){
         Alert.alert(
             STRINGS._SYNCHRO_SHIPMENT_TITTLE_, 
@@ -53,16 +54,16 @@ class NavbarShipment extends Component {
             { cancelable: false }
           );
     }
-
+    
     async goToSupport(){
-        this.props._navigation.navigation.navigate('Support');
+      this.props._navigation.navigation.navigate('Support');
+    }
+    
+    async shipments(){
+      this.props._navigation.navigation.navigate('Expeditions');
     }
 
-    async goToOrders(){
-        this.props._navigation.navigation.navigate('Preparation');
-    }
-
-
+    
     render() {
         const styles = StyleSheet.create({
             body: {
@@ -109,7 +110,7 @@ class NavbarShipment extends Component {
               position: 'absolute',
               left: 20,
               top: 20,
-
+      
             },
         });
 
@@ -117,9 +118,9 @@ class NavbarShipment extends Component {
             <View style={styles.body}>
                 <ImageBackground source={IMG_SRC} resizeMode='cover' style={styles.backdrop}>
 
-                    <View style={[styles.icon1, {width: 100, flexDirection: "row", justifyContent: "space-between"}]}>
-                        <Icon name="cloud" size={25} style={{color: "#fff"}} onPress={() => this.syncShipments()}/>
-                        <Icon name="clipboard-list" size={25} style={{color: "#fff"}} onPress={() => this.goToOrders()}/>
+                    <View style={[styles.icon1, {width: 100, flexDirection: "row"}]}>
+                        {/* <Icon name="cloud" size={25} style={{color: "#fff"}} onPress={() => this.syncShipments()}/> */}
+                        <Icon name="truck" size={25} style={{color: "#fff"}} onPress={() => this.shipments()}/>
                     </View>
 
                     <View style={styles.text_layout}>
@@ -129,7 +130,7 @@ class NavbarShipment extends Component {
                     <View style={[styles.icon2]}>
                         <Icon name="headset" size={25} style={{color: "#fff"}} onPress={() => this.goToSupport()}/>
                     </View>
-
+                    
 
                 </ImageBackground>
 
@@ -138,5 +139,15 @@ class NavbarShipment extends Component {
     }
 }
 
+// define your styles
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#2c3e50',
+    },
+});
+
 //make this component available to the app
-export default NavbarShipment;
+export default NavbarPicking;

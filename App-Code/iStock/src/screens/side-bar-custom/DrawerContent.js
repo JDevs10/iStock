@@ -97,7 +97,7 @@ export function DrawerContent(props) {
 
         const shipmentLinesManager = new ShipmentLinesManager();
         await shipmentLinesManager.initDB();
-        const res_6 = await shipmentLinesManager.DROP_SHIPMENTS().then(async (val) => {
+        const res_6 = await shipmentLinesManager.DROP_SHIPMENTS_LINES().then(async (val) => {
             return await val;
         });
 

@@ -125,7 +125,7 @@ class ProductsManager extends Component {
             try{
                 for(let x = 0; x < data_.length; x++){
                     data_[x].image = "";
-                    console.log("data_ : ", data_[x]);
+                    // console.log("data_ : ", data_[x]);
 
                     await db.transaction(async (tx) => {
                         await tx.executeSql("INSERT INTO " + TABLE_NAME + " ("+COLUMN_ID+", "+COLUMN_PRODUCT_ID+", "+COLUMN_REF+", "+COLUMN_LABEL+", "+COLUMN_CODEBARRE+", "+COLUMN_DESCRIPTION+", "+COLUMN_EMPLACEMENT+", "+COLUMN_STOCK+", "+COLUMN_IMAGE+") VALUES (NULL, "+data_[x].id+", '"+data_[x].ref+"', '"+data_[x].label.replace(/'/g, "''")+"', '"+(data_[x].barcode == null ? "" : data_[x].barcode)+"', "+(data_[x].description == null ? null : "'"+data_[x].description.replace(/'/g, "''")+"'" )+", '"+(data_[x].fk_default_warehouse == null ? "" : data_[x].fk_default_warehouse)+"', '"+data_[x].stock_reel+"', '"+data_[x].image+"')", []);

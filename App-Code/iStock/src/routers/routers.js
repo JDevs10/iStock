@@ -4,13 +4,14 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 
 import Welcome from '../screens/Welcome';
 import Loading from '../screens/splash/Loading';
-import Login from '../screens/Login';
+import Login from '../screens/login';
 import SignIn from '../screens/SignIn';
 import Download from '../screens/splash/Download';
 import Dashboard from '../screens/dashbord-screens/Dashboard';
 import Commande from '../screens/dashbord-screens/Commande';
 import CommandeDetails from '../screens/dashbord-screens/CommandeDetails';
 import Preparation from '../screens/dashbord-screens/Preparation';
+import Picking from '../screens/dashbord-screens/Picking';
 import Inventory from '../screens/dashbord-screens/Inventory';
 import Settings from '../screens/dashbord-screens/Settings';
 import ProductDetails from '../screens/dashbord-screens/ProductDetails'
@@ -42,6 +43,7 @@ class RouterNavigation extends Component {
           <Drawer.Screen name="CommandeDetails" component={CommandeDetails} />
           <Drawer.Screen name="ProductDetails" component={ProductDetails} />
           <Drawer.Screen name="Preparation" component={Preparation} />
+          <Drawer.Screen name="Picking" component={Picking} />
           <Drawer.Screen name="OrdersSync" component={OrdersSync} />
           <Drawer.Screen name="ProductSync" component={ProductSync} />
           <Drawer.Screen name="ImagesSync" component={ImagesSync} />

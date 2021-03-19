@@ -49,34 +49,24 @@ export default  class SendShipments extends Component {
             });
             return res; // need to remove when downloading new shipments in later version
         }
+
         
         const isSyncShipments = await new Promise(async (resolve)=> {
             for(let index=0; index<SHIPMENTS.length; index++){
-                console.log(`POST => ${token.server}/api/index.php/shipments`);
-                console.log("SHIPMENTS["+index+"] : ", SHIPMENTS[index]);
+                console.log(`POST => ${token.server}/api/index.php/istockapi/shipment/create`);
+                console.log("SHIPMENTS["+index+"] ======================================> ", JSON.stringify(SHIPMENTS[index]));
 
-                await axios.post(`${token.server}/api/index.php/shipments`, 
+                await axios.post(`${token.server}/api/index.php/istockapi/shipment/create`, 
                     SHIPMENTS[index], 
                     { headers: { 'DOLAPIKEY': token.token, 'Accept': 'application/json' } }
                 ).then(async (response) => {
                     if(response.status == 200){
                         console.log(response.data);
                         const insertedShipmentId = response.data;
-
-                        /*
-                        const res_1 = await shipmentsManager.UPDATE_SHIPMENTS_ID_AND_SYNC([{id: SHIPMENTS[index].id, shipment_id: insertedShipmentId, is_synchro: "true"}]).then(async (val) => {
-                            return val;
-                        });
-                        console.log('shipmentsManager.UPDATE_SHIPMENTS_ID_AND_SYNC : ', res_1);
-        
-                        if(SHIPMENTS.length == (index + 1) && res_1){
-                            await resolve(true);
-                        }
-                        */
                         
                         // validate shipment
-                        console.log(`POST => ${token.server}/api/index.php/shipments/${insertedShipmentId}/validate`);
-                        await axios.post(`${token.server}/api/index.php/shipments/${insertedShipmentId}/validate`, 
+                        console.log(`POST => ${token.server}/api/index.php/istockapi/shipment/${insertedShipmentId}/validate`);
+                        await axios.post(`${token.server}/api/index.php/istockapi/shipment/${insertedShipmentId}/validate`, 
                             {
                                 "notrigger": 0
                             }, 
@@ -87,7 +77,7 @@ export default  class SendShipments extends Component {
                                 console.log(response.data);
                                 
                                 // update shipment
-                                const res_1 = await shipmentsManager.UPDATE_SHIPMENTS_ID_AND_SYNC([{id: SHIPMENTS[index].id, shipment_id: insertedShipmentId, is_synchro: "true"}]).then(async (val) => {
+                                const res_1 = await shipmentsManager.UPDATE_SHIPMENTS_ID_AND_SYNC([{id: SHIPMENTS[index].id, shipment_id: insertedShipmentId, status: 1, is_synchro: "true"}]).then(async (val) => {
                                     return val;
                                 });
                                 console.log('shipmentsManager.UPDATE_SHIPMENTS_ID_AND_SYNC : ', res_1);
