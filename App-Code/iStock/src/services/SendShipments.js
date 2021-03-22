@@ -61,7 +61,7 @@ export default  class SendShipments extends Component {
                     { headers: { 'DOLAPIKEY': token.token, 'Accept': 'application/json' } }
                 ).then(async (response) => {
                     if(response.status == 200){
-                        console.log(response.data);
+                        // console.log(response.data);
                         const insertedShipmentId = response.data;
                         
                         // validate shipment
@@ -74,7 +74,7 @@ export default  class SendShipments extends Component {
                         ).then(async (response) => {
                             console.log("response : ", response);
                             if(response.status == 200){
-                                console.log(response.data);
+                                // console.log(response.data);
                                 
                                 // update shipment
                                 const res_1 = await shipmentsManager.UPDATE_SHIPMENTS_ID_AND_SYNC([{id: SHIPMENTS[index].id, shipment_id: insertedShipmentId, status: 1, is_synchro: "true"}]).then(async (val) => {

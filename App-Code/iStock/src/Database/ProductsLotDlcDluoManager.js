@@ -130,7 +130,7 @@ class ProductsLotDlcDluoManager extends Component {
             let productsLotDlcDluo = [];
             await db.transaction(async (tx) => {
                 await tx.executeSql("SELECT "+COLUMN_ID+", "+COLUMN_ENTREPOT_ID+", "+COLUMN_ENTREPOT_LABEL+", "+COLUMN_BATCH+", "+COLUMN_FK_PRODUCT+", "+COLUMN_EAT_BY+", "+COLUMN_SELL_BY+", "+COLUMN_STOCK+", "+COLUMN_FK_ORIGIN_STOCK+" FROM "+TABLE_NAME+" WHERE "+COLUMN_FK_PRODUCT+" = "+id, []).then(async ([tx,results]) => {
-                    console.log("Query completed");
+                    // console.log("Query completed");
 
                     var len = results.rows.length;
                     for (let i = 0; i < len; i++) {
@@ -138,7 +138,7 @@ class ProductsLotDlcDluoManager extends Component {
                         row.prepare = 0;
                         productsLotDlcDluo.push(row);
                     }
-                    console.log(productsLotDlcDluo);
+                    // console.log(productsLotDlcDluo);
                 });
             }).then(async (result) => {
                 await resolve(productsLotDlcDluo);

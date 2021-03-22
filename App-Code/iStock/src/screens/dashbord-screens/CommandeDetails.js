@@ -73,16 +73,18 @@ class CommandeDetails extends React.Component{
       // this.setState({opneScanner: false});
       // this.setState({addRemoveNothing: 0});
 
+      this.setState({data: []});
       await this._settings();
       await this._orderLinesData();
 
       this.listener = await this.props.navigation.addListener('focus', async () => {
         // Prevent default action
+        this.setState({data: []});
+        await this.setState({orderId: this.props.route.params.order.commande_id});
+
         await this._settings();
         await console.log('Done settings update!');
         console.log('new settings : ', this.state.settings);
-        await this.setState({orderId: this.props.route.params.order.commande_id});
-        this.setState({data: []});
         await this._orderLinesData();
 
         return;
@@ -305,7 +307,7 @@ class CommandeDetails extends React.Component{
       const data = await olm.GET_LINES_BY_ORDER_ID_v2(this.state.orderId).then(async (val) => {
         return await val;
       });
-      console.log("res data", data);
+      // console.log("res data", data);
       this.setState({data: data, isLoading: false});
     }
 

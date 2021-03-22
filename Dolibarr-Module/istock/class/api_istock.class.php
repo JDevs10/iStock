@@ -20,12 +20,21 @@ use Luracast\Restler\RestException;
 
 require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
 require_once DOL_DOCUMENT_ROOT.'/fourn/class/fournisseur.product.class.php';
+require_once DOL_DOCUMENT_ROOT.'/commande/class/commande.class.php';
+
+require_once DOL_DOCUMENT_ROOT.'/societe/class/societe.class.php';
+require_once DOL_DOCUMENT_ROOT.'/categories/class/categorie.class.php';
 
 dol_include_once('/istock/class/authentification.class.php');
 dol_include_once('/istock/class/configuration.class.php');
 dol_include_once('/istock/class/evenement.class.php');
 
+require_once DOL_DOCUMENT_ROOT.'/expedition/class/expedition.class.php';
+//require_once DOL_DOCUMENT_ROOT.'/custom/istock/backend/expedition.class.php';
 
+
+//dol_include_once('/istock/backend/expedition.class.php');
+//dol_include_once('/istock/backend/expeditionbatch.class.php');
 
 /**
  * \file    istock/class/api_istock.class.php
@@ -47,6 +56,9 @@ class IStockApi extends DolibarrApi
     public $authentification;
 	public $evenement;
 	public $configuration;
+	public $shipment;
+	public $commande;
+	public $company;
 	
 	/**
      * @var Product $product {@type Product}
@@ -73,11 +85,15 @@ class IStockApi extends DolibarrApi
 		$this->configuration = new Configuration($this->db);
 		$this->product = new Product($this->db);
 		$this->productsupplier = new ProductFournisseur($this->db);
+		$this->shipment = new Expedition($this->db);
+		$this->commande = new Commande($this->db);
+		$this->company = new Societe($this->db);
     }
 	
-	/*##########################################################################################################################*/
-	/*#############################################  Gestion Api Login  ########################################################*/
-    
+	/*###############################################################################################################################*/
+	/*#############################################  Gestion Api Login  #############################################################*/
+    #region Gestion Api Login
+	
     /**
 	 * Login
 	 *
@@ -186,9 +202,13 @@ class IStockApi extends DolibarrApi
 		);
 	}
 	
-	/*##########################################################################################################################*/
-	/*########################################  Gestion Api Authentification  ##################################################*/
-
+	#endregion
+	
+	
+	/*###############################################################################################################################*/
+	/*#############################################  Gestion Api Authentification  ##################################################*/
+	#region Gestion Api Authentification
+	
     /**
      * Get properties of a authentification object
      *
@@ -420,9 +440,12 @@ class IStockApi extends DolibarrApi
         );
     }
 	
+	#endregion
 	
-	/*##########################################################################################################################*/
-	/*##########################################  Gestion Api Configuration  ###################################################*/
+	
+	/*###############################################################################################################################*/
+	/*#############################################  Gestion Api Configuration  #####################################################*/
+	#region Gestion Api Configuration
 	
 	/**
      * Get properties of a configuration object
@@ -653,10 +676,13 @@ class IStockApi extends DolibarrApi
         );
     }
 	
+	#endregion
 	
-	/*##########################################################################################################################*/
-	/*############################################  Gestion Api Evenement  #####################################################*/
-
+	
+	/*################################################################################################################################*/
+	/*#############################################  Gestion Api Evenement  ##########################################################*/
+	#region Gestion Api Evenement
+	
     /**
      * Get properties of a evenement object
      *
@@ -874,11 +900,12 @@ class IStockApi extends DolibarrApi
         );
     }
 	
+	#endregion
 	
 	
-	/*##########################################################################################################################*/
-	/*############################################  Gestion Api Products  ######################################################*/
-	
+	/*################################################################################################################################*/
+	/*#############################################  Gestion Api Products  ###########################################################*/
+	#region Gestion Api Products
 	
 	/**
      * List products
@@ -985,9 +1012,10 @@ class IStockApi extends DolibarrApi
 	{
 		$obj_ret = array();
 		
-		$sql  = "SELECT stock.fk_entrepot, lot.batch, lot.fk_product, lot.eatby, lot.sellby, stock.reel ";
+		$sql  = "SELECT batch.rowid as fk_origin_stock, stock.fk_entrepot, (SELECT ent.ref FROM llx_entrepot as ent WHERE ent.rowid = stock.fk_entrepot) as entrepot_label, lot.batch, lot.fk_product, lot.eatby, lot.sellby, batch.qty ";
 		$sql .= "FROM llx_product_stock as stock, llx_product_batch as batch, llx_product_lot as lot ";
 		$sql .= "WHERE stock.fk_product = ".$id." AND stock.rowid = batch.fk_product_stock AND batch.batch = lot.batch AND lot.fk_product = ".$id."";
+		
 
 		//print "SQL => $sql\n\n";
 
@@ -1015,9 +1043,12 @@ class IStockApi extends DolibarrApi
 		return $obj_ret;
 	}
 	
+	#endregion
 	
-	/*##########################################################################################################################*/
-	/*############################################  Gestion Api Order  #####################################################*/
+	
+	/*################################################################################################################################*/
+	/*#############################################  Gestion Api Order  ##############################################################*/
+	#region Gestion Api Order
 	
 	/**
      * Get total number of oders before download the ordes
@@ -1103,9 +1134,304 @@ class IStockApi extends DolibarrApi
 	
 	
 	
-	/*##############################################################################################################################*/
-	/*############################################  Gestion Api Order_Contact  #####################################################*/
+	/**
+     * Get total number of oders before download the ordes
+     *	
+	 * @param string	       $sortfield	        Sort field
+     * @param string	       $sortorder	        Sort order
+     * @param int		       $limit		        Limit for list
+     * @param int		       $page		        Page number
+     * @param string   	       $thirdparty_ids	    Thirdparty ids to filter orders of (example '1' or '1,2,3') {@pattern /^[0-9,]*$/i}
+     * @param string           $sqlfilters          Other criteria to filter answers separated by a comma. Syntax example "(t.ref:like:'SO-%') and (t.date_creation:<:'20160101')"
+     * @return  array                               Array of order objects
+     *
+     * @url	GET get/sync_v2
+     */
+	public function sync_v2($sortfield = "t.rowid", $sortorder = 'ASC', $limit = 100, $page = 0, $thirdparty_ids = '', $sqlfilters = ''){
+		global $db, $conf;
+
+		$obj_ret = array();
+
+        $main_obj = array();
+		$order_array = array();
+		$order_line_array = array();
+		$order_contact_array = array();
+		$client_array = array();
+		$product_array = array();
+		$productsLotDlcDluoManager_array = array();
+		$shipment_array = array();
+		$shipment_line_array = array();
+		$user_array = array();
+		$warehouse_array = array();
+
+        // case of external user, $thirdparty_ids param is ignored and replaced by user's socid
+        $socids = DolibarrApiAccess::$user->socid ? DolibarrApiAccess::$user->socid : $thirdparty_ids;
+
+        // If the internal user must only see his customers, force searching by him
+        $search_sale = 0;
+        if (!DolibarrApiAccess::$user->rights->societe->client->voir && !$socids) $search_sale = DolibarrApiAccess::$user->id;
+
+        $sql = "SELECT t.rowid";
+        if ((!DolibarrApiAccess::$user->rights->societe->client->voir && !$socids) || $search_sale > 0) $sql .= ", sc.fk_soc, sc.fk_user"; // We need these fields in order to filter by sale (including the case where the user can only see his prospects)
+        $sql .= " FROM ".MAIN_DB_PREFIX."commande as t";
+
+        if ((!DolibarrApiAccess::$user->rights->societe->client->voir && !$socids) || $search_sale > 0) $sql .= ", ".MAIN_DB_PREFIX."societe_commerciaux as sc"; // We need this table joined to the select in order to filter by sale
+
+        $sql .= ' WHERE t.entity IN ('.getEntity('commande').')';
+        if ((!DolibarrApiAccess::$user->rights->societe->client->voir && !$socids) || $search_sale > 0) $sql .= " AND t.fk_soc = sc.fk_soc";
+        if ($socids) $sql .= " AND t.fk_soc IN (".$socids.")";
+        if ($search_sale > 0) $sql .= " AND t.rowid = sc.fk_soc"; // Join for the needed table to filter by sale
+        // Insert sale filter
+        if ($search_sale > 0)
+        {
+            $sql .= " AND sc.fk_user = ".$search_sale;
+        }
+        // Add sql filters
+        if ($sqlfilters)
+        {
+            if (!DolibarrApi::_checkFilters($sqlfilters))
+            {
+                throw new RestException(503, 'Error when validating parameter sqlfilters '.$sqlfilters);
+            }
+	        $regexstring = '\(([^:\'\(\)]+:[^:\'\(\)]+:[^:\(\)]+)\)';
+            $sql .= " AND (".preg_replace_callback('/'.$regexstring.'/', 'DolibarrApi::_forge_criteria_callback', $sqlfilters).")";
+        }
+
+        $sql .= $db->order($sortfield, $sortorder);
+        if ($limit) {
+            if ($page < 0)
+            {
+                $page = 0;
+            }
+            $offset = $limit * $page;
+
+            $sql .= $db->plimit($limit + 1, $offset);
+        }
+
+        dol_syslog("API Rest request");
+        $result = $db->query($sql);
+
+        if ($result)
+        {
+            $num = $db->num_rows($result);
+            $min = min($num, ($limit <= 0 ? $num : $limit));
+            $i = 0;
+            while ($i < $min)
+            {
+                $obj = $db->fetch_object($result);
+                $commande_static = new Commande($db);
+                if ($commande_static->fetch($obj->rowid)) {
+                    // Add external contacts ids
+                    $commande_static->contacts_ids = $commande_static->liste_contact(-1, 'external', 1);
+                    $obj_ret[] = $this->_cleanObjectDatas($commande_static);
+                }
+                $i++;
+            }
+        }
+        else {
+            throw new RestException(503, 'Error when retrieve commande list : '.$db->lasterror());
+        }
+        if (!count($obj_ret)) {
+            throw new RestException(404, 'No order found');
+        }
+		//return $obj_ret;
+		
+		//print("<pre>".print_r($obj_ret,true)."</pre>");
+		
+		//JL
+		// Filter the order array and get tmp list of all
+		// clients, users, products, batchs, 
+		
+		
+		$tmp_order = array();			//ok
+		$tmp_order_ids = array();			//ok
+		$tmp_order_lines_ids = array();			//ok
+		$orders_contacts = array();		//ok
+		$tmp_clients = array();			//ok
+		$tmp_users = array();			//ok
+		$tmp_products_ids = array();
+		$tmp_products = array();		
+		$tmp_batchs_ids = array();
+		$tmp_shipments = array();			//ok
+		
+		if($obj_ret != null && count($obj_ret)>0){
+			
+			for($index=0; $index<count($obj_ret); $index++){
+				
+				$obj = $obj_ret[$index];
+				
+				// get and store orders
+				$tmp_order_ids[] = $obj->id;
+				($this->checkArrayDouble($tmp_order, $obj->id) ? null : $tmp_order[] = $obj );
+				
+				// get and store products of order
+				for($_index_=0; $_index_<count($obj->lines); $_index_++){
+					//$tmp_order_lines_ids[] = $obj->lines[$_index_]->id;
+					$tmp_products_ids[] = $obj->lines[$_index_]->fk_product;
+				}
+				
+				
+				// get and store contact of order
+				$tmp_res = $this->orderContactById($obj->id);
+				($tmp_res == null ? null : $orders_contacts[] = $tmp_res );
+				
+				
+				// get and store client of order
+				$tmp_res = $this->clientById($obj->socid);
+				($tmp_res == null ? null : $tmp_clients[] = $tmp_res );
+				
+				
+				// get and store user of order
+				$tmp_res = $this->userById($obj->user_author_id);
+				($tmp_res == null ? null : $tmp_users[] = $tmp_res );
+				
+			}
+			
+			// get order contact obj of cmd id
+			
+			
+					
+		}
+		else{
+			return "No orders found!!!";
+		}
+		
+		
+		if($tmp_products_ids != null && count($tmp_products_ids)>0){
+			// get and store products && Lot_DLC_DLUO_Batch		(rowid:=:10312)
+			
+			for($index=(count($tmp_products_ids) - 5); $index<count($tmp_products_ids); $index++){ 
+				
+				$tmp_res = $this->indexProducts($sortfield = "t.ref", $sortorder = 'ASC', $limit = 50, $page = 0, $mode = 0, $category = 0, "(t.rowid:=:".$tmp_products_ids[$index].")")[0];
+				($tmp_res == null ? null : $tmp_products[] = $tmp_res ); // $tmp_res here will return an array
+			}
+			
+		}
+		
+		
+		if($tmp_order_ids != null && count($tmp_order_ids)>0){
+			// get and store products && Lot_DLC_DLUO_Batch		(rowid:=:10312)
+			
+			for($index=(count($tmp_order_ids) - 5); $index<count($tmp_order_ids); $index++){ 
+				
+				// get and store shipments & shipment lines
+				$tmp_res = $this->shipmentOfOrders_v2($tmp_order_ids[$index]);
+				($tmp_res == null ? null : $tmp_shipments[] = $tmp_res ); // $tmp_res here will return an array
+			}
+			
+		}
+		
+		
+		return array(
+			"tmp_order"=>$tmp_order,
+			"orders_contacts"=>$orders_contacts,
+			"tmp_clients"=>$tmp_clients,
+			"tmp_users"=>$tmp_users,
+			"tmp_products"=>$tmp_products,			//need to call this seperate via api
+			"tmp_order_ids"=>$tmp_order_ids,
+			"tmp_products_ids"=>$tmp_products_ids,
+			"tmp_shipments"=>$tmp_shipments,			//need to call this seperate via api
+			"sum"=> (count($tmp_order_ids) + count($tmp_clients_ids) + count($tmp_users_ids) + count($tmp_products_ids))
+		);
+		
+	}
 	
+	// Check for array before adding doubles
+	private function checkArrayDouble($theArray, $value){
+		for($index_=0; $index_<count($theArray); $index_++){
+			
+			if($theArray[$index_] == $value){
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	
+	/**
+     * Fetch properties of a thirdparty object.
+     *
+     * Return an array with thirdparty informations
+     *
+     * @param    int	$rowid      Id of third party to load
+     * @return array
+     *
+     * @throws RestException
+    */
+    private function clientById($rowid)
+    {
+		$sql = "SELECT s.rowid, s.nom as name, s.code_client as ref, s.address, s.town, s.zip, c.label as country, s.fk_pays as country_id, ";
+		$sql.= "c.code as country_code, s.status, s.phone, s.client, s.fournisseur, s.note_private, s.note_public ";
+		$sql.= "FROM llx_societe as s LEFT JOIN llx_c_effectif as e ON s.fk_effectif = e.id LEFT JOIN llx_c_country as c ON s.fk_pays = c.rowid ";
+		$sql.= "LEFT JOIN llx_c_stcomm as st ON s.fk_stcomm = st.id LEFT JOIN llx_c_forme_juridique as fj ON s.fk_forme_juridique = fj.code ";
+		$sql.= "LEFT JOIN llx_c_departements as d ON s.fk_departement = d.rowid LEFT JOIN llx_c_typent as te ON s.fk_typent = te.id ";
+		$sql.= "LEFT JOIN llx_c_incoterms as i ON s.fk_incoterms = i.rowid ";
+		$sql.= "LEFT JOIN llx_societe_remise as sr ON sr.rowid = (SELECT MAX(rowid) FROM llx_societe_remise WHERE fk_soc = s.rowid AND entity IN (1)) WHERE s.entity IN (1) AND s.rowid = $rowid";
+		
+        $result = $this->db->query($sql);
+		
+		if ($result)
+        {
+			//print("<pre>".print_r($result,true)."</pre>");
+			
+            $num = $this->db->num_rows($result);
+            while ($i < $num)
+            {
+                $obj = $this->db->fetch_object($result);
+				$obj_ret[] = $obj;
+                $i++;
+            }
+			
+			return $obj_ret[0];
+        }
+        else {
+            return [];
+        }
+    }
+	
+	/**
+     * Fetch properties of a user object.
+     *
+     * Return an array with user informations
+     *
+     * @param    int	$rowid      Id of user to load
+     * @return array
+     *
+     * @throws RestException
+    */
+    private function userById($rowid)
+    {
+		$sql = "SELECT u.rowid as id, u.rowid as ref, u.firstname, u.lastname, u.admin, u.email, u.job ";
+		$sql .= " FROM ".MAIN_DB_PREFIX."user as u";
+		$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."c_country as c ON u.fk_country = c.rowid";
+		$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."c_departements as d ON u.fk_state = d.rowid";
+		
+        $result = $this->db->query($sql);
+		
+		if ($result)
+        {
+			//print("<pre>".print_r($result,true)."</pre>");
+			
+            $num = $this->db->num_rows($result);
+            while ($i < $num)
+            {
+                $obj = $this->db->fetch_object($result);
+				$obj_ret[] = $obj;
+                $i++;
+            }
+			
+			return $obj_ret[0];
+        }
+        else {
+            return [];
+        }
+    }
+	#endregion
+	
+	
+	/*################################################################################################################################*/
+	/*#############################################  Gestion Api Order_Contact  ######################################################*/
+	#region Gestion Api Order_Contact
 	
 	/**
      * Liste des contact orders
@@ -1134,6 +1460,7 @@ class IStockApi extends DolibarrApi
             $sql.= $this->db->plimit($limit, $offset);
         }
 		//print "SQL => $sql\n\n";
+		//die();
 
         $result = $this->db->query($sql);
 		
@@ -1164,6 +1491,720 @@ class IStockApi extends DolibarrApi
             )
         );
 	}
+	
+	
+	/**
+     * Contact order object from order id
+     *
+     * @param int		       $id		        Page number
+     * @return  array 
+     *
+     * @url	GET contact/order/{id}
+     */
+	public function orderContactById($id){
+		
+		$obj_ret = array();
+		
+		$sql = "SELECT t.rowid, t.datecreate, t.statut, t.element_id, t.fk_c_type_contact, t.fk_socpeople ";
+		$sql.= "FROM llx_element_contact as t, llx_c_type_contact as c ";
+		$sql.= "WHERE t.fk_c_type_contact = c.rowid AND c.libelle = 'Responsable suivi de la commande' AND t.element_id = $id LIMIT 1";
+
+		//print "SQL => $sql\n\n";
+
+        $result = $this->db->query($sql);
+		
+		if ($result)
+        {
+			//print("<pre>".print_r($result,true)."</pre>");
+			
+            $num = $this->db->num_rows($result);
+            while ($i < $num)
+            {
+                $obj = $this->db->fetch_object($result);
+				$obj_ret[] = $obj;
+                $i++;
+            }
+			
+			return $obj_ret[0];
+        }
+        else {
+            return [];
+        }
+	}
+	#endregion
+	
+	
+	/*################################################################################################################################*/
+	/*#############################################  Gestion Api Expedition  #########################################################*/
+	#region Gestion Api Expedition
+	
+	
+	/**
+     * List shipments
+     *
+     * Get a list of shipments
+     *
+     * @param string	       $sortfield	        Sort field
+     * @param string	       $sortorder	        Sort order
+     * @param int		       $limit		        Limit for list
+     * @param int		       $page		        Page number
+     * @param string   	       $thirdparty_ids	    Thirdparty ids to filter shipments of (example '1' or '1,2,3') {@pattern /^[0-9,]*$/i}
+     * @param string           $sqlfilters          Other criteria to filter answers separated by a comma. Syntax example "(t.ref:like:'SO-%') and (t.date_creation:<:'20160101')"
+     * @return  array                               Array of shipment objects
+     *
+     * @throws RestException
+	 *
+	 * 	@url	GET shipment/list
+     */
+    public function indexShipment($sortfield = "t.rowid", $sortorder = 'ASC', $limit = 100, $page = 0, $thirdparty_ids = '', $sqlfilters = '')
+    {
+        global $db, $conf;
+
+        $obj_ret = array();
+
+        // case of external user, $thirdparty_ids param is ignored and replaced by user's socid
+        $socids = DolibarrApiAccess::$user->socid ? DolibarrApiAccess::$user->socid : $thirdparty_ids;
+
+        // If the internal user must only see his customers, force searching by him
+        $search_sale = 0;
+        if (!DolibarrApiAccess::$user->rights->societe->client->voir && !$socids) $search_sale = DolibarrApiAccess::$user->id;
+
+        $sql = "SELECT t.rowid";
+        if ((!DolibarrApiAccess::$user->rights->societe->client->voir && !$socids) || $search_sale > 0) $sql .= ", sc.fk_soc, sc.fk_user"; // We need these fields in order to filter by sale (including the case where the user can only see his prospects)
+        $sql .= " FROM ".MAIN_DB_PREFIX."expedition as t";
+
+        if ((!DolibarrApiAccess::$user->rights->societe->client->voir && !$socids) || $search_sale > 0) $sql .= ", ".MAIN_DB_PREFIX."societe_commerciaux as sc"; // We need this table joined to the select in order to filter by sale
+
+        $sql .= ' WHERE t.entity IN ('.getEntity('expedition').')';
+        if ((!DolibarrApiAccess::$user->rights->societe->client->voir && !$socids) || $search_sale > 0) $sql .= " AND t.fk_soc = sc.fk_soc";
+        if ($socids) $sql .= " AND t.fk_soc IN (".$socids.")";
+        if ($search_sale > 0) $sql .= " AND t.rowid = sc.fk_soc"; // Join for the needed table to filter by sale
+        // Insert sale filter
+        if ($search_sale > 0)
+        {
+            $sql .= " AND sc.fk_user = ".$search_sale;
+        }
+        // Add sql filters
+        if ($sqlfilters)
+        {
+            if (!DolibarrApi::_checkFilters($sqlfilters))
+            {
+                throw new RestException(503, 'Error when validating parameter sqlfilters '.$sqlfilters);
+            }
+            $regexstring = '\(([^:\'\(\)]+:[^:\'\(\)]+:[^:\(\)]+)\)';
+            $sql .= " AND (".preg_replace_callback('/'.$regexstring.'/', 'DolibarrApi::_forge_criteria_callback', $sqlfilters).")";
+        }
+
+        $sql .= $db->order($sortfield, $sortorder);
+        if ($limit) {
+            if ($page < 0)
+            {
+                $page = 0;
+            }
+            $offset = $limit * $page;
+
+            $sql .= $db->plimit($limit + 1, $offset);
+        }
+		
+		//print "SQL $sql";
+		//die();
+
+        dol_syslog("API Rest request");
+        $result = $db->query($sql);
+
+        if ($result)
+        {
+            $num = $db->num_rows($result);
+            $min = min($num, ($limit <= 0 ? $num : $limit));
+            $i = 0;
+            while ($i < $min)
+            {
+                $obj = $db->fetch_object($result);
+                $shipment_static = new Expedition($db);
+                if ($shipment_static->fetch($obj->rowid)) {
+                    $obj_ret[] = $this->_cleanObjectDatas($shipment_static);
+                }
+                $i++;
+            }
+        }
+        else {
+            throw new RestException(503, 'Error when retrieve commande list : '.$db->lasterror());
+        }
+        if (!count($obj_ret)) {
+            throw new RestException(404, 'No shipment found');
+        }
+        return $obj_ret;
+    }
+
+    /**
+     * Create shipment object
+     *
+     * @param   array   $request_data   Request data
+     * @return  int     ID of shipment
+	 *
+	 * 	@url	POST shipment/create
+     */
+    public function postShipment($request_data = null)
+    {
+        if (!DolibarrApiAccess::$user->rights->expedition->creer) {
+            throw new RestException(401, "Insuffisant rights");
+        }
+
+         
+		//print("<pre>".print_r($user,true)."</pre>");
+		//print("<pre>".print_r(DolibarrApiAccess::$user,true)."</pre>");
+		//die();
+
+	
+		global $conf, $hookmanager;
+
+		$now = dol_now();
+		$user = DolibarrApiAccess::$user;
+
+		//require_once DOL_DOCUMENT_ROOT.'product/stock/class/mouvementstock.class.php';
+		$error = 0;
+
+		// Clean parameters
+		$request_data["brouillon"] = 1;
+		$request_data["tracking_number"] = dol_sanitizeFileName($request_data["tracking_number"]);
+		if (empty($request_data["fk_project"])) $request_data["fk_project"] = 0;
+
+
+		$this->db->begin();
+
+		$sql = "INSERT INTO llx_expedition (ref, entity, ref_customer, ref_int, ref_ext, date_creation, fk_user_author, date_expedition, date_delivery, fk_soc, fk_projet, ";
+		$sql .= "fk_address, fk_shipping_method, tracking_number, weight, size, width, height, weight_units, size_units, note_private, note_public, model_pdf, fk_incoterms, ";
+		$sql .= "location_incoterms) VALUES (";
+		$sql .= "'(PROV)'";
+		$sql .= ", ".$conf->entity;
+		$sql .= ", ".($request_data["ref_customer"] ? "'".$this->db->escape($request_data["ref_customer"])."'" : "null");
+		$sql .= ", ".($request_data["ref_int"] ? "'".$this->db->escape($request_data["ref_int"])."'" : "null");
+		$sql .= ", ".($request_data["ref_ext"] ? "'".$this->db->escape($request_data["ref_ext"])."'" : "null");
+		$sql .= ", '".$this->db->idate($now)."'";
+		$sql .= ", ".$user->id;
+		$sql .= ", ".($request_data["date_expedition"] > 0 ? "'".$this->db->idate($request_data["date_expedition"])."'" : "null");
+		$sql .= ", ".($request_data["date_delivery"] > 0 ? "'".$this->db->idate($request_data["date_delivery"])."'" : "null");
+		$sql .= ", ".$request_data["socid"];
+		$sql .= ", ".$request_data["fk_project"];
+		$sql .= ", ".($request_data["fk_delivery_address"] > 0 ? $request_data["fk_delivery_address"] : "null");
+		$sql .= ", ".($request_data["shipping_method_id"] > 0 ? $request_data["shipping_method_id"] : "null");
+		$sql .= ", '".$this->db->escape($request_data["tracking_number"])."'";
+		$sql .= ", ".$request_data["weight"];
+		$sql .= ", ".$request_data["sizeS"];
+		$sql .= ", ".$request_data["sizeW"];
+		$sql .= ", ".$request_data["sizeH"];
+		$sql .= ", ".($request_data["weight_units"] != '' ? (int) $request_data["weight_units"] : 'NULL');
+		$sql .= ", ".($request_data["size_units"] != '' ? (int) $request_data["size_units"] : 'NULL');
+		$sql .= ", ".(!empty($request_data["note_private"]) ? "'".$this->db->escape($request_data["note_private"])."'" : "null");
+		$sql .= ", ".(!empty($request_data["note_public"]) ? "'".$this->db->escape($request_data["note_public"])."'" : "null");
+		$sql .= ", ".(!empty($request_data["model_pdf"]) ? "'".$this->db->escape($request_data["model_pdf"])."'" : "null");
+		$sql .= ", ".(int) $request_data["fk_incoterms"];
+		$sql .= ", '".$this->db->escape($request_data["location_incoterms"])."'";
+		$sql .= ")";
+
+		$resql = $this->db->query($sql);
+		if ($resql)
+		{
+			$inserted_shipment_id = $this->db->last_insert_id("llx_expedition");
+ 
+			$sql = "UPDATE llx_expedition";
+			$sql .= " SET ref = '(PROV".$inserted_shipment_id.")'";
+			$sql .= " WHERE rowid = ".$inserted_shipment_id;
+			
+			$shipment_update = $this->db->query($sql);
+			if(!$shipment_update){
+				$error_ = $this->db->lasterror()." - sql=$sql";
+				$this->db->rollback();
+				return array(
+					"code"=> -4,
+					"error"=> "Could not update shipment ref, ".$error_
+				);
+			}
+			
+			// Link shipment element to order element
+			$sql = "INSERT INTO llx_element_element (rowid, fk_source, sourcetype, fk_target, targettype) VALUES (NULL, ".$request_data["origin_id"].", 'commande', ".$inserted_shipment_id.", 'shipping')";
+			$shipment_link = $this->db->query($sql);
+			
+			if(!$shipment_link){
+				$error_ = $this->db->lasterror()." - sql=$sql";
+				$this->db->rollback();
+				return array(
+					"code"=> -5,
+					"error"=> "Could not link shipment to order, ".$error_
+				);
+			}
+
+			if ($shipment_update && $shipment_link)
+			{		
+				// Insert of lines
+				$num = count($request_data["lines"]);
+				for ($i = 0; $i < $num; $i++)
+				{
+					$expeditionline["fk_expedition"] = $inserted_shipment_id;
+					$expeditionline["entrepot_id"] = $request_data["lines"][$i]["entrepot_id"];
+					$expeditionline["fk_origin_line"] = $request_data["lines"][$i]["origin_line_id"];
+					$expeditionline["qty"] = $request_data["lines"][$i]["qty"];
+					$expeditionline["rang"] = $request_data["lines"][$i]["rang"];
+					$expeditionline["array_options"] = $request_data["lines"][$i]["array_options"];
+					
+					
+					//print("<pre>".print_r($request_data["lines"][0],true)."</pre>");
+					//print("<pre>".print_r($request_data["lines"][0]["entrepot_id"],true)."</pre>");
+					//print("<pre>".print_r($expeditionline,true)."</pre>");
+					//die();
+						
+					if (!isset($request_data["lines"][$i]["detail_batch"]))
+					{	
+						// no batch management
+						if(!$this->insert_shipment_line($user, $expeditionline)["code"] > 0)
+						{
+							$error++;
+						}
+					}
+					else
+					{	
+						//print("<pre>".print_r($this->insert_shipment_line($user, $expeditionline),true)."</pre>");
+						//die();
+						
+						$res = $this->insert_shipment_line($user, $expeditionline);
+						if(!$res["code"] > 0)
+						{
+							$error++;
+						}
+						
+						for ($y = 0; $y < count($request_data["lines"][$i]["detail_batch"]); $y++)
+						{
+							$request_data["lines"][$i]["detail_batch"][$y]["fk_expeditiondet"] = $res["code"];
+						}
+						
+						// with batch management
+						$res = $this->create_shipment_line_batch($request_data["lines"][$i]["detail_batch"]);
+						if (!$res["code"] > 0)
+						{
+							$error++;
+						}
+					}
+				}
+
+
+				if (!$error)
+				{
+					/*
+					// Call trigger
+					$result = $this->call_trigger('SHIPPING_CREATE', $user);
+					if ($result < 0) { $error++; }
+					// End call triggers
+					*/
+
+					if (!$error)
+					{
+						$this->db->commit();
+						return $inserted_shipment_id;
+					}
+					else
+					{
+						$error_ = $this->db->lasterror()." - sql=$sql";
+						$this->db->rollback();
+						return array(
+							"code"=> -1 * $error,
+							"error"=> $error_
+						);
+					}
+				}
+				else
+				{
+					$error_ = $this->db->lasterror()." - sql=$sql";
+					$this->db->rollback();
+					return array(
+						"code"=> -3,
+						"error"=> $error_
+					);
+				}
+			}
+			else
+			{
+				$error_ = $this->db->lasterror()." - sql=$sql";
+				$this->db->rollback();
+				return array(
+					"code"=> -2,
+					"error"=> $error_
+				);
+			}
+		}
+		else
+		{
+			$error_ = $this->db->lasterror()." - sql=$sql";
+			$this->db->rollback();
+			return array(
+				"code"=> -1,
+				"error"=> $error_
+			);
+		}
+
+    }
+	
+	
+	/**
+	 *	Insert line into database
+	 *
+	 *	@param      User	$user			User that modify
+	 *	@param      int		$notrigger		1 = disable triggers
+	 *	@return     int						<0 if KO, line id >0 if OK
+	 */
+	private function insert_shipment_line($user, $obj, $notrigger = 0)
+	{
+		global $langs, $conf;
+
+		$error_shipment_line = 0;
+		
+
+		// Check parameters
+		if (empty($obj["fk_expedition"]))
+		{
+			return array("code"=> -1, "error"=> 'ErrorMandatoryParametersNotProvided : fk_expedition');
+		}
+		if (empty($obj["entrepot_id"]))
+		{
+			return array("code"=> -1, "error"=> 'ErrorMandatoryParametersNotProvided : entrepot_id');
+		}
+		if (empty($obj["fk_origin_line"]))
+		{
+			return array("code"=> -1, "error"=> 'ErrorMandatoryParametersNotProvided : fk_origin_line');
+		}
+		if (empty($obj["qty"]))
+		{
+			return array("code"=> -1, "error"=> 'ErrorMandatoryParametersNotProvided : qty');
+		}
+		if (empty($obj["rang"]))
+		{
+			return array("code"=> -1, "error"=> 'ErrorMandatoryParametersNotProvided : rang');
+		}
+		if ($obj["rang"] <=-1)
+		{
+			return array("code"=> -1, "error"=> 'rang can not be negative!');
+		}
+		
+		
+
+		$this->db->begin();
+
+		$sql = "INSERT INTO llx_expeditiondet (";
+		$sql .= "fk_expedition";
+		$sql .= ", fk_entrepot";
+		$sql .= ", fk_origin_line";
+		$sql .= ", qty";
+		$sql .= ", rang";
+		$sql .= ") VALUES (";
+		$sql .= $obj["fk_expedition"];
+		$sql .= ", ".(empty($obj["entrepot_id"]) ? 'NULL' : $obj["entrepot_id"]);
+		$sql .= ", ".$obj["fk_origin_line"];
+		$sql .= ", ".$obj["qty"];
+		$sql .= ", ".$obj["rang"];
+		$sql .= ")";
+
+		$resql = $this->db->query($sql);
+		if ($resql)
+		{
+			$last_insert_expeditiondet_id = $this->db->last_insert_id("llx_expeditiondet");
+
+			/*
+			if (!$error && !$notrigger)
+			{
+				// Call trigger
+				$result = $this->call_trigger('LINESHIPPING_INSERT', $user);
+				if ($result < 0)
+				{
+					$error_shipment_line++;
+				}
+				// End call triggers
+			}
+			*/
+
+			if (!$error_shipment_line) {
+				$this->db->commit();
+				return array(
+					"code"=> $last_insert_expeditiondet_id,
+					"Sucess"=> "inserted"
+				);
+			}
+
+			$this->db->rollback();
+			return array(
+				"code"=> -1,
+				"error"=> "Could not insert"
+			);
+		}
+		else
+		{
+			return array(
+				"code"=> -2,
+				"error"=> "Could not insert shipment line. Error in sql!\n\r sql=$sql"
+			);
+		}
+	}
+	
+	
+	/**
+	 * Create expedition line batch
+	 *
+	 * @param 	object		$object_batch		full line informations
+	 * @return	int							<0 if KO, >0 if OK
+	 */
+	private function create_shipment_line_batch($object_batch)
+	{
+		global $langs, $conf;
+		
+		//print("<pre>".print_r($object_batch,true)."</pre>");
+		//die();
+
+		$error_msg_array = array();
+		$error_shipment_line_batch = 0;
+		
+		
+		for($z=0; $z<count($object_batch); $z++)
+		{
+			// Check parameters
+			if (empty($object_batch[$z]["fk_expeditiondet"]))
+			{
+				return array("code"=> -1, "error"=> "ErrorMandatoryParametersNotProvided : [".$z."] => fk_expeditiondet");
+			}
+			if (empty($object_batch[$z]["sellby"]))
+			{
+				return array("code"=> -1, "error"=> "ErrorMandatoryParametersNotProvided : [".$z."] => sellby");
+			}
+			if (empty($object_batch[$z]["eatby"]))
+			{
+				return array("code"=> -1, "error"=> "ErrorMandatoryParametersNotProvided : [".$z."] => eatby");
+			}
+			if (empty($object_batch[$z]["batch"]))
+			{
+				return array("code"=> -1, "error"=> "ErrorMandatoryParametersNotProvided : [".$z."] => batch");
+			}
+			if (empty($object_batch[$z]["qty"]))
+			{
+				return array("code"=> -1, "error"=> "ErrorMandatoryParametersNotProvided : [".$z."] => qty");
+			}
+			if (empty($object_batch[$z]["fk_origin_stock"]))
+			{
+				return array("code"=> -1, "error"=> "ErrorMandatoryParametersNotProvided : [".$z."] => fk_origin_stock");
+			}
+			
+			$id_line_expdet = (int) $object_batch[$z]["fk_expeditiondet"];
+
+			$sql = "INSERT INTO llx_expeditiondet_batch (";
+			$sql .= "fk_expeditiondet";
+			$sql .= ", sellby";
+			$sql .= ", eatby";
+			$sql .= ", batch";
+			$sql .= ", qty";
+			$sql .= ", fk_origin_stock";
+			$sql .= ") VALUES (";
+			$sql .= $id_line_expdet.",";
+			$sql .= " ".(!isset($object_batch[$z]["sellby"]) || dol_strlen($object_batch[$z]["sellby"]) == 0 ? 'NULL' : ("'".$this->db->idate($object_batch[$z]["sellby"]))."'").",";
+			$sql .= " ".(!isset($object_batch[$z]["eatby"]) || dol_strlen($object_batch[$z]["eatby"]) == 0 ? 'NULL' : ("'".$this->db->idate($object_batch[$z]["eatby"]))."'").",";
+			$sql .= " ".(!isset($object_batch[$z]["batch"]) ? 'NULL' : ("'".$this->db->escape($object_batch[$z]["batch"])."'")).",";
+			$sql .= " ".(!isset($object_batch[$z]["qty"]) ? ((!isset($object_batch[$z]["dluo_qty"])) ? 'NULL' : $object_batch[$z]["dluo_qty"]) : $object_batch[$z]["qty"]).","; // dluo_qty deprecated, use qty
+			$sql .= " ".(!isset($object_batch[$z]["fk_origin_stock"]) ? 'NULL' : $object_batch[$z]["fk_origin_stock"]);
+			$sql .= ")";
+			
+			$resql = $this->db->query($sql);
+			if (!$resql) 
+			{ 
+				$error_shipment_line_batch++; 
+				$error_msg_array[$z] = "- ".($z+1)." Error ".$this->db->lasterror(); 
+			}
+			
+		}
+
+		if (!$error_shipment_line_batch)
+		{
+            $inserted_shipment_line_batch = $this->db->last_insert_id("llx_expeditiondet_batch");
+			return array(
+				"code"=> $inserted_shipment_line_batch,
+				"success"=> "All ".count($object_batch)." shipment lines(s) inserted!"
+			);
+		}
+		else
+		{
+			$this->db->rollback();
+			return array(
+				"code"=> -1 * $error_shipment_line_batch,
+				"error"=> "Error from ".count($object_batch)." sql execution(s): \n\r".$error_msg
+			);
+		}
+		
+		return 1;
+	}
+	
+	
+	/**
+     * Delete a line to given shipment
+     *
+     *
+     * @param int   $id             Id of shipment to update
+     * @param int   $lineid         Id of line to delete
+     *
+     * @url	DELETE shipment/{id}/lines/{lineid}
+     *
+     * @return int
+     *
+     * @throws RestException 401
+     * @throws RestException 404
+     */
+    public function deleteLineShipment($id, $lineid)
+    {
+        if (!DolibarrApiAccess::$user->rights->expedition->creer) {
+            throw new RestException(401);
+        }
+
+        $result = $this->shipment->fetch($id);
+        if (!$result) {
+            throw new RestException(404, 'Shipment not found');
+        }
+
+        if (!DolibarrApi::_checkAccessToResource('expedition', $this->shipment->id)) {
+            throw new RestException(401, 'Access not allowed for login '.DolibarrApiAccess::$user->login);
+        }
+
+        // TODO Check the lineid $lineid is a line of ojbect
+
+        $request_data = (object) $request_data;
+        $updateRes = $this->shipment->deleteline(DolibarrApiAccess::$user, $lineid);
+        if ($updateRes > 0) {
+            return $this->get($id);
+        }
+        else
+        {
+            throw new RestException(405, $this->shipment->error);
+        }
+    }
+
+    /**
+     * Update shipment general fields (won't touch lines of shipment)
+     *
+     * @param int   $id             Id of shipment to update
+     * @param array $request_data   Datas
+     *
+     * @return int
+	 *
+	 * @url	PUT shipment/{id}/update
+     */
+    public function putShipment($id, $request_data = null)
+    {
+        if (!DolibarrApiAccess::$user->rights->expedition->creer) {
+            throw new RestException(401);
+        }
+
+        $result = $this->shipment->fetch($id);
+        if (!$result) {
+            throw new RestException(404, 'Shipment not found');
+        }
+
+        if (!DolibarrApi::_checkAccessToResource('expedition', $this->shipment->id)) {
+            throw new RestException(401, 'Access not allowed for login '.DolibarrApiAccess::$user->login);
+        }
+        foreach ($request_data as $field => $value) {
+            if ($field == 'id') continue;
+            $this->shipment->$field = $value;
+        }
+
+        if ($this->shipment->update(DolibarrApiAccess::$user) > 0)
+        {
+            return $this->get($id);
+        }
+        else
+        {
+            throw new RestException(500, $this->shipment->error);
+        }
+    }
+
+    /**
+     * Delete shipment
+     *
+     * @param   int     $id         Shipment ID
+     *
+	 *	@url DELETE    shipment/{id}
+	 *	
+     * @return  array
+     */
+    public function deleteShipment($id)
+    {
+    	if (!DolibarrApiAccess::$user->rights->expedition->supprimer) {
+            throw new RestException(401);
+        }
+        $result = $this->shipment->fetch($id);
+        if (!$result) {
+            throw new RestException(404, 'Shipment not found');
+        }
+
+        if (!DolibarrApi::_checkAccessToResource('expedition', $this->shipment->id)) {
+            throw new RestException(401, 'Access not allowed for login '.DolibarrApiAccess::$user->login);
+        }
+
+        if (!$this->shipment->delete(DolibarrApiAccess::$user)) {
+            throw new RestException(500, 'Error when deleting shipment : '.$this->shipment->error);
+        }
+
+        return array(
+            'success' => array(
+                'code' => 200,
+                'message' => 'Shipment deleted'
+            )
+        );
+    }
+
+    /**
+     * Validate a shipment
+     *
+     * This may record stock movements if module stock is enabled and option to
+     * decrease stock on shipment is on.
+     *
+     * @param   int $id             Shipment ID
+     * @param   int $notrigger      1=Does not execute triggers, 0= execute triggers
+     *
+     * @url POST    shipment/{id}/validate
+     *
+     * @return  array
+     * \todo An error 403 is returned if the request has an empty body.
+     * Error message: "Forbidden: Content type `text/plain` is not supported."
+     * Workaround: send this in the body
+     * {
+     *   "notrigger": 0
+     * }
+     */
+    public function validateShipment($id, $notrigger = 0)
+    {
+        if (!DolibarrApiAccess::$user->rights->expedition->creer) {
+            throw new RestException(401);
+        }
+        $result = $this->shipment->fetch($id);
+        if (!$result) {
+            throw new RestException(404, 'Shipment not found');
+        }
+
+        if (!DolibarrApi::_checkAccessToResource('expedition', $this->shipment->id)) {
+            throw new RestException(401, 'Access not allowed for login '.DolibarrApiAccess::$user->login);
+        }
+
+        $result = $this->shipment->valid(DolibarrApiAccess::$user, $notrigger);
+        if ($result == 0) {
+            throw new RestException(304, 'Error nothing done. May be object is already validated');
+        }
+        if ($result < 0) {
+            throw new RestException(500, 'Error when validating Shipment: '.$this->shipment->error);
+        }
+        $result = $this->shipment->fetch($id);
+        if (!$result) {
+            throw new RestException(404, 'Shipment not found');
+        }
+
+        if (!DolibarrApi::_checkAccessToResource('expedition', $this->shipment->id)) {
+            throw new RestException(401, 'Access not allowed for login '.DolibarrApiAccess::$user->login);
+        }
+
+        $this->shipment->fetchObjectLinked();
+        return $this->_cleanObjectDatas($this->shipment);
+    }
 	
 	
 	/**
@@ -1251,29 +2292,67 @@ class IStockApi extends DolibarrApi
 					$sql_.= ", p.weight, p.weight_units, p.length, p.length_units, p.surface, p.surface_units, p.volume, p.volume_units, p.tobatch as product_tobatch";
 					$sql_.= " FROM llx_expeditiondet as ed, llx_commandedet as cd";
 					$sql_.= " LEFT JOIN llx_product as p ON p.rowid = cd.fk_product";
-					$sql_.= " WHERE ed.fk_expedition = ".$id;
+					$sql_.= " WHERE ed.fk_expedition = ".$row["rowid"];
 					$sql_.= " AND ed.fk_origin_line = cd.rowid";
 					$sql_.= " ORDER BY cd.rang, ed.fk_origin_line";
 					
+					//print("<pre>".print_r($sql_,true)."</pre>");
+					//die();
+					
 					$res = $this->db->query($sql_);
-					if($this->db->num_rows($res)){
+					if($this->db->num_rows($res) > 0){
 						
 						$lines = array();
+						$tmp_lines_batch = array();
 						$index_=0;
 						while($row_ = $this->db->fetch_array($sql_)){ 
 							
-							$lines[$index_]["rowid"] 		= $row_["line_id"];
-							$lines[$index_]["origin_line_id"]= $row_["fk_origin_line"];
-							$lines[$index_]["fk_expedition"] = $id;
-							$lines[$index_]["entrepot_id"] 	= $row_["fk_entrepot"];
-							$lines[$index_]["qty_asked"] 	= $row_["qty_asked"];
-							$lines[$index_]["qty_shipped"] 	= $row_["qty_shipped"];
+							$lines[$index_]["rowid"] 			= $row_["line_id"];
+							$lines[$index_]["origin_line_id"]	= $row_["fk_origin_line"];
+							$lines[$index_]["fk_expedition"] 	= $row["rowid"];
+							$lines[$index_]["entrepot_id"] 		= $row_["fk_entrepot"];
+							$lines[$index_]["qty_asked"] 		= $row_["qty_asked"];
+							$lines[$index_]["qty_shipped"] 		= $row_["qty_shipped"];
 							$lines[$index_]["rang"] 			= $row_["rang"];
+							
+							$ii["index"] = $index_;
+							$ii["rowid"] = $lines[$index_]["rowid"];
+							$tmp_lines_batch[] = $ii;
 							
 							//print("<pre>".print_r($lines,true)."</pre>");
 							
 							$index_++;
 						}
+						
+						
+						
+						// check and get detail_batch
+						$myIndex = 0;
+						$cpt = count($tmp_lines_batch);
+						while($myIndex < $cpt){
+							$sql__ = "SELECT rowid, fk_expeditiondet, eatby, sellby, batch, qty, fk_origin_stock";
+							$sql__.= " FROM llx_expeditiondet_batch";
+							$sql__.= " WHERE fk_expeditiondet = ".$tmp_lines_batch[$myIndex]["rowid"];
+							
+							$res__ = $this->db->query($sql__);
+							if($this->db->num_rows($res__) > 0){
+								
+								while($row__ = $this->db->fetch_array($sql__)){
+									
+									$detail_batch["rowid"] 			= $row__["rowid"];
+									$detail_batch["fk_expeditiondet"] = $row__["fk_expeditiondet"];
+									$detail_batch["eatby"] 			= $row__["eatby"];
+									$detail_batch["sellby"] 			= $row__["sellby"];
+									$detail_batch["batch"] 			= $row__["batch"];
+									$detail_batch["qty"] 				= $row__["qty"];
+									$detail_batch["fk_origin_stock"] 	= $row__["fk_origin_stock"];
+									
+									$lines[$tmp_lines_batch[$myIndex]["index"]]["detail_batch"][] = $detail_batch;
+								}
+							}
+							$myIndex++;
+						}
+						
 						
 						$obj_ret[$index]["lines"] = $lines;
 					}else{
@@ -1281,8 +2360,6 @@ class IStockApi extends DolibarrApi
 						$obj_ret[$index]["lines"] = [];
 					}
 					
-					// Get shipment lines
-					//$obj_ret[$index]["lines"] = $this->getShipmentLines($row["rowid"]);
 					
 					$index++;
 				}
@@ -1290,7 +2367,7 @@ class IStockApi extends DolibarrApi
 				return array(
 					'success' => array(
 						'code' => 200,
-						'message' => "Delivery for order id '$origin_id' found, with ".($index+1)." Delivery/Deliveries)",
+						'message' => "Delivery for order id '$origin_id' found, with ".($index)." Delivery/Deliveries)",
 						'data' => $obj_ret
 					)
 				);
@@ -1319,85 +2396,175 @@ class IStockApi extends DolibarrApi
 	}
 	
 	
+	
 	/**
-     * Get Shipment Lines by shipment id
+     * Get Shipments by origin id
      *
-     * @param string	       $id	        Shipment id
+     * @param string	       $origin_id	        Shipment order id
      * @return  array 
      *
-     * @url	GET shipment/{id}/lines
      */
-	public function getShipmentLines($id){
-		/*
+	private function shipmentOfOrders_v2($origin_id){
+		
 		// Check parameters
-		if (empty($id)){
+		if (empty($origin_id)){
 			return -1;
 		}
 		
 		global $conf;
 		
-		$lines = null;
+		$obj_ret = null;
 		
-		$sql_ = "SELECT cd.rowid, cd.fk_product, cd.label as custom_label, cd.description, cd.qty as qty_asked, cd.product_type";
-		$sql_.= ", cd.total_ht, cd.total_localtax1, cd.total_localtax2, cd.total_ttc, cd.total_tva";
-		$sql_.= ", cd.vat_src_code, cd.tva_tx, cd.localtax1_tx, cd.localtax2_tx, cd.localtax1_type, cd.localtax2_type, cd.info_bits, cd.price, cd.subprice, cd.remise_percent,cd.buy_price_ht as pa_ht";
-		$sql_.= ", cd.fk_multicurrency, cd.multicurrency_code, cd.multicurrency_subprice, cd.multicurrency_total_ht, cd.multicurrency_total_tva, cd.multicurrency_total_ttc, cd.rang";
-		$sql_.= ", ed.rowid as line_id, ed.qty as qty_shipped, ed.fk_origin_line, ed.fk_entrepot";
-		$sql_.= ", p.ref as product_ref, p.label as product_label, p.fk_product_type";
-		$sql_.= ", p.weight, p.weight_units, p.length, p.length_units, p.surface, p.surface_units, p.volume, p.volume_units, p.tobatch as product_tobatch";
-		$sql_.= " FROM llx_expeditiondet as ed, llx_commandedet as cd";
-		$sql_.= " LEFT JOIN llx_product as p ON p.rowid = cd.fk_product";
-		$sql_.= " WHERE ed.fk_expedition = ".$id;
-		$sql_.= " AND ed.fk_origin_line = cd.rowid";
-		$sql_.= " ORDER BY cd.rang, ed.fk_origin_line";
+		$sql = "SELECT e.rowid, e.ref, e.fk_soc as socid, e.date_creation, e.ref_customer, e.ref_ext, e.ref_int, e.fk_user_author, e.fk_statut, e.fk_projet as fk_project, e.billed, ";
+		$sql.= "e.date_valid, e.weight, e.weight_units, e.size, e.size_units, e.width, e.height, ";
+		$sql.= "e.date_expedition as date_expedition, e.model_pdf, e.fk_address, e.date_delivery, ";
+		$sql.= "e.fk_shipping_method, e.tracking_number, e.note_private, e.note_public, ";
+		$sql.= "e.fk_incoterms, e.location_incoterms, i.libelle as label_incoterms, ";
+		$sql.= "s.libelle as shipping_method, el.fk_source as origin_id, el.sourcetype as origin ";
+		$sql.= "FROM llx_expedition as e ";
+		$sql.= "LEFT JOIN llx_element_element as el ON el.fk_target = e.rowid AND el.targettype = 'shipping' ";
+		$sql.= "LEFT JOIN llx_c_incoterms as i ON e.fk_incoterms = i.rowid ";
+		$sql.= "LEFT JOIN llx_c_shipment_mode as s ON e.fk_shipping_method = s.rowid ";
+		$sql.= "WHERE e.entity IN (1) AND el.fk_source=$origin_id";
 		
-		$result_ = $this->db->query($sql_);
-		if ($result_)
+		$result = $this->db->query($sql);
+		if ($result)
 		{
-			if ($this->db->num_rows($result_) > 0)
+			if ($this->db->num_rows($result))
 			{
-				$index_=0;
-				$lines = array();
+				$index=0;
+				$obj_ret = array();
 				
-				while($row_ = $this->db->fetch_array($sql_)){ 
+				while($row = $this->db->fetch_array($sql)){
+					//print("<pre>".print_r($row,true)."</pre>");
 					
-					$lines[$index_]["rowid"] 		= $row_["line_id"];
-					$lines[$index_]["origin_line_id"]= $row_["fk_origin_line"];
-					$lines[$index_]["fk_expedition"] = $id;
-					$lines[$index_]["entrepot_id"] 	= $row_["fk_entrepot"];
-					$lines[$index_]["qty_asked"] 	= $row_["qty_asked"];
-					$lines[$index_]["qty_shipped"] 	= $row_["qty_shipped"];
-					$lines[$index_]["rang"] 			= $row_["rang"];
+					$obj_ret[$index]["rowid"] 				= $row["rowid"];
+					$obj_ret[$index]["ref"] 				= $row["ref"];
+					$obj_ret[$index]["socid"] 				= $row["socid"];
+					$obj_ret[$index]["date_creation"] 		= $row["date_creation"];
+					$obj_ret[$index]["ref_customer"] 		= $row["ref_customer"];
+					$obj_ret[$index]["ref_ext"] 			= $row["ref_ext"];
+					$obj_ret[$index]["ref_int"] 			= $row["ref_int"];
+					$obj_ret[$index]["fk_user_author"] 		= $row["fk_user_author"];
+					$obj_ret[$index]["fk_statut"] 			= $row["fk_statut"];
+					$obj_ret[$index]["fk_project"] 			= $row["fk_project"];
+					$obj_ret[$index]["billed"] 				= $row["billed"];
+					$obj_ret[$index]["date_valid"] 			= $row["date_valid"];
+					$obj_ret[$index]["weight"] 				= $row["weight"];
+					$obj_ret[$index]["weight_units"] 		= $row["weight_units"];
+					$obj_ret[$index]["size"] 				= $row["size"];
+					$obj_ret[$index]["size_units"] 			= $row["size_units"];
+					$obj_ret[$index]["width"] 				= $row["width"];
+					$obj_ret[$index]["height"] 				= $row["height"];
+					$obj_ret[$index]["date_expedition"] 	= $row["date_expedition"];
+					$obj_ret[$index]["model_pdf"] 			= $row["model_pdf"];
+					$obj_ret[$index]["fk_address"] 			= $row["fk_address"];
+					$obj_ret[$index]["date_delivery"] 		= $row["date_delivery"];
+					$obj_ret[$index]["fk_shipping_method"] 	= $row["fk_shipping_method"];
+					$obj_ret[$index]["tracking_number"] 	= $row["tracking_number"];
+					$obj_ret[$index]["note_private"] 		= $row["note_private"];
+					$obj_ret[$index]["note_public"] 		= $row["note_public"];
+					$obj_ret[$index]["fk_incoterms"] 		= $row["fk_incoterms"];
+					$obj_ret[$index]["location_incoterms"] 	= $row["location_incoterms"];
+					$obj_ret[$index]["label_incoterms"] 	= $row["label_incoterms"];
+					$obj_ret[$index]["shipping_method"] 	= $row["shipping_method"];
+					$obj_ret[$index]["origin_id"] 			= $row["origin_id"];
+					$obj_ret[$index]["origin"] 				= $row["origin"];
 					
-					//print("<pre>".print_r($lines,true)."</pre>");
+					// Get lines
+					$sql_ = "SELECT cd.rowid, cd.fk_product, cd.label as custom_label, cd.description, cd.qty as qty_asked, cd.product_type";
+					$sql_.= ", cd.total_ht, cd.total_localtax1, cd.total_localtax2, cd.total_ttc, cd.total_tva";
+					$sql_.= ", cd.vat_src_code, cd.tva_tx, cd.localtax1_tx, cd.localtax2_tx, cd.localtax1_type, cd.localtax2_type, cd.info_bits, cd.price, cd.subprice, cd.remise_percent,cd.buy_price_ht as pa_ht";
+					$sql_.= ", cd.fk_multicurrency, cd.multicurrency_code, cd.multicurrency_subprice, cd.multicurrency_total_ht, cd.multicurrency_total_tva, cd.multicurrency_total_ttc, cd.rang";
+					$sql_.= ", ed.rowid as line_id, ed.qty as qty_shipped, ed.fk_origin_line, ed.fk_entrepot";
+					$sql_.= ", p.ref as product_ref, p.label as product_label, p.fk_product_type";
+					$sql_.= ", p.weight, p.weight_units, p.length, p.length_units, p.surface, p.surface_units, p.volume, p.volume_units, p.tobatch as product_tobatch";
+					$sql_.= " FROM llx_expeditiondet as ed, llx_commandedet as cd";
+					$sql_.= " LEFT JOIN llx_product as p ON p.rowid = cd.fk_product";
+					$sql_.= " WHERE ed.fk_expedition = ".$row["rowid"];
+					$sql_.= " AND ed.fk_origin_line = cd.rowid";
+					$sql_.= " ORDER BY cd.rang, ed.fk_origin_line";
 					
-					$index_++;
+					$res = $this->db->query($sql_);
+					if($this->db->num_rows($res)){
+						
+						$lines = array();
+						$index_=0;
+						while($row_ = $this->db->fetch_array($sql_)){ 
+							
+							$lines[$index_]["rowid"] 		= $row_["line_id"];
+							$lines[$index_]["origin_line_id"]= $row_["fk_origin_line"];
+							$lines[$index_]["fk_expedition"] = $row["rowid"];
+							$lines[$index_]["entrepot_id"] 	= $row_["fk_entrepot"];
+							$lines[$index_]["qty_asked"] 	= $row_["qty_asked"];
+							$lines[$index_]["qty_shipped"] 	= $row_["qty_shipped"];
+							$lines[$index_]["rang"] 			= $row_["rang"];
+							
+							//print("<pre>".print_r($lines,true)."</pre>");
+							
+							$index_++;
+						}
+						
+						$obj_ret[$index]["lines"] = $lines;
+					}else{
+						
+						$obj_ret[$index]["lines"] = [];
+					}
+					
+					// Get shipment lines
+					//$obj_ret[$index]["lines"] = $this->getShipmentLines($row["rowid"]);
+					
+					$index++;
 				}
 				
-				//print("<pre>".print_r($lines,true)."</pre>");
-				return array('linnesss' => $lines);
-			}
-			else
-			{
-				return array('linnesss' => "nothing");
+				return $obj_ret;
 			}
 		}
-		else
-		{
-			return array(
-				'error' => array(
-					'code' => 500,
-					'message' => $this->db->error(),
-					'data' => $lines
-				)
-			);
-		}
-		*/
+		
+		return $obj_ret;
 	}
 	
 	
-	/*##########################################################################################################################*/
+	#endregion
+	
+	
+	/**
+	 * Clean sensible object datas
+	 *
+	 * @param   object  $object    Object to clean
+	 * @return    array    Array of cleaned object properties
+	 */
+	protected function _cleanObjectDatasCompany($object)
+    {
+        // phpcs:enable
+		$object = parent::_cleanObjectDatasCompany($object);
 
+		unset($object->nom); // ->name already defined and nom deprecated
+		unset($object->name_bis); // ->name_alias already defined
+		unset($object->note); // ->note_private and note_public already defined
+		unset($object->departement);
+		unset($object->departement_code);
+		unset($object->pays);
+		unset($object->particulier);
+		unset($object->prefix_comm);
+
+		unset($object->commercial_id); // This property is used in create/update only. It does not exists in read mode because there is several sales representatives.
+
+		unset($object->total_ht);
+		unset($object->total_tva);
+		unset($object->total_localtax1);
+		unset($object->total_localtax2);
+		unset($object->total_ttc);
+
+		unset($object->lines);
+		unset($object->thirdparty);
+
+		unset($object->fk_delivery_address); // deprecated feature
+
+		return $object;
+	}
+	
+	
 
     // phpcs:disable PEAR.NamingConventions.ValidFunctionName.PublicUnderscore
     /**

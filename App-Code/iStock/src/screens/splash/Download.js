@@ -217,7 +217,7 @@ class Download extends Component {
     });
     res.push(res6);
     currentStep++;
-*/
+
 
     // 7 // Get all warehouse lines from server
     setTimeout(() => {
@@ -235,7 +235,7 @@ class Download extends Component {
     });
     res.push(res7);
     currentStep++;
-    
+    */
 
     // 8 // Get all shipments and shipment lines from server
     setTimeout(() => {

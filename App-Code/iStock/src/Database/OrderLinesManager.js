@@ -243,7 +243,7 @@ class OrderLinesManager extends Component {
                             row.prepare_shipping_qty = (row.prepare_shipping_qty == null ? 0 : row.prepare_shipping_qty);
                             lines.push(row);
                         }
-                        console.log(lines);
+                        // console.log(lines);
                         await resolve(lines);
                     });
                 });

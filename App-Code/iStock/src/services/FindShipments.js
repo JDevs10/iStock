@@ -6,6 +6,7 @@ import ShipmentsLinesManager from '../Database/ShipmentLinesManager';
 import CheckConnections from '../services/CheckConnections';
 import SettingsManager from '../Database/SettingsManager';
 import DefaultSettings from '../utilities/DefaultSettings';
+import ShipmentLineDetailBatchManager from '../Database/ShipmentLineDetailBatchManager';
 
 const LIMIT = "20"; //Limite of orders in each page
 const DEFAULT_SETTINGS = new DefaultSettings();
@@ -29,7 +30,6 @@ class FindShipments extends Component {
       return false;
     }
 
-    return;
 
     // Limit of Shipments downloaded
     const settingsManager = new SettingsManager();
@@ -55,6 +55,10 @@ class FindShipments extends Component {
     const shipmentsLinesManager = new ShipmentsLinesManager();
     await shipmentsLinesManager.initDB();
     await shipmentsLinesManager.CREATE_SHIPMENT_LINES_TABLE();
+
+    const shipmentLineDetailBatchManager = new ShipmentLineDetailBatchManager();
+    await shipmentLineDetailBatchManager.initDB();
+    await shipmentLineDetailBatchManager.CREATE_SHIPMENT_LINE_DETAIL_BATCH_TABLE();
 
     return true;
     

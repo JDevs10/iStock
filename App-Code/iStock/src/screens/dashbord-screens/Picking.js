@@ -14,6 +14,7 @@ import { checkObjExistInDetailBatchList, checkObjExistInSelectedProductWarehouse
 import ShipmentsManager from '../../Database/ShipmentsManager';
 import ShipmentLinesManager from '../../Database/ShipmentLinesManager';
 import ShipmentLineDetailBatchManager from '../../Database/ShipmentLineDetailBatchManager';
+import Toast from 'react-native-simple-toast';
 
 
 // create a component
@@ -233,10 +234,123 @@ class Picking extends Component {
         this.setState(state);
     }
 
+    add_100_ToTextInput(item) {
+        const ADD = 100;
+        if( item.qty >= (item.prepare_shipping_qty + ADD)){
+            let isBatchMax = false;
 
+            //check && update lot list
+            const state = this.state;
+            item.productLotDlcDluoData.forEach((_item_, _index_) => {
+                if(state.lastSelectedProductBatch == _item_.batch && _item_.prepare == _item_.stock){
+                    isBatchMax = true;
+                    return;
+                }
+
+                if(state.lastSelectedProductBatch == _item_.batch && (_item_.prepare + ADD) <= _item_.stock){
+                    _item_.prepare = _item_.prepare + ADD;
+                }
+            });
+
+            // check if lot item stock is max with detail batch stock
+            if(!isBatchMax){
+
+                //check && update lot list
+                state.pickingDataSelected.product.selectedProductWarehouse.forEach((_item_, _index_) => {
+                    if(state.lastSelectedProductBatch == _item_.batch && (_item_.qty + ADD) <= _item_.stock){
+                        _item_.qty = _item_.qty + ADD;
+                    }
+                });
+
+                console.log("item.selectedProductWarehouse :=> ", state.pickingDataSelected.product.selectedProductWarehouse);
+
+                state.addRemoveNothing = item.prepare_shipping_qty + ADD
+                this.setState(state);
+
+                item.prepare_shipping_qty = (item.prepare_shipping_qty == null ? 0 : item.prepare_shipping_qty) + ADD;
+                console.log("add :=> "+item.prepare_shipping_qty);
+            }
+        }
+    }
+    add_50_ToTextInput(item) {
+        const ADD = 50;
+        if( item.qty >= (item.prepare_shipping_qty + ADD)){
+            let isBatchMax = false;
+
+            //check && update lot list
+            const state = this.state;
+            item.productLotDlcDluoData.forEach((_item_, _index_) => {
+                if(state.lastSelectedProductBatch == _item_.batch && _item_.prepare == _item_.stock){
+                    isBatchMax = true;
+                    return;
+                }
+
+                if(state.lastSelectedProductBatch == _item_.batch && (_item_.prepare + ADD) <= _item_.stock){
+                    _item_.prepare = _item_.prepare + ADD;
+                }
+            });
+
+            // check if lot item stock is max with detail batch stock
+            if(!isBatchMax){
+
+                //check && update lot list
+                state.pickingDataSelected.product.selectedProductWarehouse.forEach((_item_, _index_) => {
+                    if(state.lastSelectedProductBatch == _item_.batch && (_item_.qty + ADD) <= _item_.stock){
+                        _item_.qty = _item_.qty + ADD;
+                    }
+                });
+
+                console.log("item.selectedProductWarehouse :=> ", state.pickingDataSelected.product.selectedProductWarehouse);
+
+                state.addRemoveNothing = item.prepare_shipping_qty + ADD
+                this.setState(state);
+
+                item.prepare_shipping_qty = (item.prepare_shipping_qty == null ? 0 : item.prepare_shipping_qty) + ADD;
+                console.log("add :=> "+item.prepare_shipping_qty);
+            }
+        }
+    }
+    add_10_ToTextInput(item) {
+        const ADD = 10;
+        if( item.qty >= (item.prepare_shipping_qty + ADD)){
+            let isBatchMax = false;
+
+            //check && update lot list
+            const state = this.state;
+            item.productLotDlcDluoData.forEach((_item_, _index_) => {
+                if(state.lastSelectedProductBatch == _item_.batch && _item_.prepare == _item_.stock){
+                    isBatchMax = true;
+                    return;
+                }
+
+                if(state.lastSelectedProductBatch == _item_.batch && (_item_.prepare + ADD) <= _item_.stock){
+                    _item_.prepare = _item_.prepare + ADD;
+                }
+            });
+
+            // check if lot item stock is max with detail batch stock
+            if(!isBatchMax){
+
+                //check && update lot list
+                state.pickingDataSelected.product.selectedProductWarehouse.forEach((_item_, _index_) => {
+                    if(state.lastSelectedProductBatch == _item_.batch && (_item_.qty + ADD) <= _item_.stock){
+                        _item_.qty = _item_.qty + ADD;
+                    }
+                });
+
+                console.log("item.selectedProductWarehouse :=> ", state.pickingDataSelected.product.selectedProductWarehouse);
+
+                state.addRemoveNothing = item.prepare_shipping_qty + ADD
+                this.setState(state);
+
+                item.prepare_shipping_qty = (item.prepare_shipping_qty == null ? 0 : item.prepare_shipping_qty) + ADD;
+                console.log("add :=> "+item.prepare_shipping_qty);
+            }
+        }
+    }
     add_1_ToTextInput(item) {
-        if( item.qty >= (item.prepare_shipping_qty + 1)){
-            const ADD = 1;
+        const ADD = 1;
+        if( item.qty >= (item.prepare_shipping_qty + ADD)){
             let isBatchMax = false;
 
             //check && update lot list
@@ -273,8 +387,8 @@ class Picking extends Component {
         }
     }
     remove_1_ToTextInput(item) {
-        if((item.prepare_shipping_qty - 1) >= 0){
-            const ADD = 1;
+        const REMOVE = 1;
+        if((item.prepare_shipping_qty - REMOVE) >= 0){
             var isBatchMim = false;
 
             //check && update lot list
@@ -285,8 +399,8 @@ class Picking extends Component {
                     return;
                 }
 
-                if(state.lastSelectedProductBatch == _item_.batch && (_item_.prepare - ADD) >= 0){
-                    _item_.prepare = _item_.prepare - ADD;
+                if(state.lastSelectedProductBatch == _item_.batch && (_item_.prepare - REMOVE) >= 0){
+                    _item_.prepare = _item_.prepare - REMOVE;
                 }
             });
 
@@ -296,18 +410,159 @@ class Picking extends Component {
 
                 //check && update lot list
                 state.pickingDataSelected.product.selectedProductWarehouse.forEach((_item_, _index_) => {
-                    if(state.lastSelectedProductBatch == _item_.batch && (_item_.qty - ADD) >= 0){
-                        _item_.qty = _item_.qty - ADD;
+                    if(state.lastSelectedProductBatch == _item_.batch && (_item_.qty - REMOVE) >= 0){
+                        _item_.qty = _item_.qty - REMOVE;
                     }
                 });
 
                 console.log("item.selectedProductWarehouse :=> ", state.pickingDataSelected.product.selectedProductWarehouse);
 
-                state.addRemoveNothing = item.prepare_shipping_qty - ADD
+                state.addRemoveNothing = item.prepare_shipping_qty - REMOVE
                 this.setState(state);
 
-                item.prepare_shipping_qty = (item.prepare_shipping_qty == null ? 0 : item.prepare_shipping_qty) - ADD;
-                console.log("add :=> "+item.prepare_shipping_qty);
+                item.prepare_shipping_qty = (item.prepare_shipping_qty == null ? 0 : item.prepare_shipping_qty) - REMOVE;
+                console.log("REMOVE :=> "+item.prepare_shipping_qty);
+            }
+            else{
+
+                //check if contains in selectedProductWarehouse list
+                const newList = state.pickingDataSelected.product.selectedProductWarehouse.filter(p => p.batch != state.lastSelectedProductBatch);
+                state.pickingDataSelected.product.selectedProductWarehouse = newList;
+                console.log("item.selectedProductWarehouse remove :=> ", state.pickingDataSelected.product.selectedProductWarehouse);
+                this.setState(state);
+            }
+        }
+    }
+    remove_10_ToTextInput(item) {
+        const REMOVE = 10;
+        if((item.prepare_shipping_qty - REMOVE) >= 0){
+            var isBatchMim = false;
+
+            //check && update lot list
+            const state = this.state;
+            item.productLotDlcDluoData.forEach((_item_, _index_) => {
+                if(state.lastSelectedProductBatch == _item_.batch && _item_.prepare == 0){
+                    isBatchMim = true;
+                    return;
+                }
+
+                if(state.lastSelectedProductBatch == _item_.batch && (_item_.prepare - REMOVE) >= 0){
+                    _item_.prepare = _item_.prepare - REMOVE;
+                }
+            });
+
+            // check if lot item stock is max with detail batch stock
+            console.log("isBatchMim :=> ",isBatchMim);
+            if(!isBatchMim){
+
+                //check && update lot list
+                state.pickingDataSelected.product.selectedProductWarehouse.forEach((_item_, _index_) => {
+                    if(state.lastSelectedProductBatch == _item_.batch && (_item_.qty - REMOVE) >= 0){
+                        _item_.qty = _item_.qty - REMOVE;
+                    }
+                });
+
+                console.log("item.selectedProductWarehouse :=> ", state.pickingDataSelected.product.selectedProductWarehouse);
+
+                state.addRemoveNothing = item.prepare_shipping_qty - REMOVE
+                this.setState(state);
+
+                item.prepare_shipping_qty = (item.prepare_shipping_qty == null ? 0 : item.prepare_shipping_qty) - REMOVE;
+                console.log("REMOVE :=> "+item.prepare_shipping_qty);
+            }
+            else{
+
+                //check if contains in selectedProductWarehouse list
+                const newList = state.pickingDataSelected.product.selectedProductWarehouse.filter(p => p.batch != state.lastSelectedProductBatch);
+                state.pickingDataSelected.product.selectedProductWarehouse = newList;
+                console.log("item.selectedProductWarehouse remove :=> ", state.pickingDataSelected.product.selectedProductWarehouse);
+                this.setState(state);
+            }
+        }
+    }
+    remove_50_ToTextInput(item) {
+        const REMOVE = 50;
+        if((item.prepare_shipping_qty - REMOVE) >= 0){
+            var isBatchMim = false;
+
+            //check && update lot list
+            const state = this.state;
+            item.productLotDlcDluoData.forEach((_item_, _index_) => {
+                if(state.lastSelectedProductBatch == _item_.batch && _item_.prepare == 0){
+                    isBatchMim = true;
+                    return;
+                }
+
+                if(state.lastSelectedProductBatch == _item_.batch && (_item_.prepare - REMOVE) >= 0){
+                    _item_.prepare = _item_.prepare - REMOVE;
+                }
+            });
+
+            // check if lot item stock is max with detail batch stock
+            console.log("isBatchMim :=> ",isBatchMim);
+            if(!isBatchMim){
+
+                //check && update lot list
+                state.pickingDataSelected.product.selectedProductWarehouse.forEach((_item_, _index_) => {
+                    if(state.lastSelectedProductBatch == _item_.batch && (_item_.qty - REMOVE) >= 0){
+                        _item_.qty = _item_.qty - REMOVE;
+                    }
+                });
+
+                console.log("item.selectedProductWarehouse :=> ", state.pickingDataSelected.product.selectedProductWarehouse);
+
+                state.addRemoveNothing = item.prepare_shipping_qty - REMOVE
+                this.setState(state);
+
+                item.prepare_shipping_qty = (item.prepare_shipping_qty == null ? 0 : item.prepare_shipping_qty) - REMOVE;
+                console.log("REMOVE :=> "+item.prepare_shipping_qty);
+            }
+            else{
+
+                //check if contains in selectedProductWarehouse list
+                const newList = state.pickingDataSelected.product.selectedProductWarehouse.filter(p => p.batch != state.lastSelectedProductBatch);
+                state.pickingDataSelected.product.selectedProductWarehouse = newList;
+                console.log("item.selectedProductWarehouse remove :=> ", state.pickingDataSelected.product.selectedProductWarehouse);
+                this.setState(state);
+            }
+        }
+    }
+    remove_100_ToTextInput(item) {
+        const REMOVE = 100;
+        if((item.prepare_shipping_qty - REMOVE) >= 0){
+            var isBatchMim = false;
+
+            //check && update lot list
+            const state = this.state;
+            item.productLotDlcDluoData.forEach((_item_, _index_) => {
+                if(state.lastSelectedProductBatch == _item_.batch && _item_.prepare == 0){
+                    isBatchMim = true;
+                    return;
+                }
+
+                if(state.lastSelectedProductBatch == _item_.batch && (_item_.prepare - REMOVE) >= 0){
+                    _item_.prepare = _item_.prepare - REMOVE;
+                }
+            });
+
+            // check if lot item stock is max with detail batch stock
+            console.log("isBatchMim :=> ",isBatchMim);
+            if(!isBatchMim){
+
+                //check && update lot list
+                state.pickingDataSelected.product.selectedProductWarehouse.forEach((_item_, _index_) => {
+                    if(state.lastSelectedProductBatch == _item_.batch && (_item_.qty - REMOVE) >= 0){
+                        _item_.qty = _item_.qty - REMOVE;
+                    }
+                });
+
+                console.log("item.selectedProductWarehouse :=> ", state.pickingDataSelected.product.selectedProductWarehouse);
+
+                state.addRemoveNothing = item.prepare_shipping_qty - REMOVE
+                this.setState(state);
+
+                item.prepare_shipping_qty = (item.prepare_shipping_qty == null ? 0 : item.prepare_shipping_qty) - REMOVE;
+                console.log("REMOVE :=> "+item.prepare_shipping_qty);
             }
             else{
 
@@ -461,9 +716,11 @@ class Picking extends Component {
 
 
                 if(isShipment_ && isShipmentLines_){
-                    alert("Expédition créé !");
+                    // alert("Expédition créé !");
+                    Toast.showWithGravity('Expédition créé !', Toast.LONG, Toast.TOP);
                 }else{
-                    alert("Expédition non créé !");
+                    // alert("Expédition non créé !");
+                    Toast.showWithGravity('Expédition non créé !', Toast.LONG, Toast.TOP);
                 }
             }
             else{
@@ -556,9 +813,11 @@ class Picking extends Component {
                     });
                     
                     if(isShipmentLines_){
-                        alert("Produit ajouté dans l'expédition !");
+                        // alert("Produit ajouté dans l'expédition !");
+                        Toast.showWithGravity("Produit ajouté dans l'expédition !", Toast.LONG, Toast.TOP);
                     }else{
-                        alert("Produit non ajouté dans l'expédition !");
+                        // alert("Produit non ajouté dans l'expédition !");
+                        Toast.showWithGravity("Produit non ajouté dans l'expédition !", Toast.LONG, Toast.TOP);
                     }
 
                 }
@@ -577,22 +836,6 @@ class Picking extends Component {
                     const isRemoveShipmentLines = await slm.DELETE_SHIPMENT_LINES_BY_ORIGIN_LINE_ID(product.order_line_id).then(async (val) => {
                         return await val;
                     });
-
-
-
-                    // const jj = await sldbm.GET_SHIPMENT_LINE_DETAIL_BATCH_BY_FK_PRODUCT(product.product_id).then(async (val) => {
-                    //     return await val;
-                    // });
-
-                    // const kk = await slm.GET_SHIPMENT_LINE_BY_ORIGIN_LINE_ID(product.order_line_id).then(async (val) => {
-                    //     return await val;
-                    // });
-
-
-                    // console.log("============================================> ", jj.length, kk.length);
-                    // return;
-
-                    // return;
 
                     //insert shipment lines of each different detail batch entrepot_id
                     const numberOfLines = [];
@@ -671,9 +914,9 @@ class Picking extends Component {
 
 
                     if(isShipmentLines_){
-                        alert("Produit mit à jour dans l'expédition !");
+                        Toast.showWithGravity("Produit mit à jour dans l'expédition !", Toast.LONG, Toast.TOP);
                     }else{
-                        alert("Produit non à jour dans l'expédition !");
+                        Toast.showWithGravity("Produit non à jour dans l'expédition !", Toast.LONG, Toast.TOP);
                     }
 
                 }
@@ -830,9 +1073,9 @@ class Picking extends Component {
                                                 borderRadius: 2,}}>
                                             {this.state.pickingDataSelected.product.productLotDlcDluoData.map((item, index) => (
                                                 <View key={index}>
-                                                    {item.entrepot == "null" || item.batch == "null" || item.eatby == "null" || item.sellby == "null" || item.stock == "null" ? 
+                                                    {/* {item.entrepot == "null" || item.batch == "null" || item.eatby == "null" || item.sellby == "null" || item.stock == "null" ? 
                                                         null
-                                                    :
+                                                    : */}
                                                         <TouchableOpacity
                                                             style={[{
                                                                 borderWidth: 2,
@@ -872,7 +1115,7 @@ class Picking extends Component {
                                                                 </View>
                                                             
                                                         </TouchableOpacity>
-                                                    }
+                                                     {/* } */}
                                                 </View>
                                             ))}
                                         </ScrollView>
@@ -899,9 +1142,10 @@ class Picking extends Component {
                                     </CardView>
                                 }
 
+                            </ScrollView>
 
-                                {this.state.isShowNextPick ? 
-                                    <View style={{width: "100%",}}>
+                            {this.state.isShowNextPick ? 
+                                    <View style={{width: "100%", marginBottom: 50}}>
 
                                         <View style={{flexDirection: "row", justifyContent: "center", alignItems: "center"}}>
                                             <TouchableOpacity
@@ -962,8 +1206,6 @@ class Picking extends Component {
                                 :
                                     null
                                 }
-                                
-                            </ScrollView>
 
                             {/* Main twist button */}
                             <PickingButton navigation={this.props.navigation} isPickingDone={this._onPickingDone.bind(this)}/>

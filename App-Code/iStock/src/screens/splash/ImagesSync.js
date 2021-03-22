@@ -6,6 +6,7 @@ import SettingsManager from '../../Database/SettingsManager';
 import Strings from "../../utilities/Strings";
 const STRINGS = new Strings();
 const BG = require('../../../img/waiting_bg.png');
+import { writeLog, LOG_TYPE } from '../../utilities/MyLogs';
 
 
 export default class ImagesSync extends Component {
@@ -17,15 +18,20 @@ export default class ImagesSync extends Component {
   }
 
   async componentDidMount(){
+    writeLog(LOG_TYPE.INFO, ImagesSync.name, this.componentDidMount.name, "Init...");
     await this.sync();
 
     this.listener = await this.props.navigation.addListener('focus', async () => {
+      writeLog(LOG_TYPE.INFO, ImagesSync.name, this.componentDidMount.name, "Back Init...");
+
       await this.sync();
       return;
     });
   }
 
   async sync(){
+    writeLog(LOG_TYPE.INFO, ImagesSync.name, this.sync.name, "Init, sync...");
+
     const settingsManager = new SettingsManager();
     await settingsManager.initDB();
     const settings = await settingsManager.GET_SETTINGS_BY_ID(1).then(async (val)=> {

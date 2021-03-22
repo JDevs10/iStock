@@ -25,6 +25,8 @@ const COLUMN_DESCRIPTION = "description";
 const COLUMN_EMPLACEMENT = "emplacement";
 const COLUMN_STOCK = "stock";
 const COLUMN_IMAGE = "image";
+const COLUMN_COLIS_QTY = "colis_qty";
+const COLUMN_PALETTE_QTY = "palette_qty";
 
 const create = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "(" +
     COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
@@ -35,7 +37,9 @@ const create = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "(" +
     COLUMN_DESCRIPTION + " VARCHAR(255)," +
     COLUMN_EMPLACEMENT + " VARCHAR(255)," +
     COLUMN_STOCK + " VARCHAR(255)," +
-    COLUMN_IMAGE + " VARCHAR(255)" +
+    COLUMN_IMAGE + " VARCHAR(255)," +
+    COLUMN_COLIS_QTY + " INTEGER(255)," +
+    COLUMN_PALETTE_QTY + " INTEGER(255)" +
 ")";
 
 
@@ -50,6 +54,8 @@ class ProductsManager extends Component {
     _COLUMN_EMPLACEMENT_ = COLUMN_EMPLACEMENT;
     _COLUMN_STOCK_ = COLUMN_STOCK;
     _COLUMN_IMAGE_ = COLUMN_IMAGE;
+    _COLUMN_COLIS_QTY_ = COLUMN_COLIS_QTY;
+    _COLUMN_PALETTE_QTY_ = COLUMN_PALETTE_QTY;
 
     //Init database
     async initDB() {
@@ -128,7 +134,7 @@ class ProductsManager extends Component {
                     // console.log("data_ : ", data_[x]);
 
                     await db.transaction(async (tx) => {
-                        await tx.executeSql("INSERT INTO " + TABLE_NAME + " ("+COLUMN_ID+", "+COLUMN_PRODUCT_ID+", "+COLUMN_REF+", "+COLUMN_LABEL+", "+COLUMN_CODEBARRE+", "+COLUMN_DESCRIPTION+", "+COLUMN_EMPLACEMENT+", "+COLUMN_STOCK+", "+COLUMN_IMAGE+") VALUES (NULL, "+data_[x].id+", '"+data_[x].ref+"', '"+data_[x].label.replace(/'/g, "''")+"', '"+(data_[x].barcode == null ? "" : data_[x].barcode)+"', "+(data_[x].description == null ? null : "'"+data_[x].description.replace(/'/g, "''")+"'" )+", '"+(data_[x].fk_default_warehouse == null ? "" : data_[x].fk_default_warehouse)+"', '"+data_[x].stock_reel+"', '"+data_[x].image+"')", []);
+                        await tx.executeSql("INSERT INTO " + TABLE_NAME + " ("+COLUMN_ID+", "+COLUMN_PRODUCT_ID+", "+COLUMN_REF+", "+COLUMN_LABEL+", "+COLUMN_CODEBARRE+", "+COLUMN_DESCRIPTION+", "+COLUMN_EMPLACEMENT+", "+COLUMN_STOCK+", "+COLUMN_IMAGE+", "+COLUMN_COLIS_QTY+", "+COLUMN_PALETTE_QTY+") VALUES (NULL, "+data_[x].id+", '"+data_[x].ref+"', '"+data_[x].label.replace(/'/g, "''")+"', '"+(data_[x].barcode == null ? "" : data_[x].barcode)+"', "+(data_[x].description == null ? null : "'"+data_[x].description.replace(/'/g, "''")+"'" )+", '"+(data_[x].fk_default_warehouse == null ? "" : data_[x].fk_default_warehouse)+"', '"+data_[x].stock_reel+"', '"+data_[x].image+"', "+(data_[x].array_options.options_colis_qty != null ? data_[x].array_options.options_colis_qty : 0)+", "+(data_[x].array_options.options_palette_qty != null ? data_[x].array_options.options_palette_qty : 0)+")", []);
                     });
 
                     if(data_[x].Lot_DLC_DLUO_Batch != null && data_[x].Lot_DLC_DLUO_Batch.length > 0){

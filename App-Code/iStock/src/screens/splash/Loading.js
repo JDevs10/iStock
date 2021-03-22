@@ -16,6 +16,7 @@ import CheckConnections from '../../services/CheckConnections';
 import Strings from "../../utilities/Strings";
 const STRINGS = new Strings();
 const BG = require('../../../img/waiting_bg.png');
+import { creatLogDir, writeLog } from '../../utilities/MyLogs';
 
 
 class Loading extends Component {
