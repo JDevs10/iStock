@@ -1,4 +1,4 @@
-package com.istock;
+package com.iStock;
 
 import com.facebook.react.ReactActivity;
 

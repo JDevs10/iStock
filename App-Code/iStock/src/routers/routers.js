@@ -7,6 +7,8 @@ import Loading from '../screens/splash/Loading';
 import Login from '../screens/login';
 import SignIn from '../screens/SignIn';
 import Download from '../screens/splash/Download';
+import DownloadIntern from '../screens/splash/DownloadIntern';
+import DownloadNew from '../screens/splash/DownloadNew';
 import Dashboard from '../screens/dashbord-screens/Dashboard';
 import Commande from '../screens/dashbord-screens/Commande';
 import CommandeDetails from '../screens/dashbord-screens/CommandeDetails';
@@ -24,7 +26,6 @@ import ProductSync from '../screens/splash/ProductSync';
 import ImagesSync from '../screens/splash/ImagesSync';
 import ShipmentsSync from '../screens/splash/ShipmentsSync';
 import WarehousesSync from '../screens/splash/WarehousesSync';
-import Scanner from '../screens/dashbord-screens/Scanner';
 import {DrawerContent} from '../screens/side-bar-custom/DrawerContent';
 
 
@@ -37,8 +38,10 @@ class RouterNavigation extends Component {
 
     function DrawerNavigation() {
       return (
-        <Drawer.Navigator drawerContent={props => <DrawerContent {...props} />} initialRouteName="Preparation">
+        <Drawer.Navigator drawerContent={props => <DrawerContent {...props} />} initialRouteName="Dashboard">
           <Drawer.Screen name="Dashboard" component={Dashboard} />
+          <Drawer.Screen name="DownloadIntern" component={DownloadIntern} />
+          <Drawer.Screen name="DownloadNew" component={DownloadNew} />
           <Drawer.Screen name="Commande" component={Commande} />
           <Drawer.Screen name="CommandeDetails" component={CommandeDetails} />
           <Drawer.Screen name="ProductDetails" component={ProductDetails} />
@@ -50,7 +53,6 @@ class RouterNavigation extends Component {
           <Drawer.Screen name="UsersSync" component={UsersSync} />
           <Drawer.Screen name="ShipmentsSync" component={ShipmentsSync} />
           <Drawer.Screen name="WarehousesSync" component={WarehousesSync} />
-          <Drawer.Screen name="Scanner" component={Scanner} />
           <Drawer.Screen name="Inventory" component={Inventory} />
           <Drawer.Screen name="Expeditions" component={Expeditions} />
           <Drawer.Screen name="Settings" component={Settings} />

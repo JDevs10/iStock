@@ -2,8 +2,7 @@ import React, { Component } from 'react';
 import { StyleSheet, View, Text, Image, Alert, StatusBar } from 'react-native';
 import TokenManager from '../../Database/TokenManager';
 import FindProduits from '../../services/FindProduits';
-import Strings from "../../utilities/Strings";
-const STRINGS = new Strings();
+import { STRINGS } from "../../utilities/STRINGS";
 const BG = require('../../../img/waiting_bg.png');
 
 
@@ -32,14 +31,11 @@ export default class ProductSync extends Component {
     });
 
     const findProduits = new FindProduits();
-    const res = await findProduits.getAllProductsFromServer(token).then(async (val) => {
-      console.log('findProduits.getAllProductsFromServer : ');
-      console.log(val);
+    const res = await findProduits.getAllLatestProductsFromServer(token).then(async (val) => {
       return val;
     });
     
     if(res){
-      console.log("Remove loading screen!");
       this.props.navigation.navigate("Dashboard");
     }else{
       Alert.alert(

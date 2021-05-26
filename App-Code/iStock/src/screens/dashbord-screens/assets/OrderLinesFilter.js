@@ -30,6 +30,7 @@ export default class OrderLinesFilter extends Component {
         });
     }
 
+
     cleanSearch(){
         this.setState({
             filterCMD: "",

@@ -5,8 +5,7 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import DeviceInfo from 'react-native-device-info';
 import SettingsManager from '../../../Database/SettingsManager';
-import Strings from "../../../utilities/Strings";
-const STRINGS = new Strings();
+import { STRINGS } from "../../../utilities/STRINGS";
 
 // Main bouton
 const MAIN_BTN_HEIGHT_TABLETTE = 125;
@@ -109,7 +108,7 @@ class SettingsDetailButton extends Component {
 
             const sm = new SettingsManager();
             await sm.initDB();
-            const res = await sm.UPDATE_SETTINGS(data).then(async (val) => {
+            const res = await sm.UPDATE_SETTINGS_CONFIG(data).then(async (val) => {
                 return await val;
             });
 

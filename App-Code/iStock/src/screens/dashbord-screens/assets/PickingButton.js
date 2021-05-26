@@ -3,8 +3,7 @@ import {StyleSheet, View, Text, Image, TouchableHighlight, Animated, Alert} from
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import DeviceInfo from 'react-native-device-info';
-import Strings from '../../../utilities/Strings';
-const STRINGS = new Strings();
+import { STRINGS } from '../../../utilities/STRINGS';
 
 // Main bouton
 const MAIN_BTN_HEIGHT_TABLETTE = 125;
@@ -14,10 +13,10 @@ const MAIN_BTN_BORDER_RADIUS_TABLETTE = 60;
 
 const MAIN_BTN_HEIGHT_PHONE = 75;
 const MAIN_BTN_WIDTH_PHONE = 75;
-const MAIN_BTN_POSITION_B_PHONE = -60;
+const MAIN_BTN_POSITION_B_PHONE = -40;
 const MAIN_BTN_BORDER_RADIUS_PHONE = 40;
 
-// Main bouton
+// Secondaries bouton
 const SECONDARY_BTN_HEIGHT_TABLETTE = 100;
 const SECONDARY_BTN_WIDTH_TABLETTE = 100;
 const SECONDARY_BTN_POSITION_B_TABLETTE = -80;
@@ -25,7 +24,7 @@ const SECONDARY_BTN_BORDER_RADIUS_TABLETTE = 50;
 
 const SECONDARY_BTN_HEIGHT_PHONE = 70;
 const SECONDARY_BTN_WIDTH_PHONE = 70;
-const SECONDARY_BTN_POSITION_B_PHONE = -60;
+const SECONDARY_BTN_POSITION_B_PHONE = -40;
 const SECONDARY_BTN_BORDER_RADIUS_PHONE = 40;
 
 

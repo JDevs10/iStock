@@ -3,8 +3,10 @@ import {StyleSheet, View, Text, Image, TouchableHighlight, Animated, Alert} from
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import DeviceInfo from 'react-native-device-info';
-import Strings from '../../../utilities/Strings';
-const STRINGS = new Strings();
+import { STRINGS } from '../../../utilities/STRINGS';
+import ProductsManager from '../../../Database/ProductsManager';
+import ProductsLotDlcDluoManager from '../../../Database/ProductsLotDlcDluoManager';
+
 
 // Main bouton
 const MAIN_BTN_HEIGHT_TABLETTE = 125;
@@ -82,7 +84,7 @@ export default class PreparationButton extends Component {
         this.setState({isFilter: !this.state.isFilter});
         //this.default__();
     }
-    action_3 = () => {
+    action_3 = async () => {
         console.log('action_3');
         //this.default__();
 

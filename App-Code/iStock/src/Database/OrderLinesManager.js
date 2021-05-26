@@ -23,7 +23,8 @@ const COLUMN_ID = "id"; //INTEGER PRIMARY KEY AUTOINCREMENT
 const COLUMN_ORDER_LINE_ID = "order_line_id"; //VARCHAR(255)
 const COLUMN_ORDER_ID = "fk_commande"; //VARCHAR(255)
 const COLUMN_LABEL = "libelle"; //VARCHAR(255)
-const COLUMN_REF = "ref"; //VARCHAR(255)
+const COLUMN_FK_PRODUCT_ID = "fk_product_id"; //VARCHAR(255)
+const COLUMN_PRODUCT_REF = "product_ref"; //VARCHAR(255)
 const COLUMN_RANG = "rang"; //VARCHAR(255)
 const COLUMN_QTE = "qty"; //VARCHAR(255)
 const COLUMN_PRICE = "price"; //VARCHAR(255)
@@ -38,7 +39,8 @@ const create = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "(" +
     COLUMN_ORDER_LINE_ID + " VARCHAR(255)," +
     COLUMN_ORDER_ID + " VARCHAR(255)," +
     COLUMN_LABEL + " VARCHAR(255)," +
-    COLUMN_REF + " VARCHAR(255)," +
+    COLUMN_FK_PRODUCT_ID + " VARCHAR(255)," +
+    COLUMN_PRODUCT_REF + " VARCHAR(255)," +
     COLUMN_RANG + " VARCHAR(255)," +
     COLUMN_QTE + " VARCHAR(255)," +
     COLUMN_PRICE + " VARCHAR(255)," +
@@ -128,7 +130,7 @@ class OrderLinesManager extends Component {
             try{
                 for(let x = 0; x < data_.length; x++){
                     await db.transaction(async (tx) => {
-                        const insert = "INSERT INTO " + TABLE_NAME + " (" + COLUMN_ID + ", " + COLUMN_ORDER_LINE_ID + ", " + COLUMN_ORDER_ID + ", " + COLUMN_LABEL + ", " + COLUMN_REF + ", " + COLUMN_RANG + ", " + COLUMN_QTE + ", " +COLUMN_PRICE + ", " +COLUMN_TVA_TX + ", " +COLUMN_TOTAL_HT + ", " +COLUMN_TOTAL_TVA + ", " +COLUMN_TOTAL_TTC + ") VALUES (null, '"+data_[x].rowid+"', '"+data_[x].fk_commande+"', '"+(data_[x].libelle != null ? data_[x].libelle.replace(/'/g, "''") : "null")+"', '"+data_[x].ref+"', '" + data_[x].rang + "', '"+data_[x].qty+"', '"+data_[x].price+"', '"+data_[x].tva_tx+"', '"+data_[x].total_ht+"', '"+data_[x].total_tva+"', '"+data_[x].total_ttc+"')";
+                        const insert = "INSERT INTO " + TABLE_NAME + " (" + COLUMN_ID + ", " + COLUMN_ORDER_LINE_ID + ", " + COLUMN_ORDER_ID + ", " + COLUMN_LABEL + ", " + COLUMN_FK_PRODUCT_ID + ", " + COLUMN_PRODUCT_REF + ", " + COLUMN_RANG + ", " + COLUMN_QTE + ", " +COLUMN_PRICE + ", " +COLUMN_TVA_TX + ", " +COLUMN_TOTAL_HT + ", " +COLUMN_TOTAL_TVA + ", " +COLUMN_TOTAL_TTC + ") VALUES (null, '"+data_[x].rowid+"', '"+data_[x].fk_commande+"', '"+(data_[x].libelle != null ? data_[x].libelle.replace(/'/g, "''") : "null")+"', '"+data_[x].fk_product+"', '"+data_[x].ref+"', '" + data_[x].rang + "', '"+data_[x].qty+"', '"+data_[x].price+"', '"+data_[x].tva_tx+"', '"+data_[x].total_ht+"', '"+data_[x].total_tva+"', '"+data_[x].total_ttc+"')";
                         await tx.executeSql(insert, []);
                     });
                 }
@@ -147,7 +149,7 @@ class OrderLinesManager extends Component {
             try{
                 const lines = [];
                 await db.transaction(async (tx) => {
-                    await tx.executeSql("SELECT l." + COLUMN_ID + ", l." + COLUMN_ORDER_ID + ", l." + COLUMN_LABEL + ", l." + COLUMN_REF + ", l." + COLUMN_RANG + ", l." +COLUMN_QTE + ", l." +COLUMN_PRICE + ", l." +COLUMN_TVA_TX + ", l." +COLUMN_TOTAL_HT + ", l." +COLUMN_TOTAL_TVA + ", l." +COLUMN_TOTAL_TTC + " FROM " + TABLE_NAME + " as l", [], async (tx, results) => {
+                    await tx.executeSql("SELECT l." + COLUMN_ID + ", l." + COLUMN_ORDER_ID + ", l." + COLUMN_LABEL + ", l."+COLUMN_FK_PRODUCT_ID+", l." + COLUMN_PRODUCT_REF + ", l." + COLUMN_RANG + ", l." +COLUMN_QTE + ", l." +COLUMN_PRICE + ", l." +COLUMN_TVA_TX + ", l." +COLUMN_TOTAL_HT + ", l." +COLUMN_TOTAL_TVA + ", l." +COLUMN_TOTAL_TTC + " FROM " + TABLE_NAME + " as l", [], async (tx, results) => {
                         var len = results.rows.length;
                         for (let i = 0; i < len; i++) {
                             let row = results.rows.item(i);
@@ -171,7 +173,7 @@ class OrderLinesManager extends Component {
             try{
                 const lines = [];
                 await db.transaction(async (tx) => {
-                    await tx.executeSql("SELECT l." + COLUMN_ID + ", l." + COLUMN_ORDER_ID + ", l." + COLUMN_LABEL + ", l." + COLUMN_REF + ", l." + COLUMN_RANG + ", l." +COLUMN_QTE + ", l." +COLUMN_PRICE + ", l." +COLUMN_TVA_TX + ", l." +COLUMN_TOTAL_HT + ", l." +COLUMN_TOTAL_TVA + ", l." +COLUMN_TOTAL_TTC + " FROM " + TABLE_NAME + " as l", [], async (tx, results) => {
+                    await tx.executeSql("SELECT l." + COLUMN_ID + ", l." + COLUMN_ORDER_ID + ", l." + COLUMN_LABEL + ", l." + COLUMN_PRODUCT_REF + ", l." + COLUMN_RANG + ", l." +COLUMN_QTE + ", l." +COLUMN_PRICE + ", l." +COLUMN_TVA_TX + ", l." +COLUMN_TOTAL_HT + ", l." +COLUMN_TOTAL_TVA + ", l." +COLUMN_TOTAL_TTC + " FROM " + TABLE_NAME + " as l", [], async (tx, results) => {
                         var len = results.rows.length;
                         for (let i = 0; i < len; i++) {
                             let row = results.rows.item(i);
@@ -193,13 +195,13 @@ class OrderLinesManager extends Component {
         const pm = new ProductsManager();
         const wm = new WarehouseManager();
 
-        console.log("Order id Lines SQL => : SELECT l." + COLUMN_ID + ", l." + COLUMN_ORDER_ID + ", l." + COLUMN_ORDER_LINE_ID + ", l." + COLUMN_LABEL + ", l." + COLUMN_REF + ", l." + COLUMN_RANG + ", l." +COLUMN_QTE + ", l." +COLUMN_PRICE + ", l." +COLUMN_TVA_TX + ", l." +COLUMN_TOTAL_HT + ", l." +COLUMN_TOTAL_TVA + ", l." +COLUMN_TOTAL_TTC + ", (SELECT "+wm._COLUMN_LABEL_+" from "+wm._TABLE_NAME_+" as w where p."+pm._COLUMN_EMPLACEMENT_+" = w."+wm._COLUMN_ID_+") as emplacement, p."+pm._COLUMN_STOCK_+", p."+pm._COLUMN_CODEBARRE_+", p."+pm._COLUMN_REF_+" FROM " + TABLE_NAME + " as l, "+pm._TABLE_NAME_+" as p WHERE l." + COLUMN_ORDER_ID + " = " + id + " AND l."+COLUMN_REF+" = p."+pm._COLUMN_REF_);
+        console.log("Order id Lines SQL => : SELECT l." + COLUMN_ID + ", l." + COLUMN_ORDER_ID + ", l." + COLUMN_ORDER_LINE_ID + ", l." + COLUMN_LABEL + ", l."+COLUMN_FK_PRODUCT_ID+", l." + COLUMN_PRODUCT_REF + ", l." + COLUMN_RANG + ", l." +COLUMN_QTE + ", l." +COLUMN_PRICE + ", l." +COLUMN_TVA_TX + ", l." +COLUMN_TOTAL_HT + ", l." +COLUMN_TOTAL_TVA + ", l." +COLUMN_TOTAL_TTC + ", (SELECT "+wm._COLUMN_LABEL_+" from "+wm._TABLE_NAME_+" as w where p."+pm._COLUMN_EMPLACEMENT_+" = w."+wm._COLUMN_ID_+") as emplacement, p."+pm._COLUMN_STOCK_+", p."+pm._COLUMN_CODEBARRE_+", p."+pm._COLUMN_PRODUCT_REF_+" FROM " + TABLE_NAME + " as l, "+pm._TABLE_NAME_+" as p WHERE l." + COLUMN_ORDER_ID + " = " + id + " AND l."+COLUMN_PRODUCT_REF+" = p."+pm._COLUMN_PRODUCT_REF_);
 
         return await new Promise(async (resolve) => {
             try{
                 const lines = [];
                 await db.transaction(async (tx) => {
-                    await tx.executeSql("SELECT l." + COLUMN_ID + ", l." + COLUMN_ORDER_ID + ", l." + COLUMN_ORDER_LINE_ID + ", l." + COLUMN_LABEL + ", l." + COLUMN_REF + ", l." + COLUMN_RANG + ", l." +COLUMN_QTE + ", l." +COLUMN_PRICE + ", l." +COLUMN_TVA_TX + ", l." +COLUMN_TOTAL_HT + ", l." +COLUMN_TOTAL_TVA + ", l." +COLUMN_TOTAL_TTC + ", (SELECT "+wm._COLUMN_LABEL_+" from "+wm._TABLE_NAME_+" as w where p."+pm._COLUMN_EMPLACEMENT_+" = w."+wm._COLUMN_ID_+") as emplacement, p."+pm._COLUMN_STOCK_+", p."+pm._COLUMN_CODEBARRE_+", p."+pm._COLUMN_REF_+" FROM " + TABLE_NAME + " as l, "+pm._TABLE_NAME_+" as p WHERE l." + COLUMN_ORDER_ID + " = " + id + " AND l."+COLUMN_REF+" = p."+pm._COLUMN_REF_, [], async (tx, results) => {
+                    await tx.executeSql("SELECT l." + COLUMN_ID + ", l." + COLUMN_ORDER_ID + ", l." + COLUMN_ORDER_LINE_ID + ", l." + COLUMN_LABEL + ", l."+COLUMN_FK_PRODUCT_ID+", l." + COLUMN_PRODUCT_REF + ", l." + COLUMN_RANG + ", l." +COLUMN_QTE + ", l." +COLUMN_PRICE + ", l." +COLUMN_TVA_TX + ", l." +COLUMN_TOTAL_HT + ", l." +COLUMN_TOTAL_TVA + ", l." +COLUMN_TOTAL_TTC + ", (SELECT "+wm._COLUMN_LABEL_+" from "+wm._TABLE_NAME_+" as w where p."+pm._COLUMN_EMPLACEMENT_+" = w."+wm._COLUMN_ID_+") as emplacement, p."+pm._COLUMN_STOCK_+", p."+pm._COLUMN_CODEBARRE_+", p."+pm._COLUMN_PRODUCT_REF_+" FROM " + TABLE_NAME + " as l, "+pm._TABLE_NAME_+" as p WHERE l." + COLUMN_ORDER_ID + " = " + id + " AND l."+COLUMN_PRODUCT_REF+" = p."+pm._COLUMN_PRODUCT_REF_, [], async (tx, results) => {
                         var len = results.rows.length;
                         for (let i = 0; i < len; i++) {
                             let row = results.rows.item(i);
@@ -223,13 +225,13 @@ class OrderLinesManager extends Component {
         const wm = new WarehouseManager();
         const sml = new ShipmentLinesManager();
 
-        console.log("Order id Lines SQL => : SELECT l." + COLUMN_ID + ", l." + COLUMN_ORDER_ID + ", l." + COLUMN_ORDER_LINE_ID + ", l." + COLUMN_LABEL + ", l." + COLUMN_REF + ", l." + COLUMN_RANG + ", l." +COLUMN_QTE + ", l." +COLUMN_PRICE + ", l." +COLUMN_TVA_TX + ", l." +COLUMN_TOTAL_HT + ", l." +COLUMN_TOTAL_TVA + ", l." +COLUMN_TOTAL_TTC + ", (SELECT "+wm._COLUMN_ID_+" from "+wm._TABLE_NAME_+" as w where p."+pm._COLUMN_EMPLACEMENT_+" = w."+wm._COLUMN_ID_+") as emplacement_id, (SELECT "+wm._COLUMN_LABEL_+" from "+wm._TABLE_NAME_+" as w where p."+pm._COLUMN_EMPLACEMENT_+" = w."+wm._COLUMN_ID_+") as emplacement, p."+pm._COLUMN_STOCK_+", p."+pm._COLUMN_CODEBARRE_+", p."+pm._COLUMN_REF_+", p."+pm._COLUMN_IMAGE_+" FROM " + TABLE_NAME + " as l, "+pm._TABLE_NAME_+" as p WHERE l." + COLUMN_ORDER_ID + " = " + id + " AND l."+COLUMN_REF+" = p."+pm._COLUMN_REF_);
+        console.log("Order id Lines SQL => : SELECT l." + COLUMN_ID + ", l." + COLUMN_ORDER_ID + ", l." + COLUMN_ORDER_LINE_ID + ", l." + COLUMN_LABEL + ", l."+COLUMN_FK_PRODUCT_ID+", l." + COLUMN_PRODUCT_REF + ", l." + COLUMN_RANG + ", l." +COLUMN_QTE + ", l." +COLUMN_PRICE + ", l." +COLUMN_TVA_TX + ", l." +COLUMN_TOTAL_HT + ", l." +COLUMN_TOTAL_TVA + ", l." +COLUMN_TOTAL_TTC + ", (SELECT "+wm._COLUMN_ID_+" from "+wm._TABLE_NAME_+" as w where p."+pm._COLUMN_EMPLACEMENT_+" = w."+wm._COLUMN_ID_+") as emplacement_id, (SELECT "+wm._COLUMN_LABEL_+" from "+wm._TABLE_NAME_+" as w where p."+pm._COLUMN_EMPLACEMENT_+" = w."+wm._COLUMN_ID_+") as emplacement, p."+pm._COLUMN_STOCK_+", p."+pm._COLUMN_CODEBARRE_+", p."+pm._COLUMN_REF_+", p."+pm._COLUMN_IMAGE_+" FROM " + TABLE_NAME + " as l, "+pm._TABLE_NAME_+" as p WHERE l." + COLUMN_ORDER_ID + " = " + id + " AND l."+COLUMN_FK_PRODUCT_ID+" = p."+pm._COLUMN_PRODUCT_ID_+" ORDER BY p."+pm._COLUMN_EMPLACEMENT_+" ASC");
 
         return await new Promise(async (resolve) => {
             try{
                 const lines = [];
                 await db.transaction(async (tx) => {
-                    await tx.executeSql("SELECT l." + COLUMN_ID + ", l." + COLUMN_ORDER_ID + ", l." + COLUMN_ORDER_LINE_ID + ", p."+pm._COLUMN_PRODUCT_ID_+", l." + COLUMN_LABEL + ", l." + COLUMN_REF + ", l." + COLUMN_RANG + ", l." +COLUMN_QTE + ", l." +COLUMN_PRICE + ", l." +COLUMN_TVA_TX + ", l." +COLUMN_TOTAL_HT + ", l." +COLUMN_TOTAL_TVA + ", l." +COLUMN_TOTAL_TTC + ", (SELECT "+wm._COLUMN_ID_+" from "+wm._TABLE_NAME_+" as w where p."+pm._COLUMN_EMPLACEMENT_+" = w."+wm._COLUMN_ID_+") as emplacement_id, (SELECT "+wm._COLUMN_LABEL_+" from "+wm._TABLE_NAME_+" as w where p."+pm._COLUMN_EMPLACEMENT_+" = w."+wm._COLUMN_ID_+") as emplacement, p."+pm._COLUMN_STOCK_+", p."+pm._COLUMN_CODEBARRE_+", p."+pm._COLUMN_REF_+", p."+pm._COLUMN_DESCRIPTION_+", (SELECT sum(sml."+sml._COLUMN_QTY_+") FROM "+sml._TABLE_NAME_+" as sml WHERE sml."+sml._COLUMN_ORIGIN_LINE_ID_+" = l."+COLUMN_ORDER_LINE_ID+" AND sml."+sml._COLUMN_RANG_+" = l."+COLUMN_RANG+") as prepare_shipping_qty, p."+pm._COLUMN_IMAGE_+" FROM " + TABLE_NAME + " as l, "+pm._TABLE_NAME_+" as p WHERE l." + COLUMN_ORDER_ID + " = " + id + " AND l."+COLUMN_REF+" = p."+pm._COLUMN_REF_, [], async (tx, results) => {
+                    await tx.executeSql("SELECT l." + COLUMN_ID + ", l." + COLUMN_ORDER_ID + ", l." + COLUMN_ORDER_LINE_ID + ", p."+pm._COLUMN_PRODUCT_ID_+", l." + COLUMN_LABEL + ", l."+COLUMN_FK_PRODUCT_ID+", l." + COLUMN_PRODUCT_REF + ", l." + COLUMN_RANG + ", l." +COLUMN_QTE + ", l." +COLUMN_PRICE + ", l." +COLUMN_TVA_TX + ", l." +COLUMN_TOTAL_HT + ", l." +COLUMN_TOTAL_TVA + ", l." +COLUMN_TOTAL_TTC + ", (SELECT "+wm._COLUMN_ID_+" from "+wm._TABLE_NAME_+" as w where p."+pm._COLUMN_EMPLACEMENT_+" = w."+wm._COLUMN_ID_+") as emplacement_id, (SELECT "+wm._COLUMN_LABEL_+" from "+wm._TABLE_NAME_+" as w where p."+pm._COLUMN_EMPLACEMENT_+" = w."+wm._COLUMN_ID_+") as emplacement, p."+pm._COLUMN_STOCK_+", p."+pm._COLUMN_CODEBARRE_+", p."+pm._COLUMN_REF_+", p."+pm._COLUMN_DESCRIPTION_+", p."+pm._COLUMN_COLIS_QTY_+" as colis_qty, p."+pm._COLUMN_PALETTE_QTY_+" as palette_qty, (SELECT sum(sml."+sml._COLUMN_QTY_+") FROM "+sml._TABLE_NAME_+" as sml WHERE sml."+sml._COLUMN_ORIGIN_LINE_ID_+" = l."+COLUMN_ORDER_LINE_ID+" AND sml."+sml._COLUMN_RANG_+" = l."+COLUMN_RANG+") as prepare_shipping_qty, p."+pm._COLUMN_IMAGE_+" FROM " + TABLE_NAME + " as l, "+pm._TABLE_NAME_+" as p WHERE l." + COLUMN_ORDER_ID + " = " + id + " AND l."+COLUMN_FK_PRODUCT_ID+" = p."+pm._COLUMN_PRODUCT_ID_+" ORDER BY p."+pm._COLUMN_EMPLACEMENT_+" ASC", [], async (tx, results) => {
                         var len = results.rows.length;
                         for (let i = 0; i < len; i++) {
 
@@ -251,6 +253,55 @@ class OrderLinesManager extends Component {
                 console.log("error: ", error);
                 return resolve([]);
             }
+        });
+    }
+
+    
+    // Update order lines
+    async UPDATE_ORDER_LINES(data_){
+        console.log("##### UPDATE_ORDER_LINES #########################");
+        console.log("updating.... ", data_.length);
+
+        return await new Promise(async (resolve) => {
+            try{
+                for(let x = 0; x < data_.length; x++){
+
+                    const sql = "UPDATE "+TABLE_NAME+" SET "+
+                    ""+COLUMN_ORDER_ID+" = '"+data_[x].fk_commande+"', "+
+                    ""+COLUMN_LABEL+" = '"+(data_[x].libelle != null ? data_[x].libelle.replace(/'/g, "''") : "null")+"', "+
+                    ""+COLUMN_PRODUCT_REF+" = '"+data_[x].ref+"', "+
+                    ""+COLUMN_RANG+" = '"+data_[x].rang+"', "+
+                    ""+COLUMN_QTE+" = '"+data_[x].qty+"', "+
+                    ""+COLUMN_PRICE+" = '"+data_[x].price+"', "+
+                    ""+COLUMN_TVA_TX+" = '"+data_[x].tva_tx+"', "+
+                    ""+COLUMN_TOTAL_HT+" = '"+data_[x].total_ht+"', "+
+                    ""+COLUMN_TOTAL_TVA+" = '"+data_[x].total_tva+"', "+
+                    ""+COLUMN_TOTAL_TTC+" = '"+data_[x].total_ttc+"' "+
+                    "WHERE "+COLUMN_ORDER_LINE_ID+" = '" +data_[x].order_line_id +"'";
+
+                    await db.transaction(async (tx) => {
+                        await tx.executeSql(sql, []);
+                    });
+                }
+                await resolve(true);
+            } catch(error){
+                console.log("error: ", error);
+                await resolve(false);
+            }
+        });
+
+    }
+
+    //Delete
+    async DELETE_LINES_BY_ORDER_ID(orderId){
+        console.log("##### DELETE_LINES_BY_ORDER_ID #########################");
+        console.log("##### ORDER_ID "+orderId+" #########################");
+
+        return await new Promise(async (resolve) => {
+            await db.transaction(async function (txn) {
+                await txn.executeSql("DELETE FROM " + TABLE_NAME + " WHERE "+COLUMN_ORDER_ID+" = '"+orderId+"'", []);
+            });
+            return await resolve(true);
         });
     }
 

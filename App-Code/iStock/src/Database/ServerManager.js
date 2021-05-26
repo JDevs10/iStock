@@ -183,7 +183,6 @@ class ServerManager extends Component {
                 resolve(true);
 
             }).then(async (result) => {
-                console.error('result : ', result);
                 resolve(false);
             });
         });
@@ -199,7 +198,6 @@ class ServerManager extends Component {
                 resolve(true);
 
             }).then(async (result) => {
-                console.error('result : ', result);
                 resolve(false);
             });
         });

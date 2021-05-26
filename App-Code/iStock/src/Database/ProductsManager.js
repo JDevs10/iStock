@@ -25,8 +25,10 @@ const COLUMN_DESCRIPTION = "description";
 const COLUMN_EMPLACEMENT = "emplacement";
 const COLUMN_STOCK = "stock";
 const COLUMN_IMAGE = "image";
+const COLUMN_DATE_MODIFICATION = "date_modification";
 const COLUMN_COLIS_QTY = "colis_qty";
 const COLUMN_PALETTE_QTY = "palette_qty";
+const COLUMN_FK_DEFAUFT_WAREHOUSE = "fk_default_warehouse";
 
 const create = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "(" +
     COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
@@ -38,8 +40,10 @@ const create = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "(" +
     COLUMN_EMPLACEMENT + " VARCHAR(255)," +
     COLUMN_STOCK + " VARCHAR(255)," +
     COLUMN_IMAGE + " VARCHAR(255)," +
+    COLUMN_DATE_MODIFICATION + " VARCHAR(255)," +
     COLUMN_COLIS_QTY + " INTEGER(255)," +
-    COLUMN_PALETTE_QTY + " INTEGER(255)" +
+    COLUMN_PALETTE_QTY + " INTEGER(255), " +
+    COLUMN_FK_DEFAUFT_WAREHOUSE + " INTEGER(255)"+
 ")";
 
 
@@ -54,8 +58,10 @@ class ProductsManager extends Component {
     _COLUMN_EMPLACEMENT_ = COLUMN_EMPLACEMENT;
     _COLUMN_STOCK_ = COLUMN_STOCK;
     _COLUMN_IMAGE_ = COLUMN_IMAGE;
+    _COLUMN_DATE_MODIFICATION_ = COLUMN_DATE_MODIFICATION;
     _COLUMN_COLIS_QTY_ = COLUMN_COLIS_QTY;
     _COLUMN_PALETTE_QTY_ = COLUMN_PALETTE_QTY;
+    _COLUMN_FK_DEFAUFT_WAREHOUSE_ = COLUMN_FK_DEFAUFT_WAREHOUSE;
 
     //Init database
     async initDB() {
@@ -134,7 +140,7 @@ class ProductsManager extends Component {
                     // console.log("data_ : ", data_[x]);
 
                     await db.transaction(async (tx) => {
-                        await tx.executeSql("INSERT INTO " + TABLE_NAME + " ("+COLUMN_ID+", "+COLUMN_PRODUCT_ID+", "+COLUMN_REF+", "+COLUMN_LABEL+", "+COLUMN_CODEBARRE+", "+COLUMN_DESCRIPTION+", "+COLUMN_EMPLACEMENT+", "+COLUMN_STOCK+", "+COLUMN_IMAGE+", "+COLUMN_COLIS_QTY+", "+COLUMN_PALETTE_QTY+") VALUES (NULL, "+data_[x].id+", '"+data_[x].ref+"', '"+data_[x].label.replace(/'/g, "''")+"', '"+(data_[x].barcode == null ? "" : data_[x].barcode)+"', "+(data_[x].description == null ? null : "'"+data_[x].description.replace(/'/g, "''")+"'" )+", '"+(data_[x].fk_default_warehouse == null ? "" : data_[x].fk_default_warehouse)+"', '"+data_[x].stock_reel+"', '"+data_[x].image+"', "+(data_[x].array_options.options_colis_qty != null ? data_[x].array_options.options_colis_qty : 0)+", "+(data_[x].array_options.options_palette_qty != null ? data_[x].array_options.options_palette_qty : 0)+")", []);
+                        await tx.executeSql("INSERT INTO " + TABLE_NAME + " ("+COLUMN_ID+", "+COLUMN_PRODUCT_ID+", "+COLUMN_REF+", "+COLUMN_LABEL+", "+COLUMN_CODEBARRE+", "+COLUMN_DESCRIPTION+", "+COLUMN_EMPLACEMENT+", "+COLUMN_STOCK+", "+COLUMN_IMAGE+", "+COLUMN_DATE_MODIFICATION+", "+COLUMN_COLIS_QTY+", "+COLUMN_PALETTE_QTY+", "+COLUMN_FK_DEFAUFT_WAREHOUSE+") VALUES (NULL, "+data_[x].id+", '"+data_[x].ref+"', '"+data_[x].label.replace(/'/g, "''")+"', '"+(data_[x].barcode == null ? "" : data_[x].barcode)+"', "+(data_[x].description == null ? null : "'"+data_[x].description.replace(/'/g, "''")+"'" )+", '"+(data_[x].fk_default_warehouse == null ? "" : data_[x].fk_default_warehouse)+"', '"+data_[x].stock_reel+"', '"+data_[x].image+"', '"+(data_[x].date_modification != null ? data_[x].date_modification : null)+"', "+(data_[x].array_options.options_colis_qty != null ? data_[x].array_options.options_colis_qty : 0)+", "+(data_[x].array_options.options_palette_qty != null ? data_[x].array_options.options_palette_qty : 0)+", "+(data_[x].fk_default_warehouse != null ? data_[x].fk_default_warehouse : "NULL")+")", []);
                     });
 
                     if(data_[x].Lot_DLC_DLUO_Batch != null && data_[x].Lot_DLC_DLUO_Batch.length > 0){
@@ -143,8 +149,9 @@ class ProductsManager extends Component {
                         await res.INSERT_ProductsLotDlcDluo(data_[x].Lot_DLC_DLUO_Batch);
                     }
                 }
-                return await resolve(true);
+                await resolve(true);
             } catch(error){
+                console.log("inserting.... error", error);
                 return resolve(false);
             }
         });
@@ -177,6 +184,52 @@ class ProductsManager extends Component {
         });
     }
 
+    async IS_PRODUCT_EXIST_BY_PRODUCT_ID(id){
+        console.log("##### IS_PRODUCT_EXIST_BY_PRODUCT_ID #########################");
+
+        return await new Promise(async (resolve) => {
+            let product = {};
+            await db.transaction(async (tx) => {
+                await tx.executeSql("SELECT * FROM "+TABLE_NAME+" WHERE "+COLUMN_PRODUCT_ID+" = "+id+"", []).then(async ([tx,results]) => {
+                    var len = results.rows.length;
+                    for (let i = 0; i < len; i++) {
+                        let row = results.rows.item(i);
+                        product = row;
+                    }
+                });
+            }).then(async (result) => {
+                //await this.closeDatabase(db);
+                await resolve(product);
+            }).catch(async (err) => {
+                console.log(err);
+                await resolve(null);
+            });
+        });
+    }
+
+    async GET_Warehouse_Ids(){
+        console.log("##### GET_Warehouse_Ids #########################");
+
+        return await new Promise(async (resolve) => {
+            let product = [];
+            await db.transaction(async (tx) => {
+                await tx.executeSql("SELECT DISTINCT("+COLUMN_FK_DEFAUFT_WAREHOUSE+") FROM "+TABLE_NAME, []).then(async ([tx,results]) => {
+                    var len = results.rows.length;
+                    for (let i = 0; i < len; i++) {
+                        let row = results.rows.item(i);
+                        product.push(row);
+                    }
+                });
+            }).then(async (result) => {
+                //await this.closeDatabase(db);
+                await resolve(product);
+            }).catch(async (err) => {
+                console.log(err);
+                await resolve(null);
+            });
+        });
+    }
+
     // get all
     async GET_PRODUCT_LIST(){
         console.log("##### GET_PRODUCT_LIST #########################");
@@ -184,15 +237,12 @@ class ProductsManager extends Component {
         return await new Promise(async (resolve) => {
             const products = [];
             await db.transaction(async (tx) => {
-                await tx.executeSql('SELECT p.'+COLUMN_ID+', p.'+COLUMN_REF+', p.'+COLUMN_LABEL+', p.'+COLUMN_CODEBARRE+', p.'+COLUMN_DESCRIPTION+', p.'+COLUMN_IMAGE+' FROM '+TABLE_NAME+' p', []).then(async ([tx,results]) => {
+                await tx.executeSql('SELECT p.'+COLUMN_ID+', p.'+COLUMN_REF+', p.'+COLUMN_LABEL+', p.'+COLUMN_CODEBARRE+', p.'+COLUMN_DESCRIPTION+', p.'+COLUMN_IMAGE+", p."+COLUMN_DATE_MODIFICATION+" FROM "+TABLE_NAME+' p', []).then(async ([tx,results]) => {
                     console.log("Query completed");
                     var len = results.rows.length;
                     for (let i = 0; i < len; i++) {
                         let row = results.rows.item(i);
-                        const { id, ref, label, codebarre, description, image } = row;
-                        products.push({
-                            id, ref, label, codebarre, description, image
-                        });
+                        products.push(row);
                     }
                     //console.log(products);
                     await resolve(products);
@@ -206,20 +256,79 @@ class ProductsManager extends Component {
         });
     }
 
-
-    //Update
-    async UPDATE_PRODUCT_BY_ID(data_){
-        console.log("##### UPDATE_PRODUCT_BY_ID #########################");
+    async GET_PRODUCT_LIST_DESC_LIMIT(limit){
+        console.log("##### GET_PRODUCT_LIST_DESC_LIMIT #########################");
 
         return await new Promise(async (resolve) => {
+            const products = [];
             await db.transaction(async (tx) => {
-                await tx.executeSql("UPDATE " + TABLE_NAME + " SET " + COLUMN_REF + " = "+data_.ref+", "+COLUMN_LABEL+" = "+data_.label.replace(/'/g, "''")+", "+COLUMN_CODEBARRE+" = "+data_.codebarre+", "+COLUMN_DESCRIPTION+" = "+data_.description.replace(/'/g, "''")+", "+COLUMN_EMPLACEMENT+" = "+data_.emplacement+", "+COLUMN_IMAGE+" = "+data_.image+" WHERE " + COLUMN_ID + " = " + data_.id, []);
-                resolve(true);
-
+                await tx.executeSql("SELECT * FROM "+TABLE_NAME+" ORDER BY "+COLUMN_DATE_MODIFICATION+" DESC LIMIT "+limit, []).then(async ([tx,results]) => {
+                    console.log("Query completed");
+                    var len = results.rows.length;
+                    for (let i = 0; i < len; i++) {
+                        let row = results.rows.item(i);
+                        products.push(row);
+                    }
+                    //console.log(products);
+                    await resolve(products);
+                });
             }).then(async (result) => {
-                console.error('result : ', result);
-                resolve(false);
+                //await this.closeDatabase(db);
+            }).catch(async (err) => {
+                console.log(err);
+                await resolve([]);
             });
+        });
+    }
+
+    //Update
+    async UPDATE_PRODUCT_BY_PRODUCT_ID(data_){
+        console.log("##### UPDATE_PRODUCT_BY_PRODUCT_ID #########################");
+        console.log("updating.... ", data_.length);
+
+        return await new Promise(async (resolve) => {
+            try{
+                for(let x = 0; x < data_.length; x++){
+                    const sql = "UPDATE " + TABLE_NAME + " SET " + 
+                    ""+COLUMN_REF + " = '"+data_[x].ref+"', "+
+                    ""+COLUMN_LABEL+" = '"+data_[x].label.replace(/'/g, "''")+"', "+
+                    ""+COLUMN_CODEBARRE+" = '"+(data_[x].barcode == null ? "" : data_[x].barcode)+"', "+
+                    ""+COLUMN_DESCRIPTION+" = '"+data_[x].description.replace(/'/g, "''")+"', "+
+                    ""+COLUMN_EMPLACEMENT+" = '"+(data_[x].fk_default_warehouse == null ? "" : data_[x].fk_default_warehouse)+"', "+
+                    ""+COLUMN_DATE_MODIFICATION+" = '"+(data_[x].date_modification != null ? data_[x].date_modification : null)+"', "+
+                    ""+COLUMN_COLIS_QTY+" = "+(data_[x].array_options.options_colis_qty != null ? data_[x].array_options.options_colis_qty : 0)+", "+
+                    ""+COLUMN_PALETTE_QTY+" = "+(data_[x].array_options.options_palette_qty != null ? data_[x].array_options.options_palette_qty : 0)+", "+
+                    ""+COLUMN_FK_DEFAUFT_WAREHOUSE+" = "+(data_[x].fk_default_warehouse != "" ? data_[x].fk_default_warehouse : "NULL")+" "+
+                    "WHERE " + COLUMN_PRODUCT_ID + " = " + data_[x].id;
+
+                    await db.transaction(async (tx) => {
+                        await tx.executeSql(sql, []);
+                    });
+
+                    if(data_[x].Lot_DLC_DLUO_Batch != null && data_[x].Lot_DLC_DLUO_Batch.length > 0){
+                        const res = new ProductsLotDlcDluoManager();
+                        await res.initDB();
+                        
+                        for(let y=0; y<data_[x].Lot_DLC_DLUO_Batch.length; y++){
+
+                            const is_fk_origin_stock = await res.IS_ORIGIN_STOCK_EXIST(data_[x].Lot_DLC_DLUO_Batch[y].fk_origin_stock).then(async (val) => {
+                                return val;
+                            });
+    
+                            if(is_fk_origin_stock == null || Object.keys(is_fk_origin_stock).length == 0){
+                                await res.INSERT_ProductsLotDlcDluo([data_[x].Lot_DLC_DLUO_Batch[y]]);
+                            }
+                            else if(is_fk_origin_stock != null && Object.keys(is_fk_origin_stock).length > 0){
+                                await res.UPDATE_ProductsLotDlcDluo_BY_ORIGIN_STOCK([data_[x].Lot_DLC_DLUO_Batch[y]]);
+                            }
+                        }
+                    }
+                }
+                await resolve(true);
+            } catch(error){
+                console.error('error : ', error);
+                await resolve(false);
+            }
         });
     }
 
@@ -251,7 +360,21 @@ class ProductsManager extends Component {
                 resolve(true);
 
             }).then(async (result) => {
-                console.error('result : ', result);
+                resolve(false);
+            });
+        });
+    }
+
+    async DELETE_PRODUCT_BY_REF(ref){
+        console.log("##### DELETE_PRODUCT_BY_REF #########################");
+        console.log("##### deleting...."+ref+" #########################");
+
+        return await new Promise(async (resolve) => {
+            await db.transaction(async (tx) => {
+                await tx.executeSql("DELETE FROM " + TABLE_NAME+" WHERE "+COLUMN_REF+"='"+ref+"'", []);
+                resolve(true);
+
+            }).then(async (result) => {
                 resolve(false);
             });
         });

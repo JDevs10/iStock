@@ -2,8 +2,7 @@ import React, { Component } from 'react';
 import {StyleSheet, View, Text, Image, ImageBackground, TouchableOpacity, Dimensions, Alert} from  'react-native';
 import DeviceInfo from 'react-native-device-info';
 import Icon from 'react-native-vector-icons/FontAwesome5';
-import Strings from "../utilities/Strings";
-const STRINGS = new Strings();
+import { STRINGS } from "../utilities/STRINGS";
 const IMG_SRC = require('../../img/banner.png');
 
 // create a component

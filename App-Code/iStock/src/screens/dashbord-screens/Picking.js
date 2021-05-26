@@ -15,6 +15,7 @@ import ShipmentsManager from '../../Database/ShipmentsManager';
 import ShipmentLinesManager from '../../Database/ShipmentLinesManager';
 import ShipmentLineDetailBatchManager from '../../Database/ShipmentLineDetailBatchManager';
 import Toast from 'react-native-simple-toast';
+import { writeInitLog, writeBackInitLog, writeLog, LOG_TYPE } from '../../utilities/MyLogs';
 
 
 // create a component
@@ -39,7 +40,6 @@ class Picking extends Component {
         };
     
         this.state = {
-            isPopUpVisible: false,
             isLoading: true,
             data: [],
             lastSelectedProductBatch: "",
@@ -51,6 +51,8 @@ class Picking extends Component {
                 product: {}
             },
             orientation: isPortrait() ? 'portrait' : 'landscape',
+            colis_qty: 0,
+            palette_qty: 0
         };
         
         // Event Listener for orientation changes
@@ -62,11 +64,13 @@ class Picking extends Component {
     }
 
     componentDidMount(){
+        writeInitLog(LOG_TYPE.INFO, Picking.name, this.componentDidMount.name);
         this.getData();
         this.updateDataInfo();     
 
         this.listener = this.props.navigation.addListener('focus', () => {
             // Prevent default action
+            writeBackInitLog(LOG_TYPE.INFO, Picking.name, this.componentDidMount.name);
             this.getData();
             this.updateDataInfo();
             return;
@@ -78,7 +82,8 @@ class Picking extends Component {
         const state = this.state;
         state.cmd_header = this.props.route.params.cmd_header;
 
-        // console.log("pickingDataSelected ", JSON.stringify(pickingDataSelected));
+        state.colis_qty = pickingDataSelected.product.colis_qty
+        state.palette_qty = pickingDataSelected.product.palette_qty
 
         state.pickingDataSelected = pickingDataSelected;
         
@@ -90,6 +95,7 @@ class Picking extends Component {
         // });
         // console.log("pickingDataSelected", this.state.pickingDataSelected);
         // console.log("productLotDlcDluoData", this.state.pickingDataSelected.productLotDlcDluoData);
+        
         state.isLoading = false;
         this.setState(state);
     }
@@ -132,6 +138,8 @@ class Picking extends Component {
         state.addRemoveNothing = _prepare_;
         state.pickingDataSelected.product.prepare_shipping_qty = _prepare_;
         this.setState(state);
+
+        this.remove_input_picking();
     }
 
     selectProductWarehouse(item, index){
@@ -232,6 +240,13 @@ class Picking extends Component {
         state.addRemoveNothing = _prepare_;
         state.pickingDataSelected.product.prepare_shipping_qty = _prepare_;
         this.setState(state);
+    }
+
+    remove_input_picking(){
+        this.setState({
+            isShowNextPick: false,
+            lastSelectedProductBatch: ""
+        });
     }
 
     add_100_ToTextInput(item) {
@@ -340,7 +355,7 @@ class Picking extends Component {
 
                 console.log("item.selectedProductWarehouse :=> ", state.pickingDataSelected.product.selectedProductWarehouse);
 
-                state.addRemoveNothing = item.prepare_shipping_qty + ADD
+                state.addRemoveNothing = item.prepare_shipping_qty + ADD;
                 this.setState(state);
 
                 item.prepare_shipping_qty = (item.prepare_shipping_qty == null ? 0 : item.prepare_shipping_qty) + ADD;
@@ -367,7 +382,9 @@ class Picking extends Component {
             });
 
             // check if lot item stock is max with detail batch stock
+            console.log("isBatchMax", isBatchMax);
             if(!isBatchMax){
+                console.log("isBatchMax", isBatchMax);
 
                 //check && update lot list
                 state.pickingDataSelected.product.selectedProductWarehouse.forEach((_item_, _index_) => {
@@ -378,7 +395,7 @@ class Picking extends Component {
 
                 console.log("item.selectedProductWarehouse :=> ", state.pickingDataSelected.product.selectedProductWarehouse);
 
-                state.addRemoveNothing = item.prepare_shipping_qty + ADD
+                state.addRemoveNothing = item.prepare_shipping_qty + ADD;
                 this.setState(state);
 
                 item.prepare_shipping_qty = (item.prepare_shipping_qty == null ? 0 : item.prepare_shipping_qty) + ADD;
@@ -619,8 +636,8 @@ class Picking extends Component {
                     true_size: "xx",
                     date_creation: parseInt(new Date().getTime()/1000), // get current timestamp in seconds
                     date_delivery: (cmd_header.date_livraison == null ? "null" : cmd_header.date_livraison),
-                    tracking_number: (product.tracking_number == null ? "null" : product.tracking_number),
-                    tracking_url: (product.tracking_url == null ? "null" : product.tracking_url),
+                    tracking_number: (product.tracking_number == null ? "" : product.tracking_number),
+                    tracking_url: (product.tracking_url == null ? "" : product.tracking_url),
                     statut: 0, //brouillion / draft
                     is_synchro: "false", // 0 => false | 1 => true
                 };
@@ -918,7 +935,6 @@ class Picking extends Component {
                     }else{
                         Toast.showWithGravity("Produit non à jour dans l'expédition !", Toast.LONG, Toast.TOP);
                     }
-
                 }
                 
             }
@@ -941,12 +957,12 @@ class Picking extends Component {
                 borderTopRightRadius: 30,
                 borderBottomLeftRadius: 30,
                 borderBottomRightRadius: 30,
-                paddingHorizontal: 20,
-                paddingVertical: 30,
-                height: this.state.orientation === 'portrait' ? '84%' : '85%',
+                paddingHorizontal: 5,
+                paddingVertical: 10,
+                height: this.state.orientation === 'portrait' ? '80%' : '75%',
                 width: '100%',
                 position: "absolute",
-                bottom: this.state.orientation === 'portrait' ? "10%" : "15%",
+                bottom: this.state.orientation === 'portrait' ? "10%" : "10%",
                 opacity: this.state._opacity_,
             },
             cardViewStyle: {
@@ -1024,8 +1040,8 @@ class Picking extends Component {
                 justifyContent: "center",
                 alignContent: "center",
                 alignItems: "center",
-                margin: 20,
-                // marginBottom: 70,
+                margin: 10,
+                marginBottom: 70,
             },
             lastCard_text: {
                 flex: 1,
@@ -1056,13 +1072,13 @@ class Picking extends Component {
 
                         <View style={{flex: 1}}>
                             {/* <Text style={[styles.addPopUpCard_title, {marginLeft: "auto", marginRight: "auto"}]}>Sélectionner un entrepot</Text> */}
-                            <Text style={{color: "#00AAFF", fontSize: 20, fontWeight: "bold", marginLeft: "auto", marginRight: "auto"}}>Sélectionner un entrepot</Text>  
+                            <Text style={{color: "#00AAFF", fontSize: 20, fontWeight: "bold", marginLeft: 5, marginRight: "auto"}}>Sélectionnez un entrepôt</Text>  
 
                             <ScrollView
                                 nestedScrollEnabled = {true}>
                                 
                                 {this.state.pickingDataSelected.product.productLotDlcDluoData != null ?
-                                    <View style={{marginTop: 20, marginBottom: 20}}>
+                                    <View style={{marginTop: 5, marginBottom: 20}}>
                                         <Text style={{color: "#00AAFF", fontSize: 20, fontWeight: "bold", marginLeft: "auto", marginBottom: 10}}>Préparation Total : <Text style={{color: "#000", fontSize: 20, fontWeight: "bold", }}>{this.state.addRemoveNothing} / {this.state.pickingDataSelected.product.qty}</Text></Text>
                                         
                                         <ScrollView
@@ -1073,9 +1089,9 @@ class Picking extends Component {
                                                 borderRadius: 2,}}>
                                             {this.state.pickingDataSelected.product.productLotDlcDluoData.map((item, index) => (
                                                 <View key={index}>
-                                                    {/* {item.entrepot == "null" || item.batch == "null" || item.eatby == "null" || item.sellby == "null" || item.stock == "null" ? 
+                                                    {item.entrepot == "null" || item.batch == "null" || item.eatby == "null" || item.sellby == "null" || item.stock == "null" ? 
                                                         null
-                                                    : */}
+                                                    :
                                                         <TouchableOpacity
                                                             style={[{
                                                                 borderWidth: 2,
@@ -1086,11 +1102,10 @@ class Picking extends Component {
                                                             ]}
                                                             onPress={() => this.selectProductWarehouse(item, index)} onLongPress={() => this.unSelectProductWarehouse(item, index)}>
                                                                 <View style={{width: "100%", flexDirection: "row"}}>
-                                                                    <View style={{width: "6%", marginLeft: "1%"}}>
-                                                                        <CheckBox
-                                                                            value={item.isBatchSelected}/>
+                                                                    <View style={{width: "10%", marginLeft: "1%"}}>
+                                                                        <Icon name="check-square" size={30} style={{color: (item.isBatchSelected ? "#0FAAFF" : "#dbdbdb") }} />
                                                                     </View>
-                                                                    <View style={{width: "93%",}}>
+                                                                    <View style={{width: "90%",}}>
                                                                         <Text style={{fontSize: 15, color: "#00AAFF", fontWeight: "bold",}}>Entrepot : <Text style={{color: "#000", fontSize: 15, fontWeight: "bold",}}>{item.entrepot_label}</Text></Text>
                                                                         <Text style={{fontSize: 15, color: "#00AAFF", fontWeight: "bold",}}>Lot : <Text style={{color: "#000", fontSize: 15, fontWeight: "bold",}}>{item.batch}</Text></Text>
                                                                         
@@ -1098,7 +1113,7 @@ class Picking extends Component {
                                                                             <View style={{}}>
                                                                                 <Text style={{fontSize: 15, color: "#00AAFF", fontWeight: "bold",}}>DLC : <Text style={{color: "#000", fontSize: 15, fontWeight: "bold",}}>{item.eatby}</Text></Text>
                                                                             </View>
-                                                                            <View style={{marginLeft: "auto"}}>
+                                                                            <View style={{marginLeft: "auto"}}> 
                                                                                 <Text style={{fontSize: 15, color: "#00AAFF", fontWeight: "bold",}}>DLUO : <Text style={{color: "#000", fontSize: 15, fontWeight: "bold",}}>{item.sellby}</Text></Text>
                                                                             </View>
                                                                         </View>
@@ -1107,15 +1122,28 @@ class Picking extends Component {
                                                                             <View style={{}}>
                                                                                 <Text style={{fontSize: 15, color: "#00AAFF", fontWeight: "bold",}}>Stock : <Text style={{color: "#000", fontSize: 15, fontWeight: "bold",}}>{item.stock}</Text></Text>
                                                                             </View>
-                                                                            <View style={{marginLeft: "auto"}}>
+                                                                            {/* <View style={{marginLeft: "auto"}}>
                                                                                 <Text style={{fontSize: 15, color: "#00AAFF", fontWeight: "bold",}}>Préparation : <Text style={{color: "#000", fontSize: 15, fontWeight: "bold",}}>{item.prepare}</Text></Text>
+                                                                            </View> */}
+                                                                        </View>
+
+                                                                        <View style={{width: "100%", flexDirection: "row"}}>
+                                                                            <View style={{}}>
+                                                                                <Text style={{fontSize: 15, color: "#00AAFF", fontWeight: "bold",}}>Unité : <Text style={{color: "#000", fontSize: 15, fontWeight: "bold",}}>{item.prepare}</Text></Text>
+                                                                            </View>
+                                                                            <View style={{marginLeft: "auto"}}>
+                                                                                <Text style={{fontSize: 15, color: "#00AAFF", fontWeight: "bold",}}>Colis : <Text style={{color: "#000", fontSize: 15, fontWeight: "bold",}}>{Math.round((item.prepare / this.state.colis_qty) * 100) / 100 }</Text></Text>
+                                                                            </View>
+                                                                            <View style={{marginLeft: "auto"}}>
+                                                                                <Text style={{fontSize: 15, color: "#00AAFF", fontWeight: "bold",}}>Palette : <Text style={{color: "#000", fontSize: 15, fontWeight: "bold",}}>{Math.round(((item.prepare / this.state.colis_qty) / this.state.palette_qty) * 100) / 100 }</Text></Text>
                                                                             </View>
                                                                         </View>
+
                                                                     </View>
                                                                 </View>
                                                             
                                                         </TouchableOpacity>
-                                                     {/* } */}
+                                                    } 
                                                 </View>
                                             ))}
                                         </ScrollView>
@@ -1145,7 +1173,29 @@ class Picking extends Component {
                             </ScrollView>
 
                             {this.state.isShowNextPick ? 
-                                    <View style={{width: "100%", marginBottom: 50}}>
+                                    <View style={{width: "100%", marginBottom: "10%"}}>
+
+                                        <LinearGradient
+                                        start={{x: 0.0, y: 1}} end={{x: 0.5, y: 1}}
+                                        colors={['#00AAFF', '#706FD3']}
+                                        style={{width: "100%", flexDirection: "row", alignItems: "center", paddingTop: 10, paddingBottom: 10, marginBottom: 20}}>
+
+                                            <View style={{width: "90%", flexDirection: "row", alignItems: "center", }}>
+                                                {/* <View style={{marginLeft: 5, height: 30, width: 90, padding: 10, justifyContent: "center", alignItems: "center", borderWidth: 2, backgroundColor: "#ffffff"}}>
+                                                    <Text style={{color: "#00AAFF", fontSize: 20, fontWeight: 'bold'}}>Bouton</Text>
+                                                </View>
+                                                <View style={{marginLeft: 5, height: 30, width: 90, padding: 10, justifyContent: "center", alignItems: "center", borderWidth: 2, backgroundColor: "#dbdbdb"}}>
+                                                    <Text style={{color: "#00AAFF", fontSize: 20, fontWeight: 'bold'}}>Saisi</Text>
+                                                </View> */}
+                                            </View>
+                                            <View style={{width: "15%",}}>
+                                                <TouchableOpacity
+                                                    style={{marginRight: 10}}
+                                                    onPress={() => this.remove_input_picking()}>
+                                                        <Icon name="times-circle" size={30} style={{color: "#ffffff"}}/>
+                                                </TouchableOpacity>
+                                            </View>
+                                        </LinearGradient>
 
                                         <View style={{flexDirection: "row", justifyContent: "center", alignItems: "center"}}>
                                             <TouchableOpacity
@@ -1202,6 +1252,12 @@ class Picking extends Component {
                                                 <Text style={{fontSize: 20}}>100</Text>
                                             </TouchableOpacity>
                                         </View>
+
+                                        {/* <TouchableOpacity
+                                            style={{marginTop: 10, marginLeft: 'auto', marginRight: 10}}
+                                            onPress={() => this.remove_input_picking()}>
+                                                <Icon name="times-circle" size={30} style={{color: "#00AAFF"}}/>
+                                        </TouchableOpacity> */}
                                     </View>
                                 :
                                     null

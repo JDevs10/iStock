@@ -2,8 +2,7 @@ import React, { Component } from 'react';
 import { StyleSheet, View, Text, Image, Alert, StatusBar } from 'react-native';
 import TokenManager from '../../Database/TokenManager';
 import FindWarehouses from '../../services/FindWarehouses';
-import Strings from "../../utilities/Strings";
-const STRINGS = new Strings();
+import { STRINGS } from "../../utilities/STRINGS";
 const BG = require('../../../img/waiting_bg.png');
 
 
@@ -33,8 +32,8 @@ export default class WarehousesSync extends Component {
     });
 
     const findWarehouses = new FindWarehouses();
-    const res = await findWarehouses.getAllWarehousesFromServer(token).then(async (val) => {
-      console.log('findWarehouses.getAllWarehousesFromServer : ');
+    const res = await findWarehouses.getLatestWarehousesFromServer(token).then(async (val) => {
+      console.log('findWarehouses.getLatestWarehousesFromServer : ');
       console.log(val);
       return val;
     });

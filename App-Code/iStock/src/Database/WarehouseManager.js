@@ -112,7 +112,7 @@ class WarehouseManager extends Component {
     //Insert
     async INSERT_WAREHOUSE(data_){
         console.log("##### INSERT_WAREHOUSE #########################");
-        console.log("inserting.... ", data_);
+        console.log("inserting.... ", data_.length);
         return await new Promise(async (resolve) => {
             try{
                 for(let x = 0; x < data_.length; x++){
@@ -179,6 +179,60 @@ class WarehouseManager extends Component {
             });
         });
     }
+
+    async IS_WAREHOUSE_EXIST_BY_ID(id){
+        console.log("##### IS_WAREHOUSE_EXIST_BY_ID #########################");
+
+        return await new Promise(async (resolve) => {
+            let user = {};
+            try{
+                await db.transaction(async (tx) => {
+                    await tx.executeSql("SELECT * FROM "+TABLE_NAME+" WHERE "+COLUMN_ID+" = "+id+"", []).then(async ([tx,results]) => {
+                        var len = results.rows.length;
+                        for (let i = 0; i < len; i++) {
+                            let row = results.rows.item(i);
+                            user = row;
+                        }
+                    });
+                })
+                await resolve(user);
+            } catch(error){
+                console.log("IS_WAREHOUSE_EXIST.... error", error);
+                await resolve(null);
+            }
+        });
+    }
+
+    //Update
+    async UPDATE_WAREHOUSE_BY_ID(data){
+        console.log("##### UPDATE_WAREHOUSE_BY_ID #########################");
+        console.log("updating.... ", data);
+
+        return await new Promise(async (resolve) => {
+            try{
+                for(let x = 0; x < data.length; x++){
+                    const sql = "UPDATE "+TABLE_NAME+" SET "+
+                    ""+COLUMN_LABEL+" = '"+data[x].label+"', "+
+                    ""+COLUMN_LIEU+" = '"+data[x].lieu+"', "+
+                    ""+COLUMN_FK_PARENT+" = '"+data[x].fk_parent+"', "+
+                    ""+COLUMN_COUNTRY+" = '"+data[x].country+"', "+
+                    ""+COLUMN_COUNTRY_ID+" = '"+data[x].country_id+"', "+
+                    ""+COLUMN_COUNTRY_CODE+" = '"+data[x].country_code+"', "+
+                    ""+COLUMN_STATUT+" = '"+data[x].statut+"' "+
+                    "WHERE "+COLUMN_ID+" = "+data[x].id;
+                    
+                    await db.transaction(async (tx) => {
+                        await tx.executeSql(sql, []);
+                    });
+                }
+                await resolve(true);
+            } catch(error){
+                console.log("updating.... error", error);
+                await resolve(false);
+            }
+        });
+    }
+
 
     //Delete
     async DELETE_WAREHOUSE_LIST(){

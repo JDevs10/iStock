@@ -25,8 +25,7 @@ import FindCommandes from '../../services/FindCommandes';
 import ShipmentsManager from '../../Database/ShipmentsManager';
 import ShipmentLinesManager from '../../Database/ShipmentLinesManager';
 
-import Strings from "../../utilities/Strings";
-const STRINGS = new Strings();
+import { STRINGS } from "../../utilities/STRINGS";
 
 
 const iconStyle = {
@@ -130,7 +129,7 @@ export function DrawerContent(props) {
                         <View style={{flexDirection:'row',marginTop: 15}}>
                             <Avatar.Image 
                             style={{backgroundColor: "#fff"}}
-                                source={require('../../../img/Logo.jpg')}
+                                source={require('../../../img/Logo.png')}
                                 size={100}
                             />
                             <View style={{marginLeft:15, flexDirection:'column'}}>

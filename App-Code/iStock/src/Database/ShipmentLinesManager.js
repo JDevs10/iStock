@@ -129,11 +129,13 @@ class ShipmentLinesManager extends Component {
                         await tx.executeSql(SQL_INSERT, []).then(async ([tx,results]) => {
                             console.log("Query completed");
 
-                            var insertedId = results.insertId;
-                            const detail_batch = data_[x].detail_batch;
-                            const isShipmentLineDetailBatch = await sldbm.INSERT_SHIPMENT_LINE_DETAIL_BATCH(insertedId, detail_batch).then(async (val) => {
-                                return val;
-                            });
+                            if(data_[x].detail_batch != null && data_[x].detail_batch.length > 0){
+                                var insertedId = results.insertId;
+                                const detail_batch = data_[x].detail_batch;
+                                const isShipmentLineDetailBatch = await sldbm.INSERT_SHIPMENT_LINE_DETAIL_BATCH(insertedId, data_[x].fk_product, detail_batch).then(async (val) => {
+                                    return val;
+                                });
+                            }
                         });
                     });
                 }
@@ -246,15 +248,25 @@ class ShipmentLinesManager extends Component {
         console.log("updating.... ", data_.length);
         return await new Promise(async (resolve) => {
             try{
+                const shipmentLineDetailBatchManager = new ShipmentLineDetailBatchManager();
+                await shipmentLineDetailBatchManager.initDB();
+
                 for(let x = 0; x < data_.length; x++){
                     const SQL_UPDATE = "UPDATE " + TABLE_NAME + " SET " +
                     ""+COLUMN_ENTREPOT_ID+" = '"+data_[x].entrepot_id+"', " +
                     ""+COLUMN_QTY+" = "+data_[x].qty+", " +
                     ""+COLUMN_RANG+" = '"+data_[x].rang+"', " +
-                    "WHERE "+COLUMN_FK_EXPEDITION+" = '"+data_[x].fk_expedition+"'";
+                    "WHERE "+COLUMN_ORIGIN_LINE_ID+" = "+data_[x].origin_line_id+" AND "+COLUMN_FK_EXPEDITION+" = '"+data_[x].fk_expedition+"'";
 
                     await db.transaction(async (tx) => {
-                        await tx.executeSql(SQL_UPDATE, []);
+                        await tx.executeSql(SQL_UPDATE, []).then(async ([tx,results]) => {
+                            
+                            if(detail_batch != null && detail_batch.length > 0){
+                                await shipmentLineDetailBatchManager.DELETE_SHIPMENT_LINE_DETAIL_BATCH_BY_FK_PRODUCT_N_FK_EXPEDITIONDET(data_[x].fk_expedition, data_[x].fk_product);
+                                await shipmentLineDetailBatchManager.INSERT_SHIPMENT_LINE_DETAIL_BATCH(data_[x].detail_batch);
+                            }
+                            
+                        });
                     });
                 }
                 return await resolve(true);
@@ -277,7 +289,7 @@ class ShipmentLinesManager extends Component {
     }
 
     //Delete
-    async DELETE_SHIPMENT_LINES_BY_ID(fk_expedition){
+    async DELETE_SHIPMENT_LINES_BY_FK_EXPEDITION(fk_expedition){
         console.log("##### DELETE_SHIPMENT_LINES_BY_ORIGIN #########################");
 
         return await new Promise(async (resolve) => {

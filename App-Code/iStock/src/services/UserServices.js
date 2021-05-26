@@ -6,8 +6,10 @@ import DeviceInfo from 'react-native-device-info';
 import ServerManager from '../Database/ServerManager';
 import TokenManager from '../Database/TokenManager';
 import CheckConnections from '../services/CheckConnections';
-import Strings from "../utilities/Strings";
-const STRINGS = new Strings();
+import { STRINGS } from "../utilities/STRINGS";
+import { MyErrors } from "../utilities/Error";
+import { writeInitLog, writeBackInitLog, writeLog, LOG_TYPE } from '../utilities/MyLogs';
+
 
 // create a component
 class UserServices extends Component {
@@ -45,6 +47,7 @@ class UserServices extends Component {
             return await val;
         });
         console.log('server_list : ', servers);
+        writeLog(LOG_TYPE.INFO, UserServices.name, this.LogginIn.name, "BDC servers => "+servers.length);
 
         let isServerActive = false;
         for(let i = 0; i < servers.length; i++){
@@ -58,14 +61,16 @@ class UserServices extends Component {
 
         // Check if the server exist and avaiable
         if(!isServerActive){
-            if(account.serverUrl == null || account.serverUrl == ""){
+            if(account.serverUrl == null || account.serverUrl == "") {
                 console.log("Le server " + account.entreprise + " n'est pas joignable ou configuré dans iApps");
                 alert("Le server " + account.entreprise + " n'est pas joignable ou configuré dans iApps");
+                writeLog(LOG_TYPE.INFO, UserServices.name, this.LogginIn.name, "The server \""+JSON.stringify(account.serverUrl)+"\" is not reachable");
                 return;
             }
-            if(account.serverStatus == null || account.serverStatus != 1){
+            if(account.serverStatus == null || account.serverStatus != 1) {
                 console.log("Le server " + account.entreprise + " est inactive !");
                 alert("Le server " + account.entreprise + " est inactive !");
+                writeLog(LOG_TYPE.INFO, UserServices.name, this.LogginIn.name, "The server \""+JSON.stringify(account.serverUrl)+"\" is inactive");
                 return;
             }
         }
@@ -91,19 +96,22 @@ class UserServices extends Component {
                         password: account.password
                     }, 
                     { headers: { 'DOLAPIKEY': account.key, 'Accept': 'application/json' } })
-                .then(async (response) => {
-                    if(response.status == 200){
+                .then(async (response_istockapi) => {
+                    if(response_istockapi.status == 200){
                         console.log('Status == 200');
-                        console.log(response.data);
+                        console.log(response_istockapi.data);
 
                         //navigate to download
                         const token_ = {
-                            userId: response.data.success.id,
-                            name: response.data.success.identifiant,
+                            userId: response_istockapi.data.success.id,
+                            name: response_istockapi.data.success.identifiant,
                             server: account.serverUrl,
                             token: account.key,
-                            company: account.entreprise
+                            company: account.entreprise,
+                            channel: response_istockapi.data.success.iStock_channel
                         };
+
+                        console.log("token_ => ", token_);
 
                         const tm = new TokenManager();
                         await tm.initDB();
@@ -113,13 +121,13 @@ class UserServices extends Component {
                         await resolve(true);
                     }else{
                         console.log('Status != 200');
-                        console.log(response.data);
+                        console.log(response_istockapi.data);
                     }
                 }).catch(async (error) => {
                     // handle error
                     console.log('error 1 : ');
                     console.log(error);
-                    console.log( error.response.request._response);
+                    writeLog(LOG_TYPE.INFO, UserServices.name, this.LogginIn.name, JSON.stringify(error));
                 });
                 
             }else{
@@ -130,12 +138,13 @@ class UserServices extends Component {
             // handle error
             console.log('error 1 : ');
             console.log(error);
-            console.log( error.response.request._response);
+            writeLog(LOG_TYPE.INFO, UserServices.name, this.LogginIn.name, JSON.stringify(error));
         });
         });
 
         if(result){
             this.props.navigation.navigate('download');
+            writeLog(LOG_TYPE.INFO, UserServices.name, this.LogginIn.name, "Loggin successful && token saved");
         }
         
     }
@@ -192,11 +201,17 @@ class UserServices extends Component {
                         last_connexion: Math.floor(Date.now() / 1000),
                         device_platform: deviceOS,
                         device_type: (DeviceInfo.isTablet() ? "Tablette" : "Téléphone"),
-                        fk_user: parseInt("" + response.data.success.id)
+                        fk_user: parseInt("" + response.data.success.id),
+                        iStock_channel: response.data.success.iStock_channel
                     };
                     //console.log(user_data);
 
+                    
+                    writeLog(LOG_TYPE.INFO, UserServices.name, this.SigningIn.name, `${account.server}/api/index.php/istockapi/authentifications/create?DOLAPIKEY${account.key}`);
+                    writeLog(LOG_TYPE.INFO, UserServices.name, this.SigningIn.name, JSON.stringify(user_data));
+                    
                     console.log(`${account.server}/api/index.php/istockapi/authentifications/create?DOLAPIKEY${account.key}`);
+
                     axios.post(`${account.server}/api/index.php/istockapi/authentifications/create`, 
                         user_data, 
                         { headers: { 'DOLAPIKEY': account.key, 'Accept': 'application/json' } })
@@ -211,8 +226,10 @@ class UserServices extends Component {
                                 name: user_data.identifiant,
                                 server: account.server,
                                 token: account.key,
-                                company: account.server.split('/')[2].split('.')[0]
+                                company: account.server.split('/')[2].split('.')[0],
+                                channel: user_data.iStock_channel
                             };
+                            writeLog(LOG_TYPE.INFO, UserServices.name, this.SigningIn.name, "Token: "+JSON.stringify(token_));
 
                             const tm = new TokenManager();
                             await tm.initDB();
@@ -221,19 +238,23 @@ class UserServices extends Component {
 
                             //navigate to connexion screen
                             if(res_ != null && res_){
+                                writeLog(LOG_TYPE.INFO, UserServices.name, this.SigningIn.name, "Bienvenu sur iStock!");
                                 await resolve({status: true, tittle: "Succès", message: "Bienvenu sur iStock!"});
                             }else{
+                                writeLog(LOG_TYPE.WARNING, UserServices.name, this.SigningIn.name, JSON.stringify(MyErrors.getErrorMsgObj(100)));
                                 await resolve({status: false, tittle: "Erreur", message: "Problème d'enregistrement du token!"});
                             }
                         }else{
                             console.log('Status != 200');
                             console.log(response.data);
+                            writeLog(LOG_TYPE.WARNING, UserServices.name, this.SigningIn.name, JSON.stringify(response));
                             await resolve({status: false, tittle: "Erreur", message: JSON.stringify(response)});
                         }
                     }).catch(async (error) => {
                         // handle error
                         console.log('error 2 : ');
                         console.log(error);
+                        writeLog(LOG_TYPE.ERROR, UserServices.name, this.SigningIn.name, JSON.stringify(error));
                         await resolve({status: false, tittle: "Erreur", message: JSON.stringify(error)});
                     });
                 }else{
@@ -245,6 +266,8 @@ class UserServices extends Component {
                 isUser = false;
                 console.log('error 1 : ');
                 console.log( error);
+                writeLog(LOG_TYPE.ERROR, UserServices.name, this.SigningIn.name, JSON.stringify(error));
+                writeLog(LOG_TYPE.ERROR, UserServices.name, this.SigningIn.name, JSON.stringify(MyErrors.getErrorMsgObj(101)));
                 await resolve({status: false, tittle: "Erreur", message: "Vous n'avez pas de compte sur " + account.server});
             });
         });

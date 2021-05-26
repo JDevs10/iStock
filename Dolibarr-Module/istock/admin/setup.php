@@ -106,39 +106,8 @@ dol_fiche_head($head, 'settings', '', -1, "istock@istock");
 // echo '<span class="opacitymedium">'.$langs->trans("IStockSetupPage").'</span><br><br>';
 
 
-if($ISTOCK_KEY == ""){
+if($ISTOCK_KEY != ""){ 
 ?>
-
-<form id="form_istock_key" name="form_istock_key" method="POST" action="setup.php">
-	<h3>Création de la clé licence : </h3>
-	<div style="display: flex;">
-		<input type="hidden" name="action_1" value="update">
-		<input type="hidden" name="action_2" value="add_key">
-		<input id="form_istock_key_input" style="margin-right: 20px; width: 250px;" type="text" name="istock_key" maxlength="29" placeholder="Ex: xxxxx-xxxxx-xxxxx-xxxxx-xxxxx" value="<?php print $ISTOCK_KEY; ?>"/>
-		<div class="maj_const _g__" style="margin-left: 20px;" onclick="generateKey()">Générer</div>
-	</div>
-	<br>
-	<br>
-	<br>
-	<div class="maj_const _a__" onclick="document.getElementById('form_istock_key').submit()">Ajouter</div>
-
-</form>
-<br>
-<br>
-<br>
-<script>
-	function generateKey(){
-		$.get("../backend/generate_key.php",function(data, status){
-			if(status == 'success'){
-				const input = document.getElementById('form_istock_key_input');
-				input.value = data;
-			}else{
-				alert("Status: " + status + "\nErreur de la génération d'une clé licence.");
-			}
-		});
-	}
-</script>
-<?php }else{ ?>
 	<form id="form_istock_key_d" name="form_istock_key_d" method="POST" action="setup.php">
 	
 		<h3>La clé lience : </h3>
@@ -146,7 +115,6 @@ if($ISTOCK_KEY == ""){
 			<input type="hidden" name="action_1" value="update">
 			<input type="hidden" name="action_2" value="delete_key">
 			<input style="margin-right: 20px; width: 250px;" type="text" name="istock_key_d" maxlength="29" value="<?php print $ISTOCK_KEY ?>" readonly="readonly"/>
-			<div class="maj_const _d__" style="margin-left: 20px;" onclick="document.getElementById('form_istock_key_d').submit()">Supprimer</div>
 		</div>
 		
 	</form>

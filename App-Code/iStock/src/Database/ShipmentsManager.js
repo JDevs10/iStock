@@ -6,6 +6,7 @@ import DatabaseInfo from './DatabaseInfo';
 import ThirdPartiesManager from './ThirdPartiesManager';
 import UserManager from './UserManager';
 import ShipmentLinesManager from '../Database/ShipmentLinesManager';
+import OrderManager from './OrderManager';
 SQLite.DEBUG(true);
 SQLite.enablePromise(true);
 
@@ -169,7 +170,7 @@ class ShipmentsManager extends Component {
                     const SQL_INSERT = "INSERT INTO " + TABLE_NAME + " ("+COLUMN_ID+", "+COLUMN_SHIPMENT_ID+", "+COLUMN_ORIGIN+", "+COLUMN_ORIGIN_ID+", "+COLUMN_ORIGIN_TYPE+", "+COLUMN_REF+", "+COLUMN_SOCID+", "+COLUMN_ENTREPOT_ID+", "+COLUMN_PROJECT_ID+", "+COLUMN_TRACKING_NUMBER+", "+ 
                     ""+COLUMN_TRACKING_URL+", "+COLUMN_DATE_CREATION+", "+COLUMN_DATE_VALID+", "+COLUMN_DATE_SHIPPING+", "+COLUMN_DATE_EXPEDITION+", "+COLUMN_DATE_DELIVERY+", "+COLUMN_STATUT+", "+COLUMN_SHIPPING_METHOD_ID+", "+
                     ""+COLUMN_SHIPPING_METHOD+", "+COLUMN_USER_AUTHOR_ID+", "+COLUMN_WEIGHT+", "+COLUMN_WEIGHT_UNITS+", "+COLUMN_SIZEW+", "+COLUMN_WIDTH_UNITS+", "+COLUMN_SIZEH+", "+COLUMN_HEIGHT_UNITS+", "+COLUMN_SIZES+", "+COLUMN_DEPTH_UNITS+", "+COLUMN_TRUE_SIZE+", "+COLUMN_IS_SYNCHRO+") "+
-                    "VALUES ("+data_[x].id+", '"+data_[x].shipment_id+"', '"+data_[x].origin+"', '"+data_[x].origin_id+"', '"+data_[x].origin_type+"', '"+data_[x].ref+"', '"+data_[x].socid+"', '"+data_[x].entrepot_id+"', '"+data_[x].project_id+"', '"+data_[x].tracking_number+"', '"+data_[x].tracking_url+"', "+
+                    "VALUES ("+data_[x].id+", '"+data_[x].id+"', '"+data_[x].origin+"', '"+data_[x].origin_id+"', '"+data_[x].origin_type+"', '"+data_[x].ref+"', '"+data_[x].socid+"', '"+data_[x].entrepot_id+"', '"+data_[x].project_id+"', '"+data_[x].tracking_number+"', '"+data_[x].tracking_url+"', "+
                     ""+(data_[x].date_creation != null ? (data_[x].date_creation != "" ? data_[x].date_creation : null) : null)+", "+(data_[x].date_valid != null ? (data_[x].date_valid != "" ? data_[x].date_valid : null) : null)+", "+(data_[x].date_shipping != null ? (data_[x].date_shipping != "" ? data_[x].date_shipping : null) : null)+", "+(data_[x].date_expedition != null ? (data_[x].date_expedition != "" ? data_[x].date_expedition : null) : null)+", "+(data_[x].date_delivery != null ? (data_[x].date_delivery != "" ? data_[x].date_delivery : null) : null)+", '"+data_[x].statut+"', '"+data_[x].shipping_method_id+"', '"+data_[x].shipping_method+"', '"+data_[x].user_author_id+"', '"+data_[x].weight+"', '"+data_[x].weight_units+"', '"+data_[x].size_w+"', "+
                     "'"+data_[x].width_units+"', '"+data_[x].size_h+"', '"+data_[x].height_units+"', '"+data_[x].size_s+"', '"+data_[x].depth_units+"', '"+data_[x].true_size+"', '"+data_[x].is_synchro+"')";
 
@@ -177,7 +178,7 @@ class ShipmentsManager extends Component {
                         await tx.executeSql(SQL_INSERT, []);
                     });
 
-                    if(data_[x].lines != null){
+                    if(data_[x].lines != null && data_[x].lines.length > 0){
                         await shipmentLinesManager.INSERT_SHIPMENT_LINES(data_[x].lines);
                     }
                     
@@ -187,6 +188,29 @@ class ShipmentsManager extends Component {
                 console.log("error : ", error);
                 return await resolve(false);
             }
+        });
+    }
+
+    async IS_SHIPMENT_EXIST_BY_REF(ref){
+        console.log("##### IS_SHIPMENT_EXIST_BY_REF #########################");
+
+        return await new Promise(async (resolve) => {
+            let user = {};
+            await db.transaction(async (tx) => {
+                await tx.executeSql("SELECT * FROM "+TABLE_NAME+" WHERE "+COLUMN_REF+" = '"+ref+"'", []).then(async ([tx,results]) => {
+                    var len = results.rows.length;
+                    for (let i = 0; i < len; i++) {
+                        let row = results.rows.item(i);
+                        user = row;
+                    }
+                });
+            }).then(async (result) => {
+                //await this.closeDatabase(db);
+                await resolve(user);
+            }).catch(async (err) => {
+                console.log(err);
+                await resolve(null);
+            });
         });
     }
 
@@ -267,11 +291,12 @@ class ShipmentsManager extends Component {
         const thirdPartiesManager = new ThirdPartiesManager();
         const userManager = new UserManager();
         const slm = new ShipmentLinesManager();
+        const om = new OrderManager();
 
         return await new Promise(async (resolve) => {
             let shipments = [];
             // to add => , sm."+COLUMN_IS_SYNCHRO+"
-            const sql = "SELECT sm." + COLUMN_ID + ", sm." + COLUMN_ORIGIN_ID + ", sm." + COLUMN_REF + ", (SELECT tdp."+thirdPartiesManager._COLUMN_NAME_+" FROM "+thirdPartiesManager._TABLE_NAME_+" as tdp WHERE tdp."+thirdPartiesManager._COLUMN_REF_+" = sm."+COLUMN_SOCID+") as client_name, sm."+COLUMN_TRACKING_NUMBER+", sm."+COLUMN_TRACKING_URL+", sm."+COLUMN_DATE_CREATION+", sm."+COLUMN_DATE_EXPEDITION+", sm."+COLUMN_DATE_DELIVERY+", sm."+COLUMN_STATUT+", sm."+COLUMN_SHIPPING_METHOD+", (SELECT u."+userManager._COLUMN_LASTNAME_+" FROM "+userManager._TABLE_NAME_+" as u WHERE u."+userManager._COLUMN_REF_+" = sm."+COLUMN_USER_AUTHOR_ID+") as user_author_id, (SELECT count(*) FROM "+slm._TABLE_NAME_+" as sml WHERE sml."+slm._COLUMN_FK_EXPEDITION_+" = sm."+COLUMN_ORIGIN_ID+") as lines FROM "+TABLE_NAME+" as sm ORDER BY sm."+COLUMN_ORIGIN_ID+" DESC";
+            const sql = "SELECT sm." + COLUMN_ID + ", sm." + COLUMN_ORIGIN_ID + ", sm." + COLUMN_REF + ", (SELECT tdp."+thirdPartiesManager._COLUMN_NAME_+" FROM "+thirdPartiesManager._TABLE_NAME_+" as tdp WHERE tdp."+thirdPartiesManager._COLUMN_REF_+" = sm."+COLUMN_SOCID+") as client_name, sm."+COLUMN_TRACKING_NUMBER+", sm."+COLUMN_TRACKING_URL+", sm."+COLUMN_DATE_CREATION+", sm."+COLUMN_DATE_EXPEDITION+", sm."+COLUMN_DATE_DELIVERY+", sm."+COLUMN_STATUT+", sm."+COLUMN_SHIPPING_METHOD+", (SELECT u."+userManager._COLUMN_LASTNAME_+" FROM "+userManager._TABLE_NAME_+" as u WHERE u."+userManager._COLUMN_REF_+" = sm."+COLUMN_USER_AUTHOR_ID+") as user_author_id, (SELECT cmd."+om._COLUMN_REF_COMMANDE_+" FROM "+om._TABLE_NAME_+" as cmd WHERE "+om._COLUMN_COMMANDE_ID_+" = "+COLUMN_ORIGIN_ID+" LIMIT 1) as from_order_ref, (SELECT count(*) FROM "+slm._TABLE_NAME_+" as sml WHERE sml."+slm._COLUMN_FK_EXPEDITION_+" = sm."+COLUMN_ID+") as lines FROM "+TABLE_NAME+" as sm ORDER BY sm."+COLUMN_ORIGIN_ID+" DESC";
             console.log("SQL => "+sql);
             await db.transaction(async (tx) => {
                 await tx.executeSql(sql, []).then(async ([tx,results]) => {
@@ -485,6 +510,18 @@ class ShipmentsManager extends Component {
         return await new Promise(async (resolve) => {
             await db.transaction(async (tx) => {
                 await tx.executeSql("DELETE FROM " + TABLE_NAME +" WHERE "+COLUMN_ORIGIN_ID+" = '"+origin_id+"'", []);
+            });
+            return await resolve(true);
+        });
+    }
+
+    //Delete
+    async DELETE_SHIPMENT_BY_REF(ref){
+        console.log("##### DELETE_SHIPMENT_BY_REF #########################");
+
+        return await new Promise(async (resolve) => {
+            await db.transaction(async (tx) => {
+                await tx.executeSql("DELETE FROM " + TABLE_NAME +" WHERE "+COLUMN_REF+" = '"+ref+"'", []);
             });
             return await resolve(true);
         });

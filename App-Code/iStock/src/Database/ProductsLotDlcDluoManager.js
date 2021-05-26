@@ -115,9 +115,9 @@ class ProductsLotDlcDluoManager extends Component {
                         await tx.executeSql("INSERT INTO " + TABLE_NAME + " ("+COLUMN_ID+", "+COLUMN_ENTREPOT_ID+", "+COLUMN_ENTREPOT_LABEL+", "+COLUMN_BATCH+", "+COLUMN_FK_PRODUCT+", "+COLUMN_EAT_BY+", "+COLUMN_SELL_BY+", "+COLUMN_STOCK+", "+COLUMN_FK_ORIGIN_STOCK+") VALUES (null, '"+data_[x].fk_entrepot+"', '"+data_[x].entrepot_label+"', '"+data_[x].batch+"', '"+data_[x].fk_product+"', '"+data_[x].eatby+"', '"+data_[x].sellby+"', "+data_[x].qty+", '"+data_[x].fk_origin_stock+"')", []);
                     });
                 }
-                return await resolve(true);
+                await resolve(true);
             } catch(error){
-                return await resolve(false);
+                await resolve(false);
             }
         });
     }
@@ -149,9 +149,112 @@ class ProductsLotDlcDluoManager extends Component {
         });
     }
 
+    //Get by id
+    async GET_Warehouse_Ids_ProductsLotDlcDluo(){
+        console.log("##### GET_Warehouse_Ids_ProductsLotDlcDluo #########################");
+
+        return await new Promise(async (resolve) => {
+            let productsLotDlcDluo = [];
+            await db.transaction(async (tx) => {
+                await tx.executeSql("SELECT DISTINCT("+COLUMN_ENTREPOT_ID+") FROM "+TABLE_NAME, []).then(async ([tx,results]) => {
+                    console.log("Query completed");
+
+                    var len = results.rows.length;
+                    for (let i = 0; i < len; i++) {
+                        let row = results.rows.item(i);
+                        productsLotDlcDluo.push(row.entrepot);
+                    }
+                });
+            }).then(async (result) => {
+                await resolve(productsLotDlcDluo);
+            }).catch(async (err) => {
+                console.log(err);
+                await resolve(null);
+            });
+        });
+    }
+
+    async GET_Warehouse_Ids_ProductsLotDlcDluo_by_fkProduct(fk_product){
+        console.log("##### GET_Warehouse_Ids_ProductsLotDlcDluo_by_fkProduct #########################");
+
+        return await new Promise(async (resolve) => {
+            let productsLotDlcDluo = [];
+            await db.transaction(async (tx) => {
+                await tx.executeSql("SELECT DISTINCT("+COLUMN_ENTREPOT_ID+") FROM "+TABLE_NAME+" WHERE "+COLUMN_FK_PRODUCT+" = "+fk_product, []).then(async ([tx,results]) => {
+                    console.log("Query completed");
+
+                    var len = results.rows.length;
+                    for (let i = 0; i < len; i++) {
+                        let row = results.rows.item(i);
+                        productsLotDlcDluo.push(row.entrepot);
+                    }
+                });
+            }).then(async (result) => {
+                await resolve(productsLotDlcDluo);
+            }).catch(async (err) => {
+                console.log(err);
+                await resolve(null);
+            });
+        });
+    }
+
+    async IS_ORIGIN_STOCK_EXIST(id){
+        console.log("##### IS_ORIGIN_STOCK_EXIST #########################");
+
+        return await new Promise(async (resolve) => {
+            let fk_origin_stock = {};
+            await db.transaction(async (tx) => {
+                await tx.executeSql("SELECT * FROM "+TABLE_NAME+" WHERE "+COLUMN_FK_ORIGIN_STOCK+" = "+id+"", []).then(async ([tx,results]) => {
+                    var len = results.rows.length;
+                    for (let i = 0; i < len; i++) {
+                        let row = results.rows.item(i);
+                        fk_origin_stock = row;
+                    }
+                });
+            }).then(async (result) => {
+                //await this.closeDatabase(db);
+                await resolve(fk_origin_stock);
+            }).catch(async (err) => {
+                console.log(err);
+                await resolve(null);
+            });
+        });
+    }
+
+
+    //Update
+    async UPDATE_ProductsLotDlcDluo_BY_ORIGIN_STOCK(data_){
+        console.log("##### UPDATE_ProductsLotDlcDluo_BY_ORIGIN_STOCK #########################");
+        console.log("updating.... ", data_.length);
+
+        return await new Promise(async (resolve) => {
+            try{
+                for(let x = 0; x < data_.length; x++){
+                    const sql = "UPDATE " + TABLE_NAME + " SET " + 
+                    ""+COLUMN_ENTREPOT_ID + " = '"+data_[x].fk_entrepot+"', "+
+                    ""+COLUMN_ENTREPOT_LABEL+" = '"+data_[x].entrepot_label.replace(/'/g, "''")+"', "+
+                    ""+COLUMN_BATCH+" = '"+data_[x].batch+"', "+
+                    ""+COLUMN_EAT_BY+" = '"+data_[x].eatby+"', "+
+                    ""+COLUMN_SELL_BY+" = '"+data_[x].sellby+"', "+
+                    ""+COLUMN_STOCK+" = "+(data_[x].stock != null ? data_[x].stock : 0)+" "+
+                    "WHERE " + COLUMN_FK_ORIGIN_STOCK + " = " + data_[x].fk_origin_stock;
+
+                    await db.transaction(async (tx) => {
+                        await tx.executeSql(sql, []);
+                    });
+
+                }
+                await resolve(true);
+            } catch(error){
+                console.error('error : ', error);
+                await resolve(false);
+            }
+        });
+    }
+
     //Delete by products
-    async DELETE_ProductsLotDlcDluo_LIST(productId){
-        console.log("##### DELETE_ProductsLotDlcDluo_LIST #########################");
+    async DELETE_ProductsLotDlcDluo_FK_PRODUCT(productId){
+        console.log("##### DELETE_ProductsLotDlcDluo_FK_PRODUCT #########################");
 
         return await new Promise(async (resolve) => {
             await db.transaction(async (tx) => {

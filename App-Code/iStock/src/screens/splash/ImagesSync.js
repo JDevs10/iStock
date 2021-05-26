@@ -3,10 +3,9 @@ import { StyleSheet, View, Text, Image, Alert, StatusBar } from 'react-native';
 import TokenManager from '../../Database/TokenManager';
 import FindImages from '../../services/FindImages';
 import SettingsManager from '../../Database/SettingsManager';
-import Strings from "../../utilities/Strings";
-const STRINGS = new Strings();
+import { STRINGS } from "../../utilities/STRINGS";
 const BG = require('../../../img/waiting_bg.png');
-import { writeLog, LOG_TYPE } from '../../utilities/MyLogs';
+import { writeInitLog, writeBackInitLog, writeLog, LOG_TYPE } from '../../utilities/MyLogs';
 
 
 export default class ImagesSync extends Component {
@@ -18,11 +17,11 @@ export default class ImagesSync extends Component {
   }
 
   async componentDidMount(){
-    writeLog(LOG_TYPE.INFO, ImagesSync.name, this.componentDidMount.name, "Init...");
+    writeInitLog(LOG_TYPE.INFO, ImagesSync.name, this.componentDidMount.name);
     await this.sync();
 
     this.listener = await this.props.navigation.addListener('focus', async () => {
-      writeLog(LOG_TYPE.INFO, ImagesSync.name, this.componentDidMount.name, "Back Init...");
+      writeBackInitLog(LOG_TYPE.INFO, ImagesSync.name, this.componentDidMount.name);
 
       await this.sync();
       return;
@@ -46,8 +45,8 @@ export default class ImagesSync extends Component {
       });
 
       const findImages = new FindImages();
-      const res = await findImages.getAllProduitsImagesFromServer(token).then(async (val) => {
-          console.log('findImages.getAllProduitsImagesFromServer : ');
+      const res = await findImages.getLatestProductImagesFromServer(token).then(async (val) => {
+          console.log('findImages.getAllProductsImagesFromServer : ');
           console.log(val);
           return val;
       });

@@ -16,7 +16,6 @@ import ShipmentLinesManager from '../../Database/ShipmentLinesManager';
 import ShipmentLineDetailBatchManager from '../../Database/ShipmentLineDetailBatchManager';
 import TokenManager from '../../Database/TokenManager';
 import OrderLinesFilter from './assets/OrderLinesFilter';
-import PickingPopUp from './assets/PickingPopUp';
 import moment from "moment";
 import Scanner from '../../utilities/Scanner';
 
@@ -44,7 +43,6 @@ class CommandeDetails extends React.Component{
         };
     
         this.state = {
-          isPopUpVisible: false,
           prepareMode: {saisi: true, barecode: false},
           isLoading: true,
           orderId: this.props.route.params.order.commande_id,
@@ -70,7 +68,6 @@ class CommandeDetails extends React.Component{
 
     async componentDidMount(){
 
-      // this.setState({opneScanner: false});
       // this.setState({addRemoveNothing: 0});
 
       this.setState({data: []});
@@ -97,22 +94,34 @@ class CommandeDetails extends React.Component{
 
     async prepareProduct(product){
       const cmd_header = this.props.route.params.order;
+      
       console.log('prepareProduct :: ', JSON.stringify(product));
 
-      const sldbm = new ShipmentLineDetailBatchManager();
-      await sldbm.initDB();
-      const selectedProductWarehouse = await sldbm.GET_SHIPMENT_LINE_DETAIL_BATCH_BY_FK_PRODUCT(product.product_id).then(async (val) => {
-        return val;
-      });
-
-      if(selectedProductWarehouse == null){
-        //toast
+      if(product.qty == null){
         return;
       }
 
-      product.selectedProductWarehouse = selectedProductWarehouse;
+      const product_qty = parseInt(product.qty);
 
-      if(product.qty != product.prepare_shipping_qty){
+      console.log('prepareProduct product_qty :: ', JSON.stringify(product_qty));
+
+      console.log('prepareProduct :: ', product_qty, product.prepare_shipping_qty);
+
+      if(product_qty > 0 && product_qty != product.prepare_shipping_qty && product.stock != null && product.stock != "null" && product.stock > 0){
+
+        const sldbm = new ShipmentLineDetailBatchManager();
+        await sldbm.initDB();
+        const selectedProductWarehouse = await sldbm.GET_SHIPMENT_LINE_DETAIL_BATCH_BY_FK_PRODUCT(product.product_id).then(async (val) => {
+          return val;
+        });
+
+        if(selectedProductWarehouse == null){
+          //toast
+          return;
+        }
+
+        product.selectedProductWarehouse = selectedProductWarehouse;
+
         console.log('prepareProduct Done: ', JSON.stringify(product));
 
         // return; 
@@ -130,20 +139,10 @@ class CommandeDetails extends React.Component{
             pickingMimLimit: 0
           }
         });
-
-        // this.setState({
-        //   isPopUpVisible: true,
-        //   pickingDataSelected: {product: product, _opacity_: 0, pickingMaxLimit: product.qty, pickingMimLimit: 0}
-        // });
-
+        
       }
     }
-
-    _onPickingClose(product){
-      this.setState({
-        isPopUpVisible: false,
-      });
-    }
+    
 
     async _onPickingOk(product){
       // console.log("cmd : ", this.props.route.params.order);
@@ -280,13 +279,6 @@ class CommandeDetails extends React.Component{
       //  If true: update db obj line
       //  Else true: create it
 
-
-      // {"brouillon": "null", "client_name": "Développeur @JL", "commande_id": 672, "date_commande": "1603929600", "date_creation": "1603929600", "date_livraison": 1604448000, "id": 45, "is_sync": 1, "lines_nb": 4, "note_privee": "", "note_public": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor. Cras elementum ultrices diam. Maecenas ligula massa, varius a, semper congue, euismod non, mi. Proin porttitor, orci nec nonummy molestie, enim est eleifend mi, non fermentum diam nisl sit amet erat. Duis semper. Duis arcu massa, scelerisque vitae, consequat in, pretium a, enim. Pellentesque congue. Ut in risus volutpat libero pharetra tempor. Cras vestibulum bibendum augue. Praesent egestas leo in pede. Praesent blandit odio eu enim. Pellentesque sed dui ut augue blandit sodales. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Aliquam nibh. Mauris ac mauris sed pede pellentesque fermentum. Maecenas adipiscing ante non diam sodales hendrerit.", "ref_client": undefined, "ref_commande": "CMD201029-000414", "remise": "0", "remise_absolue": "null", "remise_percent": "0", "socId": 2254, "statut": 3, "total_ht": "56.20000000", "total_ttc": "56.20000000", "total_tva": "0.00000000", "user": " SuperAdmin", "user_author_id": 1}
-
-      this.setState({
-        isPopUpVisible: false,
-        // pickingDataSelected: {product: product, _opacity_: 1, pickingMaxLimit: product.qty, pickingMimLimit: 0}
-      });
     }
 
     async _settings(){
@@ -314,12 +306,6 @@ class CommandeDetails extends React.Component{
     _onFilterPressed(data){
       console.log("_onFilterPressed : ", data);
       this.setState({isFilter: data.isFilter});
-    }
-
-    _onScannerPressed(data){
-      console.log("_onScannerPressed : ", data);
-      this.onOpneScanner();
-      //this.setState({opneScanner: true});
     }
 
     async _onDataToFilter(data){
@@ -380,7 +366,7 @@ class CommandeDetails extends React.Component{
             borderTopRightRadius: 30,
             borderBottomLeftRadius: 30,
             borderBottomRightRadius: 30,
-            paddingHorizontal: 20,
+            paddingHorizontal: 5,
             paddingVertical: 30,
             height: this.state.orientation === 'portrait' ? '80%' : '75%',
             width: '100%',
@@ -389,9 +375,10 @@ class CommandeDetails extends React.Component{
             opacity: this.state._opacity_,
           },
           cardViewStyle: {
-            width: '95%',
-            margin: 10,
-            // marginBottom: 20,
+            width: '97%',
+            marginLeft: "auto",
+            marginRight: "auto",
+            marginBottom: 20,
           },
           cardViewStyle1: {
             paddingTop: 10,
@@ -471,12 +458,14 @@ class CommandeDetails extends React.Component{
           },
           lastCard: {
             height: 70,
-            width: '95%',
+            width: '97%',
+            marginLeft: "auto",
+            marginRight: "auto",
+            marginTop: 30,
+            marginBottom: 70,
             justifyContent: "center",
             alignContent: "center",
             alignItems: "center",
-            margin: 10,
-            marginBottom: 70,
           },
           lastCard_text: {
             flex: 1,
@@ -509,9 +498,6 @@ class CommandeDetails extends React.Component{
                 <Scanner onScan={this._onScannerDone.bind(this)}/>
                 <OrderLinesFilter onDataToFilter={this._onDataToFilter.bind(this)} settings={{isFilter: this.state.isFilter}}/>
 
-                  {this.state.isPopUpVisible ? 
-                    <PickingPopUp settings={ {isPopUpVisible: this.state.isPopUpVisible, pickingDataSelected: this.state.pickingDataSelected} } onPickingClose={this._onPickingClose.bind(this)} onPickingOk={this._onPickingOk.bind(this)} />
-                    : 
                     <View style={{flex: 1}}>
                       <ScrollView>
                         {
@@ -521,25 +507,31 @@ class CommandeDetails extends React.Component{
                               <TouchableOpacity onPress={() => this.prepareProduct(item)} onLongPress={() => this.productDetails(item)}>
 
                                 {this.state.settings.isUseDetailedCMDLines ? 
-                                  <CardView cardElevation={10} cornerRadius={5} style={[styles.cardViewStyle,{backgroundColor: item.qty == item.prepare_shipping_qty ? "#dbdbdb" : "#FFFFFF"}]}>
+                                  <CardView cardElevation={10} cornerRadius={5} style={[styles.cardViewStyle, {backgroundColor: (item.qty == null || item.qty <=0 || item.qty == item.prepare_shipping_qty || item.stock == null || item.stock == "null" || item.stock <=0 ? "#dbdbdb" : "#FFFFFF")}]}>
                                     <View style={styles.cardViewStyle1}>
-                                      <View style={[styles.article, { flexDirection: "row" }]}>
-                                        {this.state.settings.isUseImages ? 
-                                          <View>
-                                            <Image style={{ width: DeviceInfo.isTablet() ? 125 : 50, height: DeviceInfo.isTablet() ? 125 : 50 }} source={{uri: `file://${item.image}`}} />
-                                            {/* <Image style={{ width: DeviceInfo.isTablet() ? 125 : 50, height: DeviceInfo.isTablet() ? 125 : 50 }} source={{uri: 'data:'+item.image}} /> */}
-                                          </View>
-                                        :
-                                          <View>
-                                            <Image style={{ width: DeviceInfo.isTablet() ? 125 : 50, height: DeviceInfo.isTablet() ? 125 : 50 }} source={require('../../../img/no_image.jpeg')} />
-                                          </View>
-                                        }
-                                        <View style={{ flex: 1, marginLeft: 10 }}>
-                                          <View style={styles.ic_and_details}>
-                                            <View style={styles.aname}>
-                                              <Text style={styles.articlename}>{item.libelle}</Text>
+                                      <View style={styles.article}>
+                                        <View style={[{ flexDirection: "row" }]}>
+                                          {this.state.settings.isUseImages ? 
+                                            <View>
+                                              <Image style={{ width: DeviceInfo.isTablet() ? 125 : 50, height: DeviceInfo.isTablet() ? 125 : 50 }} source={{uri: `file://${item.image}`}} />
                                             </View>
+                                          :
+                                            <View>
+                                              <Image style={{ width: DeviceInfo.isTablet() ? 125 : 50, height: DeviceInfo.isTablet() ? 125 : 50 }} source={require('../../../img/no_image.jpeg')} />
+                                            </View>
+                                          }
+                                          <View style={{ flex: 1, marginLeft: 10 }}>
+                                            <View style={styles.ic_and_details}>
+                                              <View style={styles.aname}>
+                                                <Text style={styles.articlename}>{item.libelle}</Text>
+                                              </View>
+                                            </View>
+                                            
                                           </View>
+                                          
+                                        </View>
+                                        <View>
+
                                           <View style={styles.ic_and_details}>
                                             <Icon name="tag" size={15} style={styles.iconDetails} />
                                             <Text>Ref : <Text style={{fontWeight: "bold"}}>{item.ref}</Text></Text>
@@ -553,13 +545,26 @@ class CommandeDetails extends React.Component{
                                             <Text>{item.stock} en Stock</Text>
                                           </View>
                                           <View style={styles.ic_and_details}>
-                                            <Icon name="boxes" size={15} style={styles.iconDetails} />
-                                            <Text>{item.qty} Commandé</Text>
+                                            <Icon name="map-marker-alt" size={15} style={styles.iconDetails} />
+                                            <Text>Emplacement : <Text style={{fontWeight: "bold"}}>{item.emplacement}</Text></Text>
                                           </View>
-                                          <View style={styles.ic_and_details}>
-                                          <Icon name="truck-loading" size={15} style={styles.iconDetails} />
-                                              <Text>{item.prepare_shipping_qty == null ? "0 Préparé": item.prepare_shipping_qty+" Préparé"}</Text>
+                                          <View style={{flexDirection: "row"}}>
+                                            <View style={styles.ic_and_details}>
+                                              <Icon name="boxes" size={15} style={styles.iconDetails} />
+                                              <Text>{item.qty} Unité</Text>
+                                            </View>
+                                            <Text style={{margin: 3,}}>| {Math.round((item.qty / item.colis_qty)*100) / 100} Colis</Text>
+                                            <Text style={{margin: 3,}}>| {Math.round(((item.qty / item.colis_qty) / item.palette_qty)*100) / 100} Palette</Text>
                                           </View>
+                                          <View style={{flexDirection: "row"}}>
+                                            <View style={styles.ic_and_details}>
+                                              <Icon name="truck-loading" size={15} style={styles.iconDetails} />
+                                              <Text>{item.prepare_shipping_qty == null ? "0 Préparée": item.prepare_shipping_qty+" Préparée"}</Text>
+                                            </View>
+                                            <Text style={{margin: 3,}}>| {Math.round((item.prepare_shipping_qty / item.colis_qty)*100) / 100} Colis</Text>
+                                            <Text style={{margin: 3,}}>| {Math.round(((item.prepare_shipping_qty / item.colis_qty) / item.palette_qty)*100) / 100} Palette</Text>
+                                          </View>
+                                          
 
                                           {/* <View style={{ borderBottomColor: '#00AAFF', borderBottomWidth: 1, marginRight: 10 }} />
 
@@ -568,13 +573,15 @@ class CommandeDetails extends React.Component{
                                               <Text>Total TTC : {item.total_ttc > 0 ? (parseFloat(item.total_ttc)).toFixed(2) : '0'} €</Text>
                                             </View>
                                           </View> */}
+
                                         </View>
-                                        
                                       </View>
+                                      
+
                                     </View>
                                   </CardView>
                                 : 
-                                  <CardView cardElevation={10} cornerRadius={5} style={[styles.cardViewStyle,]}>
+                                  <CardView cardElevation={10} cornerRadius={5} style={[styles.cardViewStyle, {backgroundColor: (item.qty == null || item.qty <=0 || item.qty == item.prepare_shipping_qty || item.stock == null || item.stock == "null" || item.stock <=0 ? "#dbdbdb" : "#FFFFFF")}]}>
                                     <View style={styles.cardViewStyle1}>
                                       <View style={[styles.article, {flexDirection: "row"}]}>
                                         <View style={{flex: 1, marginLeft: 10}}>
@@ -593,7 +600,7 @@ class CommandeDetails extends React.Component{
                                             </View>
                                             <View style={{width: "30%", flexDirection: "row", justifyContent: "center", marginRight: 20}}>
                                               <Icon name="boxes" size={15} style={styles.iconDetails} />
-                                              <Text>{item.qty} Commandé</Text>
+                                              <Text>{item.qty} Unité</Text>
                                             </View>
                                             <View style={{width: "30%", flexDirection: "row", justifyContent: "flex-end", marginRight: 20}}>
                                               <Icon name="truck-loading" size={15} style={styles.iconDetails} />
@@ -631,10 +638,10 @@ class CommandeDetails extends React.Component{
                       </ScrollView>
 
                       {/* Main twist button */}
-                      <OrderDetailButton navigation={this.props.navigation} isFilterPressed={this._onFilterPressed.bind(this)} isScannerPressed={this._onScannerPressed.bind(this)}/>
+                      <OrderDetailButton navigation={this.props.navigation} isFilterPressed={this._onFilterPressed.bind(this)} />
                       {/* END Main twist button */}
                     </View>
-                  }
+                  
 
         </View>
         <MyFooter_v2 />

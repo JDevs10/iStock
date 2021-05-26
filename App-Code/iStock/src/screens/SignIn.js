@@ -1,32 +1,18 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  Button,
-  Image,
-  TouchableOpacity,
-  TextInput,
-  Platform,
-  StyleSheet,
-  StatusBar,
-  ScrollView,
-  Alert
-} from 'react-native';
+import { View, Text, Button, Image, TouchableOpacity, TextInput, Platform, StyleSheet, StatusBar, ScrollView, Alert } from 'react-native';
 import * as Animatable from 'react-native-animatable';
 import LinearGradient from 'react-native-linear-gradient';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Feather from 'react-native-vector-icons/Feather';
-
 import UserServices from '../services/UserServices';
-
 import { useTheme } from 'react-native-paper';
-
 import Users from '../models/Users';
 import Animated from 'react-native-reanimated';
 import MyFooter from './footers/MyFooter';
 const IMG_SRC = require('../../img/bg_login.png');
+import { creatLogDir, writeInitLog, writeBackInitLog, writeLog, LOG_TYPE } from '../utilities/MyLogs';
 
-{/* <Button title="Login" onPress={() => this.props.navigation.navigate('dashboard')}/>*/ }
+
 
 
 class SignIn extends React.Component {
@@ -52,6 +38,14 @@ class SignIn extends React.Component {
     };
   }
 
+  componentDidMount() {
+    writeInitLog(LOG_TYPE.INFO, SignIn.name, this.componentDidMount.name);
+    this.listener = this.props.navigation.addListener('focus', async () => {
+      writeBackInitLog(LOG_TYPE.INFO, SignIn.name, this.componentDidMount.name);
+      
+      return;
+    });
+  }
 
   render() {
 

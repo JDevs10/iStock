@@ -1,30 +1,17 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  Button,
-  TouchableOpacity,
-  TextInput,
-  Platform,
-  StyleSheet,
-  StatusBar,
-  ScrollView,
-  Image,
-  Alert
-} from 'react-native';
+import { View, Text, Button, TouchableOpacity, TextInput, Platform, StyleSheet, StatusBar, ScrollView, Image, Alert } from 'react-native';
 import * as Animatable from 'react-native-animatable';
 import LinearGradient from 'react-native-linear-gradient';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Feather from 'react-native-vector-icons/Feather';
 import MyFooter from './footers/MyFooter';
 import UserServices from '../services/UserServices';
-
 import { useTheme } from 'react-native-paper';
-
 import Users from '../models/Users';
 import Animated from 'react-native-reanimated';
 import { NavigationContainer } from '@react-navigation/native';
 const IMG_SRC = require('../../img/bg_login.png');
+import { creatLogDir, writeInitLog, writeBackInitLog, writeLog, LOG_TYPE } from '../utilities/MyLogs';
 
 
 class Login extends React.Component {
@@ -37,6 +24,14 @@ class Login extends React.Component {
       check_textInputChange: false,
       secureTextEntry: true
     };
+  }
+
+  componentDidMount() {
+    writeInitLog(LOG_TYPE.INFO, Login.name, this.componentDidMount.name);
+    this.listener = this.props.navigation.addListener('focus', async () => {
+      writeBackInitLog(LOG_TYPE.INFO, Login.name, this.componentDidMount.name);
+      return;
+    });
   }
 
   render() {
@@ -93,18 +88,23 @@ class Login extends React.Component {
       const data_ = {
         entreprise: this.state.entreprise.trim(),
         identifiant: this.state.identifiant.trim(),
-        password: this.state.password
+        password: this.state.password.trim()
       };
+
+      writeLog(LOG_TYPE.INFO, Login.name, verifyData.name, "Checking...");
 
       let error_msg = "";
       if (data_.entreprise == '') {
         error_msg += "*\tLe champ 'Entreprise' est vide";
+        writeLog(LOG_TYPE.INFO, Login.name, verifyData.name, "No company entered");
       }
       if (data_.identifiant == '') {
         error_msg += ((error_msg == "") ? "*\tLe champ 'Identifiant' est vide" : "\n*\tLe champ 'Identifiant' est vide");
+        writeLog(LOG_TYPE.INFO, Login.name, verifyData.name, "No username entered");
       }
       if (data_.password == '') {
         error_msg += ((error_msg == "") ? "*\tLe champ 'Mot de Passe' est vide" : "\n*\tLe champ 'Mot de Passe' est vide");
+        writeLog(LOG_TYPE.INFO, Login.name, verifyData.name, "No passeword entered");
       }
 
       if (error_msg != '') {

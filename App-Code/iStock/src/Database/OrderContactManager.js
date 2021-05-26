@@ -105,7 +105,7 @@ class OrderContactManager extends Component {
 
     //Insert
     async INSERT_ORDER_CONTACT(data_){
-        console.log("##### INSERT_OORDER_CONTACT #########################");
+        console.log("##### INSERT_ORDER_CONTACT #########################");
         console.log("inserting.... ", data_.length);
         return await new Promise(async (resolve) => {
             try{
@@ -123,6 +123,53 @@ class OrderContactManager extends Component {
         });
     }
 
+    async IS_EXIST(element_id){
+        console.log("##### IS_EXIST #########################");
+        console.log("check.... ", element_id);
+        return await new Promise(async (resolve) => {
+            let contact = {};
+            try{
+                await db.transaction(async (tx) => {
+                    const insert = "SELECT * FROM " + TABLE_NAME + " WHERE "+COLUMN_ELEMENT_ID+" = '"+element_id+"'";
+                    await tx.executeSql(insert, []).then(async ([tx,results]) => {
+                        contact = results.rows.item(0);
+                    });
+                });
+                await resolve(contact);
+            } catch(error){
+                console.log("error: ", error);
+                await resolve(null);
+            }
+        });
+    }
+    
+    // Update
+    async UPDATE_CONTACT(data_){
+        console.log("##### UPDATE_CONTACT #########################");
+        console.log("updating.... ", data_.length);
+
+        return await new Promise(async (resolve) => {
+            try{
+                for(let x = 0; x < data_.length; x++){
+
+                    const sql = "UPDATE "+TABLE_NAME+" SET "+
+                    ""+COLUMN_DATECREATE+" = '"+data_[x].datecreate+"', "+
+                    ""+COLUMN_STATUT+" = '"+data_[x].statut+"', "+
+                    ""+COLUMN_FK_C_TYPE_CONTACT+" = '"+data_[x].fk_c_type_contact+"', "+
+                    ""+COLUMN_FK_SOPEOPLE+" = '"+data_[x].fk_socpeople+"' "+
+                    "WHERE "+COLUMN_ELEMENT_ID+" = '" +data_[x].element_id +"'";
+
+                    await db.transaction(async (tx) => {
+                        await tx.executeSql(sql, []);
+                    });
+                }
+                await resolve(true);
+            } catch(error){
+                console.log("error: ", error);
+                await resolve(false);
+            }
+        });
+    }
 
     //Delete
     async DELETE_ORDER_CONTACT(){

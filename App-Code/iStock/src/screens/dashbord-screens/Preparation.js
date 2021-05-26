@@ -1,27 +1,21 @@
 import React, { Component } from 'react';
 import CardView from 'react-native-cardview';
 import Icon from 'react-native-vector-icons/FontAwesome5';
-import { StyleSheet, ScrollView, TouchableOpacity, View, Text, TextInput, Dimensions, Alert } from 'react-native';
-import {
-  Header,
-  LearnMoreLinks,
-  Colors,
-  DebugInstructions,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+import { StyleSheet, ScrollView, TouchableOpacity, View, Text, Dimensions, Alert } from 'react-native';
 import ButtonSpinner from 'react-native-button-spinner';
 import LinearGradient from 'react-native-linear-gradient';
 import NavbarPreparation from '../../navbar/navbar-preparation';
 import MyFooter_v2 from '../footers/MyFooter_v2';
 import PreparationButton from '../dashbord-screens/assets/PreparationButton';
 import SettingsManager from '../../Database/SettingsManager';
-import ShipmentsManager from '../../Database/ShipmentsManager';
-import ShipmentLinesManager from '../../Database/ShipmentLinesManager';
-import ShipmentLineDetailBatchManager from '../../Database/ShipmentLineDetailBatchManager';
 import OrderManager from '../../Database/OrderManager';
 import Statut from '../../utilities/Statut';
 import moment from "moment";
 import OrderFilter from './assets/OrderFilter';
+import SetCommandeStatut from '../../services/SetCommandeStatut';
+import { writeInitLog, writeBackInitLog, writeLog, LOG_TYPE } from '../../utilities/MyLogs';
+import FindCommandes from '../../services/FindCommandes';
+import { STRINGS } from '../../utilities/STRINGS';
 
 const _statut_ = new Statut();
 const isAtToBottom = ({layoutMeasurement, contentOffset, contentSize}) => {
@@ -71,15 +65,14 @@ class Preparation extends Component {
   }
 
   async  componentDidMount(){
+    writeInitLog(LOG_TYPE.INFO, Preparation.name, this.componentDidMount.name);
     await this._settings();
     await this._getPickingData();
 
     this.listener = await this.props.navigation.addListener('focus', async () => {
       // Prevent default action
+      writeBackInitLog(LOG_TYPE.INFO, Preparation.name, this.componentDidMount.name);
       await this._settings();
-      await console.log('Done settings update!');
-      console.log('new settings : ', this.state.settings);
-      console.log('listener filterConfig : ', this.state.filterConfig);
       await this._getPickingData();
       return;
     });
@@ -88,37 +81,76 @@ class Preparation extends Component {
   _Showcommande = (value) => {
     console.log(value);
     //alert('Obj: \n' + JSON.stringify(value));
+    writeLog(LOG_TYPE.INFO, Preparation.name, this._Showcommande.name, "Go to CommandeDetails | order: "+JSON.stringify(value));
     this.props.navigation.navigate("CommandeDetails", { order: value });
   }
 
-  async _LongPressShipment(){
-    const sm = new ShipmentsManager();
-    const slm = new ShipmentLinesManager();
-    const sldbm = new ShipmentLineDetailBatchManager()
+  _LongPressShipment = async (order) => {
+    await Alert.alert(
+      "Commande "+order.ref_commande,
+      "Voulez vous cloturer cette commande ?\nMettre le statut à \"Livré\" ?",
+      [
+        { text: 'Oui', onPress: async () => {
+          
+            await writeLog(LOG_TYPE.INFO, Preparation.name, this._LongPressShipment.name, "Go to CommandeDetails | order: "+JSON.stringify(order));
+            // set order as delivered, locally and on server if there is internet
+            const scs = new SetCommandeStatut();
+            const res = await scs.setStatut(order, _statut_._ORDER_STATUTS_[4]);
+            await this._getPickingData();
+        
+            await Alert.alert(
+              "Commande "+order.ref_commande,
+              res.msg,
+              [
+                { text: 'Ok', onPress: async() => {
+                  
+                  } 
+                },
+              ],
+              { cancelable: false }
+            );
+          } 
+        },
+        { text: 'Non', onPress: async () => {
+          return;
+        } 
+      },
+      ],
+      { cancelable: false }
+    );
 
-    sm.initDB();
-    slm.initDB();
-    sldbm.initDB();
-
-    const m = await sm.DROP_SHIPMENTS().then(async (val) => {
-      return val;
-    });
-    const mm = await sm.CREATE_SHIPMENTS_TABLE().then(async (val) => {
-      return val;
-    });
-    const l = await slm.DROP_SHIPMENTS_LINES().then(async (val) => {
-      return val;
-    });
-    const ll = await slm.CREATE_SHIPMENT_LINES_TABLE().then(async (val) => {
-      return val;
-    });
-    const k = await sldbm.DROP_SHIPMENT_LINE_DETAIL_BATCH().then(async (val) => {
-      return val;
-    });
-    const kk = await sldbm.CREATE_SHIPMENT_LINE_DETAIL_BATCH_TABLE().then(async (val) => {
-      return val;
-    });
+    
   }
+
+  _sync_order_by_id = async (order) => {
+    const fc = new FindCommandes();
+    const res = await fc.updateOrderById(order.commande_id).then(async (val) => {
+      return val;
+    });
+
+    await this._getPickingData();
+
+    if(res){
+      Alert.alert(
+          STRINGS._ISTOCK_TITTLE_, 
+          "La commande "+order.ref_commande+" est à jour",
+          [
+            {text: "Ok", onPress: () => {}}
+          ],
+          { cancelable: false }
+      );
+    }else{
+      Alert.alert(
+        STRINGS._ISTOCK_TITTLE_, 
+        "La commande "+order.ref_commande+" n'existe plus dans le serveur",
+        [
+          {text: "Ok", onPress: () => {}}
+        ],
+        { cancelable: false }
+    );
+    }
+  }
+
 
   async _settings(){
     const sm = new SettingsManager();
@@ -127,12 +159,20 @@ class Preparation extends Component {
       return await val;
     });
     console.log('settings: ', settings);
+    writeLog(LOG_TYPE.INFO, Preparation.name, this._LongPressShipment.name, "settings: "+JSON.stringify(settings));
     this.setState({settings: settings});
   }
 
   async _getPickingData(){
     await this.setState({isLoading: true});
     let data_ = [];
+
+    this.setState({
+      limit: {
+        from: 0,
+        to: 10
+      }
+    });
 
     console.log("this.state.filterConfig : ", await Object.keys(this.state.filterConfig).length);
     if(await Object.keys(this.state.filterConfig).length == 0){
@@ -152,6 +192,7 @@ class Preparation extends Component {
       });
     }
 
+    writeLog(LOG_TYPE.INFO, Preparation.name, this._getPickingData.name, "Order data size => "+data_.length);
     await this.setState({ data: data_, isLoading: false});
   }
 
@@ -182,7 +223,7 @@ class Preparation extends Component {
 
     this.setState({
       limit: {
-        from: newFrom,
+        from: newFrom + 1,
         to: newTo
       }
     });
@@ -208,6 +249,7 @@ class Preparation extends Component {
       newData.push(data_[x]);
     }
     console.log("after : ", newData.length);
+    writeLog(LOG_TYPE.INFO, Preparation.name, this._getPickingData.name, "Old order data size => "+data_.length+" | new order size => "+newData.length);
 
     this.setState({isLoadingMoreData: false});
     await this.setState({data: newData});
@@ -364,6 +406,33 @@ class Preparation extends Component {
         width: '100%',
         // marginTop: 30,
       },
+      submit_on: {
+        backgroundColor: '#00AAFF',
+        borderColor: '#706FD3',
+        borderRadius: 25,
+        height: 35,
+        // padding: 2,
+        // marginBottom: 20,
+        textAlign: 'center',
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        margin: 10,
+        width: 200,
+        // position: 'absolute',
+        left: 0,
+      },
+      iconValiderpanier: {
+        fontSize: 15,
+        color: '#ffffff',
+        paddingLeft: 8,
+        paddingRight: 8,
+      },
+      iconPanier: {
+        fontSize: 15,
+        color: '#ffffff',
+        paddingRight: 8,
+      },
     });
 
 
@@ -414,6 +483,10 @@ class Preparation extends Component {
                                     <Text>Créé par : <Text style={{fontWeight: "bold"}}>{item.user}</Text></Text>
                                   </View>
                                   <View style={styles.ic_and_details}>
+                                    <Icon name="user" size={15} style={styles.iconDetails}/>
+                                    <Text>Assigné à : <Text style={{fontWeight: "bold"}}>{item.assinged}</Text></Text>
+                                  </View>
+                                  <View style={styles.ic_and_details}>
                                     <Icon name="boxes" size={15} style={styles.iconDetails}/>
                                     <Text>{item.lines_nb} Produit(s)</Text>
                                   </View>
@@ -427,20 +500,27 @@ class Preparation extends Component {
                                     </View>
                                   </View>
                                   <View style={{ borderBottomColor: '#00AAFF', borderBottomWidth: 1, marginRight: 10 }} />
-                                  <View style={styles.pricedetails}>
+                                  <View style={{flexDirection: 'row', width: '100%'}}>
                                     {/* <View style={styles.price}>
                                       <Text>Total TTC : {item.total_ttc > 0 ? (parseFloat(item.total_ttc)).toFixed(2) : '0'} €</Text>
                                     </View> */}
-                                    <View style={[styles.billedstate, {backgroundColor: _statut_.getOrderStatutColorStyles(item.statut)}]}>
-                                      <Text style={{color: "#000"}}>{_statut_.getOrderStatut(item.statut)}</Text>
+                                    <View style={[styles.billedstate, {height: 20, marginTop: 5, backgroundColor: _statut_.getOrderStatutBackgroundColorStyles(item.statut)}]}>
+                                      <Text style={{color: _statut_.getOrderStatutLabelColorStyles(item.statut)}}>{_statut_.getOrderStatut(item.statut)}</Text>
                                     </View>
+                                    {/* <ButtonSpinner style={styles.submit_on} positionSpinner={'right'} onPress={() => this._sync_order_by_id(item)} styleSpinner={{ color: '#FFFFFF' }} pendingRequest={true}>
+                                      <Icon name="sync" size={20} style={styles.iconValiderpanier} />
+                                      <Text style={styles.iconPanier}> Synchroniser la commande</Text>
+                                    </ButtonSpinner> */}
                                   </View>
                                 </TouchableOpacity>
+
                                 <View style={styles.butons_commande}>
-                                  {/* <ButtonSpinner style={styles.submit_on} positionSpinner={'right'} onPress={() => this._relance_commande(item.ref_commande)} styleSpinner={{ color: '#FFFFFF' }}>
+
+                                  <ButtonSpinner style={styles.submit_on} positionSpinner={'right'} onPress={() => this._sync_order_by_id(item)} styleSpinner={{ color: '#FFFFFF' }} pendingRequest={true}>
                                     <Icon name="sync" size={20} style={styles.iconValiderpanier} />
-                                    <Text style={styles.iconPanier}> Relancer la commande</Text>
-                                  </ButtonSpinner> */}
+                                    <Text style={styles.iconPanier}> Synchroniser la commande</Text>
+                                  </ButtonSpinner>
+
                                   {/* {0 === 0 ? (<Text style={styles.notif}><Icon name="cloud-upload-alt" size={20} style={styles.notif_icon} /></Text>) : (<Text style={styles.notif}></Text>)} */}
                                 </View>
                               </View>

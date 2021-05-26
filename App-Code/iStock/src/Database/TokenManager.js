@@ -20,6 +20,7 @@ const COLUMN_NAME = "name";
 const COLUMN_SERVER = "server";
 const COLUMN_TOKEN = "token";
 const COLUMN_COMPANY = "company";
+const COLUMN_CHANNEL = "channel";
 
 const create = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "(" +
     COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
@@ -27,7 +28,8 @@ const create = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "(" +
     COLUMN_NAME + " VARCHAR(255)," +
     COLUMN_SERVER + " VARCHAR(255)," +
     COLUMN_TOKEN + " VARCHAR(255)," +
-    COLUMN_COMPANY + " VARCHAR(255)" +
+    COLUMN_COMPANY + " VARCHAR(255)," +
+    COLUMN_CHANNEL + " VARCHAR(255)" +
 ")";
 
 // create a component
@@ -106,7 +108,7 @@ class TokenManager extends Component {
         return await new Promise(async (resolve) => {
             try{
                 await db.transaction(async (tx) => {
-                    await tx.executeSql("INSERT INTO " + TABLE_NAME + " ("+COLUMN_ID+", "+COLUMN_USER_ID+", "+COLUMN_NAME+", "+COLUMN_SERVER+", "+COLUMN_TOKEN+", "+COLUMN_COMPANY+") VALUES (1, '"+data_.userId+"', '"+data_.name.replace(/'/g, "''")+"', '"+data_.server.replace(/'/g, "''")+"', '"+data_.token.replace(/'/g, "''")+"', '"+data_.company.replace(/'/g, "''")+"')", []);
+                    await tx.executeSql("INSERT INTO " + TABLE_NAME + " ("+COLUMN_ID+", "+COLUMN_USER_ID+", "+COLUMN_NAME+", "+COLUMN_SERVER+", "+COLUMN_TOKEN+", "+COLUMN_COMPANY+", "+COLUMN_CHANNEL+") VALUES (1, '"+data_.userId+"', '"+data_.name.replace(/'/g, "''")+"', '"+data_.server.replace(/'/g, "''")+"', '"+data_.token.replace(/'/g, "''")+"', '"+data_.company.replace(/'/g, "''")+"', '"+(data_.iStock_channel != null ? data_.iStock_channel : "null")+"')", []);
                 });
                 return await resolve(true);
             } catch(error){
@@ -123,19 +125,13 @@ class TokenManager extends Component {
         return await new Promise(async (resolve) => {
             let token = null;
             await db.transaction(async (tx) => {
-                await tx.executeSql("SELECT t."+COLUMN_ID+", t."+COLUMN_USER_ID+", t."+COLUMN_NAME+", t."+COLUMN_SERVER+", t."+COLUMN_TOKEN+", t."+COLUMN_COMPANY+ " FROM "+TABLE_NAME+" t WHERE t."+COLUMN_ID+" = "+id, []).then(async ([tx,results]) => {
+                await tx.executeSql("SELECT t."+COLUMN_ID+", t."+COLUMN_USER_ID+", t."+COLUMN_NAME+", t."+COLUMN_SERVER+", t."+COLUMN_TOKEN+", t."+COLUMN_COMPANY+ ", t."+COLUMN_CHANNEL+" FROM "+TABLE_NAME+" t WHERE t."+COLUMN_ID+" = "+id, []).then(async ([tx,results]) => {
                     console.log("Query completed");
                     var len = results.rows.length;
                     for (let i = 0; i < len; i++) {
                         let row = results.rows.item(i);
                         console.log('token => row: ', row);
-                        token = {
-                            name: row.name, 
-                            userId: row.userId,
-                            server: row.server, 
-                            token: row.token, 
-                            company: row.company
-                        };
+                        token = row;
                     }
                 });
             }).then(async (result) => {

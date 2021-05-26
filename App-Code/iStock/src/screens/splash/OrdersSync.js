@@ -1,10 +1,16 @@
 import React, { Component } from 'react';
-import { StyleSheet, View, Text, Image, StatusBar } from 'react-native';
+import { StyleSheet, View, Text, Image, Alert, BackHandler } from 'react-native';
 import TokenManager from '../../Database/TokenManager';
 import FindCommandes from '../../services/FindCommandes';
 import FindCommandesLines from '../../services/FindCommandesLines';
-import Strings from "../../utilities/Strings";
-const STRINGS = new Strings();
+import { STRINGS } from "../../utilities/STRINGS";
+import { changeKeepAwake } from '../../utilities/Utils';
+import { writeInitLog, writeBackInitLog, writeLog, LOG_TYPE } from '../../utilities/MyLogs';
+import FindPreSync from '../../services/FindPreSync';
+import OrderManager from '../../Database/OrderManager';
+import OrderLinesManager from '../../Database/OrderLinesManager';
+import OrderContactManager from '../../Database/OrderContactManager';
+import axios from 'axios';
 const BG = require('../../../img/waiting_bg.png');
 
 
@@ -17,51 +23,38 @@ export default class OrdersSync extends Component {
   }
 
   async componentDidMount(){
+    writeInitLog(LOG_TYPE.INFO, OrdersSync.name, this.componentDidMount.name);
     await this.sync();
 
     this.listener = await this.props.navigation.addListener('focus', async () => {
+      writeBackInitLog(LOG_TYPE.INFO, OrdersSync.name, this.componentDidMount.name);
       await this.sync();
       return;
     });
   }
 
   async sync(){
-    const tm = new TokenManager();
-    await tm.initDB();
-    const token = await tm.GET_TOKEN_BY_ID(1).then(async (val) => {
-      return await val;
-    });
+    writeLog(LOG_TYPE.INFO, OrdersSync.name, this.sync.name, "Show sync options...");
 
-    const findCommandes = new FindCommandes();
-    const res5 = await findCommandes.getAllOrdersFromServer(token).then(async (val) => {
-      console.log('findCommandes.getAllOrdersFromServer : ');
-      console.log(val);
-      return val;
-    });
-    
-    const findCommandesLines = new FindCommandesLines();
-    const res6 = await findCommandesLines.getCommandesLines(token).then(async (val) => {
-      console.log('findCommandesLines.getCommandesLines : ');
-      console.log(val);
-      return val;
-    });
+    Alert.alert(
+      STRINGS._SYNCHRO_COMMANDE_TITTLE_, 
+      STRINGS._SYNCHRO_COMMANDE_TEXT_OPTIONS_,
+      [
+        {text: "Option 1", onPress: async () => {await this.sync_all()}},
+        {text: "Option 2", onPress: async () => {await this.sync_new()}},
+        {text: "Annuler", onPress: async () => {await this.props.navigation.goBack()}}
+      ],
+      { cancelable: false }
+    );
+  }
 
-    
+  async sync_all(){
+    this.props.navigation.navigate('DownloadIntern');
+  }
 
-    if(res5 && res6){
-      console.log("Remove loading screen!");
-      this.props.navigation.navigate("Preparation");
-    }else{
-      Alert.alert(
-        STRINGS._SYNCHRO_COMMANDE_TITTLE_, 
-        STRINGS._SYNCHRO_COMMANDE_ERROR_,
-        [
-          {text: "Support", onPress: () => {this.support()}},
-          {text: "Ok", onPress: () => {this.props.navigation.navigate("Dashboard")}}
-        ],
-        { cancelable: false }
-      );
-    }
+
+  async sync_new(){
+    this.props.navigation.navigate('DownloadNew');
   }
 
   render() {

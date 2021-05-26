@@ -3,13 +3,14 @@ import { StyleSheet, View, Text, StatusBar, Image } from 'react-native';
 import MyFooter from './footers/MyFooter';
 const IMG_SRC = require('../../img/bg.png');
 const LOGO = require('../../img/logo_istock.png');
-import { creatLogDir, writeLog } from '../utilities/MyLogs';
+import { creatLogDir, writeInitLog, writeLog, LOG_TYPE } from '../utilities/MyLogs';
 
 
 class Welcome extends Component {
 
   componentDidMount() {
     creatLogDir();
+    writeInitLog(LOG_TYPE.INFO, Welcome.name, this.componentDidMount.name);
     
     setTimeout(() => {
       //this.props.navigation.navigate('loading');

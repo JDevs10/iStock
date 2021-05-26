@@ -12,13 +12,16 @@ import ThirdPartiesManager from '../Database/ThirdPartiesManager';
 import UserManager from '../Database/UserManager';
 import WarehouseManager from '../Database/WarehouseManager';
 import FindImages from '../services/FindImages';
+import { writeInitLog, writeBackInitLog, writeLog, LOG_TYPE } from '../utilities/MyLogs';
+
 
 // create a component
 class CheckData extends Component {
 
     async checkData(){
-        // return true;
-        
+        writeInitLog(LOG_TYPE.INFO, CheckData.name, this.checkData.name);
+        writeLog(LOG_TYPE.INFO, CheckData.name, this.checkData.name, "return ==> true");
+
         return await new Promise(async (resolve) => {
             // list of all data checks
             const isChecked = [];
@@ -118,6 +121,7 @@ class CheckData extends Component {
             }
 
             // 8
+            /*
             const shipmentsManager = new ShipmentsManager();
             await shipmentsManager.initDB();
             const sm = await shipmentsManager.GET_SHIPMENTS_LIST().then(async (val) => {
@@ -142,6 +146,7 @@ class CheckData extends Component {
             }else{
                 isChecked.push({task: "ShipmentLinesManager", status: false});
             }
+            */
 
             // 10
             const warehouseManager = new WarehouseManager();
@@ -171,6 +176,28 @@ class CheckData extends Component {
         });
 
 
+    }
+
+    async checkOrderData(){
+        writeInitLog(LOG_TYPE.INFO, CheckData.name, this.checkOrderData.name);
+
+        return await new Promise(async (resolve) => {
+            
+            const orderManager = new OrderManager();
+            await orderManager.initDB();
+            const om = await orderManager.GET_LIST().then(async (val) => {
+                return await val;
+            });
+
+            writeLog(LOG_TYPE.INFO, CheckData.name, this.checkOrderData.name, "Current order data size => "+om.length);
+
+            if(om.length > 0){
+                await resolve(true);
+            }else{
+                await resolve(false);
+            }
+
+        });
     }
 }
 

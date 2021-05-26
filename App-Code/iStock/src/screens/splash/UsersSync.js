@@ -2,8 +2,7 @@ import React, { Component } from 'react';
 import { StyleSheet, View, Text, Image, StatusBar, Alert } from 'react-native';
 import TokenManager from '../../Database/TokenManager';
 import FindUsers from '../../services/FindUsers';
-import Strings from "../../utilities/Strings";
-const STRINGS = new Strings();
+import { STRINGS } from "../../utilities/STRINGS";
 const BG = require('../../../img/waiting_bg.png');
 
 // create a component
@@ -33,7 +32,7 @@ class UsersSync extends Component {
       });
   
       const findUsers = new FindUsers();
-      const res1 = await findUsers.getAllUsersFromServer(token).then(async (val) => {
+      const res1 = await findUsers.getAllLatestUsersFromServer(token).then(async (val) => {
         return val;
       });
   

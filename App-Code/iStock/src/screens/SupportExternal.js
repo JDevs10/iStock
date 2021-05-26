@@ -4,6 +4,7 @@ import CardView from 'react-native-cardview';
 import moment from 'moment';
 import axios from 'axios';
 const IMG1 = require('../../img/support.png');
+import { creatLogDir, writeInitLog, writeBackInitLog, writeLog, LOG_TYPE } from '../utilities/MyLogs';
 
 
 class SupportExternal extends React.Component {
@@ -16,6 +17,15 @@ class SupportExternal extends React.Component {
       message: '',
       response: ''
     };
+  }
+
+  componentDidMount() {
+    writeInitLog(LOG_TYPE.INFO, SupportExternal.name, this.componentDidMount.name);
+    this.listener = this.props.navigation.addListener('focus', async () => {
+      writeBackInitLog(LOG_TYPE.INFO, SupportExternal.name, this.componentDidMount.name);
+      
+      return;
+    });
   }
 
   send_ticket() {

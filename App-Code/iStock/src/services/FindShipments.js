@@ -60,7 +60,7 @@ class FindShipments extends Component {
     await shipmentLineDetailBatchManager.initDB();
     await shipmentLineDetailBatchManager.CREATE_SHIPMENT_LINE_DETAIL_BATCH_TABLE();
 
-    return true;
+    //return true;
     
     console.log('shipmentsManager', 'ShipmentsManager()');
     console.log('token', token);

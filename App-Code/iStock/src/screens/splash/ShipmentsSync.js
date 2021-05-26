@@ -4,8 +4,7 @@ import ShipmentsManager from '../../Database/ShipmentsManager';
 import TokenManager from '../../Database/TokenManager';
 import FindShipments from '../../services/FindShipments';
 import SendShipments from '../../services/SendShipments';
-import Strings from "../../utilities/Strings";
-const STRINGS = new Strings();
+import { STRINGS } from "../../utilities/STRINGS";
 const BG = require('../../../img/waiting_bg.png');
 
 
@@ -34,7 +33,7 @@ export default class ShipmentsSync extends Component {
     const token = await tm.GET_TOKEN_BY_ID(1).then(async (val) => {
       return await val;
     });
-
+    
     const sendShipments = new SendShipments();
     const res = await sendShipments.send_Unsync_Shipments_To_Server().then(async (val) => {
       console.log('sendShipments.send_Unsync_Shipments_To_Server : ', val);

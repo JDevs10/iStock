@@ -1,26 +1,18 @@
 import React, { Component } from 'react';
 import CardView from 'react-native-cardview';
 import Icon from 'react-native-vector-icons/FontAwesome5';
-import { StyleSheet, ScrollView, TouchableOpacity, View, Text, TextInput, Dimensions, Alert } from 'react-native';
-import {
-  Header,
-  LearnMoreLinks,
-  Colors,
-  DebugInstructions,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-import ButtonSpinner from 'react-native-button-spinner';
+import { StyleSheet, ScrollView, TouchableOpacity, View, Text, Dimensions, Alert } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import NavbarPreparation from '../../navbar/navbar-preparation';
 import NavbarShipment from '../../navbar/navbar-shipment';
 import MyFooter_v2 from '../footers/MyFooter_v2';
 import ShipmentsButton from '../dashbord-screens/assets/ShipmentsButton';
 import SettingsManager from '../../Database/SettingsManager';
 import OrderManager from '../../Database/OrderManager';
 import ShipmentsManager from '../../Database/ShipmentsManager';
-import ShipmentLinesManager from '../../Database/ShipmentLinesManager';
 import Statut from '../../utilities/Statut';
 import moment from "moment";
+import { writeInitLog, writeBackInitLog, writeLog, LOG_TYPE } from '../../utilities/MyLogs';
+import ShipmentLinesManager from '../../Database/ShipmentLinesManager';
 import ShipmentLineDetailBatchManager from '../../Database/ShipmentLineDetailBatchManager';
 
 
@@ -73,17 +65,17 @@ export default class Expeditions extends Component {
 
 
     async  componentDidMount(){
+      writeInitLog(LOG_TYPE.INFO, Expeditions.name, this.componentDidMount.name);
+      await this._settings();
+      await this._getShipmentData();
+  
+      this.listener = await this.props.navigation.addListener('focus', async () => {
+        // Prevent default action
+        writeBackInitLog(LOG_TYPE.INFO, Expeditions.name, this.componentDidMount.name);
         await this._settings();
         await this._getShipmentData();
-    
-        this.listener = await this.props.navigation.addListener('focus', async () => {
-          // Prevent default action
-          await this._settings();
-          await console.log('Done settings update!');
-          console.log('new settings : ', this.state.settings);
-          await this._getShipmentData();
-          return;
-        });
+        return;
+      });
     }
 
     async _settings(){
@@ -93,32 +85,13 @@ export default class Expeditions extends Component {
           return await val;
         });
         console.log('settings: ', settings);
+        writeLog(LOG_TYPE.INFO, Expeditions.name, this._settings.name, JSON.stringify(settings));
         this.setState({settings: settings});
     }
     
     async _getShipmentData(){
       await this.setState({isLoading: true});
       let data_ = [];
-  
-      /*
-      console.log("this.state.filterConfig : ", await Object.keys(this.state.filterConfig).length);
-      if(await Object.keys(this.state.filterConfig).length == 0){
-        const om = new OrderManager();
-        await om.initDB();
-        data_ = await om.GET_ORDER_LIST_BETWEEN_v2(this.state.limit.from, this.state.limit.to).then(async (val) => {
-          //console.log("Order data : ", val);
-          return await val;
-        });
-  
-      }else{
-        const om = new OrderManager();
-        await om.initDB();
-        data_ = await om.GET_ORDER_LIST_BETWEEN_FILTER_v2(this.state.limit.from, this.state.limit.to, this.state.filterConfig).then(async (val) => {
-          //console.log("Order data filtered : ", val);
-          return await val;
-        });
-      }
-      */
 
       console.log("filterConfig : ", await Object.keys(this.state.filterConfig).length);
       if(await Object.keys(this.state.filterConfig).length == 0){
@@ -137,7 +110,8 @@ export default class Expeditions extends Component {
           return await val;
         });
       }
-  
+      
+      writeLog(LOG_TYPE.INFO, Expeditions.name, this._getShipmentData.name, "Data size => "+data_.length);
       await this.setState({ data: data_, isLoading: false});
     }
 
@@ -179,6 +153,7 @@ export default class Expeditions extends Component {
           newData.push(data_[x]);
         }
         console.log("after : ", newData.length);
+        writeLog(LOG_TYPE.INFO, Expeditions.name, this.loadMoreData.name, "Old data size => "+data_.length+" | new data size => "+newData.length);
     
         await this.setState({isLoadingMoreData: false, data: newData});
     }
@@ -200,32 +175,33 @@ export default class Expeditions extends Component {
     }
 
     async _LongPressShipment(){
-      const sm = new ShipmentsManager();
-      const slm = new ShipmentLinesManager();
-      const sldbm = new ShipmentLineDetailBatchManager()
+      
+      // const sm = new ShipmentsManager();
+      // const slm = new ShipmentLinesManager();
+      // const sldbm = new ShipmentLineDetailBatchManager()
 
-      sm.initDB();
-      slm.initDB();
-      sldbm.initDB();
+      // sm.initDB();
+      // slm.initDB();
+      // sldbm.initDB();
 
-      const m = await sm.DROP_SHIPMENTS().then(async (val) => {
-        return val;
-      });
-      const mm = await sm.CREATE_SHIPMENTS_TABLE().then(async (val) => {
-        return val;
-      });
-      const l = await slm.DROP_SHIPMENTS_LINES().then(async (val) => {
-        return val;
-      });
-      const ll = await slm.CREATE_SHIPMENT_LINES_TABLE().then(async (val) => {
-        return val;
-      });
-      const k = await sldbm.DROP_SHIPMENT_LINE_DETAIL_BATCH().then(async (val) => {
-        return val;
-      });
-      const kk = await sldbm.CREATE_SHIPMENT_LINE_DETAIL_BATCH_TABLE().then(async (val) => {
-        return val;
-      });
+      // const m = await sm.DROP_SHIPMENTS().then(async (val) => {
+      //   return val;
+      // });
+      // const mm = await sm.CREATE_SHIPMENTS_TABLE().then(async (val) => {
+      //   return val;
+      // });
+      // const l = await slm.DROP_SHIPMENTS_LINES().then(async (val) => {
+      //   return val;
+      // });
+      // const ll = await slm.CREATE_SHIPMENT_LINES_TABLE().then(async (val) => {
+      //   return val;
+      // });
+      // const k = await sldbm.DROP_SHIPMENT_LINE_DETAIL_BATCH().then(async (val) => {
+      //   return val;
+      // });
+      // const kk = await sldbm.CREATE_SHIPMENT_LINE_DETAIL_BATCH_TABLE().then(async (val) => {
+      //   return val;
+      // });
     }
 
     render() {
@@ -437,6 +413,10 @@ export default class Expeditions extends Component {
                                         <Icon name="tag" size={15} style={styles.iconDetails} />
                                         {item.id == 0 ? (<Text>Nouvelle expédition</Text>) : (<Text style={styles.ref}>{item.ref}</Text>)}
                                       </View>
+                                      <View style={[{flexDirection: "row", width: 170, textAlign: 'center', justifyContent: 'center', alignItems: 'center', marginLeft: 'auto'}]}>
+                                        <Icon name="clipboard-list" size={15} style={styles.iconDetails} />
+                                        <Text style={{textDecorationLine: 'underline', fontWeight: 'bold'}}>{item.from_order_ref}</Text>
+                                      </View>
                                     </View>
                                     <View style={styles.ic_and_details}>
                                       <Icon name="user" size={15} style={styles.iconDetails}/>
@@ -460,8 +440,8 @@ export default class Expeditions extends Component {
                                       {/* <View style={styles.price}>
                                         <Text>Total TTC : {item.total_ttc > 0 ? (parseFloat(item.total_ttc)).toFixed(2) : '0'} €</Text>
                                       </View> */}
-                                      <View style={[styles.billedstate, {backgroundColor: _statut_.getOrderStatutColorStyles(item.statut)}]}>
-                                        <Text style={{color: "#000"}}>{_statut_.getOrderStatut(item.statut)}</Text>
+                                      <View style={[styles.billedstate, {backgroundColor: _statut_.getOrderStatutBackgroundColorStyles(item.statut)}]}>
+                                        <Text style={{color: _statut_.getOrderStatutLabelColorStyles(item.statut)}}>{_statut_.getOrderStatut(item.statut)}</Text>
                                       </View>
                                     </View>
                                   </TouchableOpacity>

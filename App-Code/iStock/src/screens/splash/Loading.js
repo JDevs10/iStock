@@ -11,12 +11,11 @@ import {
 } from 'react-native/Libraries/NewAppScreen';
 import FindServers from '../../services/FindServers';
 import TokenManager from '../../Database/TokenManager';
-import Scanner from '../../utilities/Scanner';
 import CheckConnections from '../../services/CheckConnections';
-import Strings from "../../utilities/Strings";
-const STRINGS = new Strings();
+import { STRINGS } from "../../utilities/STRINGS";
 const BG = require('../../../img/waiting_bg.png');
-import { creatLogDir, writeLog } from '../../utilities/MyLogs';
+import { MyErrors } from "../../utilities/Error";
+import { writeInitLog, writeBackInitLog, writeLog, LOG_TYPE } from '../../utilities/MyLogs';
 
 
 class Loading extends Component {
@@ -29,7 +28,9 @@ class Loading extends Component {
     };
   }
 
+
   async componentDidMount() {
+    writeInitLog(LOG_TYPE.INFO, Loading.name, this.componentDidMount.name);
 
     setTimeout(() => {
       this.setState({
@@ -40,6 +41,8 @@ class Loading extends Component {
 
 
     //find token
+    writeLog(LOG_TYPE.INFO, Loading.name, this.componentDidMount.name, "Get token from database...");
+
     const tm = new TokenManager();
     await tm.initDB();
     const token = await tm.GET_TOKEN_BY_ID(1).then(async (val) => {
@@ -48,9 +51,13 @@ class Loading extends Component {
 
     //check if tocken exist already
     if (token != null) {
+      writeLog(LOG_TYPE.ERROR, Loading.name, this.componentDidMount.name, JSON.stringify(MyErrors.getErrorMsgObj(0)) );
+      
+      writeLog(LOG_TYPE.INFO, Loading.name, this.componentDidMount.name, "Token found, so go to download screen...");
       this.props.navigation.navigate('download');
       return;
     }
+    writeLog(LOG_TYPE.INFO, Loading.name, this.componentDidMount.name, "No token register...");
 
     //check for internet connection
     const conn = new CheckConnections();
@@ -65,6 +72,7 @@ class Loading extends Component {
         [
           { text: 'Ok', onPress: () => {
             this.setState({loadingNotify: "Fermeture...."});
+            writeLog(LOG_TYPE.WARNING, Loading.name, this.componentDidMount.name, "No internet...");
             setTimeout(() => { 
               BackHandler.exitApp(); 
             }, 3000);
@@ -76,6 +84,8 @@ class Loading extends Component {
       return;
     }
 
+    writeLog(LOG_TYPE.INFO, Loading.name, this.componentDidMount.name, "Get all registered servers for iStock...");
+
     const server = new FindServers();
     const res = await server.getAllServerUrls().then(async (val) => {
       return val;
@@ -83,10 +93,15 @@ class Loading extends Component {
 
 
     if (res == true) {
+      writeLog(LOG_TYPE.INFO, Loading.name, this.componentDidMount.name, "Navigate to login...");
+
       setTimeout(() => {
         this.props.navigation.navigate('login');
       }, 2500);
     } else {
+      
+      writeLog(LOG_TYPE.ERROR, Loading.name, this.componentDidMount.name, JSON.stringify(MyErrors.getErrorMsgObj(0)) );
+
       Alert.alert(
         "Fermeture iStock",
         "Le serveur Big Data Consulting n'est pas joignable...",
@@ -109,7 +124,6 @@ class Loading extends Component {
 
     return (
       <View style={styles.container}>
-        {/* <Scanner /> */}
         <CheckConnections/>
 
         <View style={styles.backgroundContainer}>

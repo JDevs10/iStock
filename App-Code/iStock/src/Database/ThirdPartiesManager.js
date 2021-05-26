@@ -141,6 +141,26 @@ class ThirdPartiesManager extends Component {
         });
     }
 
+    async IS_EXIST(ref){
+        console.log("##### IS_EXIST #########################");
+        console.log("inserting.... ", ref);
+        return await new Promise(async (resolve) => {
+            let thirdParty
+            try{
+                await db.transaction(async (tx) => {
+                    const insert = "SELECT * FROM " + TABLE_NAME + " WHERE "+COLUMN_REF+" = '"+ref+"' LIMIT 1";
+                    await tx.executeSql(insert, []).then(async ([tx,results]) => {
+                        thirdParty = results.rows.item(0);
+                    });
+                });
+                await resolve(thirdParty);
+            } catch(error){
+                console.log("error: ", error);
+                await resolve(null);
+            }
+        });
+    }
+
     //Get by id
     async GET_TPM_BY_ID(id){
         console.log("##### GET_TPM_BY_ID #########################");
@@ -263,6 +283,62 @@ class ThirdPartiesManager extends Component {
         });
     }
 
+    async IS_CLIENT_EXIST_BY_ID(ref){
+        console.log("##### IS_CLIENT_EXIST_BY_ID #########################");
+
+        return await new Promise(async (resolve) => {
+            let user = {};
+            try{
+                await db.transaction(async (tx) => {
+                    await tx.executeSql("SELECT * FROM "+TABLE_NAME+" WHERE "+COLUMN_REF+" = "+ref+"", []).then(async ([tx,results]) => {
+                        var len = results.rows.length;
+                        for (let i = 0; i < len; i++) {
+                            let row = results.rows.item(i);
+                            user = row;
+                        }
+                    });
+                })
+                await resolve(user);
+            } catch(error){
+                console.log("IS_CLIENT_EXIST_BY_ID.... error", error);
+                await resolve(null);
+            }
+        });
+    }
+
+
+    async UPDATE_CLIENT(data){
+        console.log("##### UPDATE_CLIENT #########################");
+
+        return await new Promise(async (resolve) => {
+            try{
+                for(let x = 0; x < data.length; x++){
+                    const sql = "UPDATE "+TABLE_NAME+" SET "+
+                    ""+COLUMN_NAME+" = '"+data[x].name+"', "+
+                    ""+COLUMN_ADDRESS+" = '"+data[x].address+"', "+
+                    ""+COLUMN_TOWN+" = '"+data[x].town+"', "+
+                    ""+COLUMN_COUNTRY+" = '"+data[x].country+"', "+
+                    ""+COLUMN_COUNTRY_ID+" = '"+data[x].country_id+"', "+
+                    ""+COLUMN_COUNTRY_CODE+" = '"+data[x].country_code+"', "+
+                    ""+COLUMN_STATUT+" = '"+data[x].statut+"', "+
+                    ""+COLUMN_PHONE+" = '"+data[x].phone+"', "+
+                    ""+COLUMN_CLIENT+" = '"+data[x].client+"', "+
+                    ""+COLUMN_FOURNISSEUR+" = '"+data[x].fournisseur+"', "+
+                    ""+COLUMN_CODE_CLIENT+" = '"+data[x].statut+"' "+
+                    "WHERE "+COLUMN_REF+" = "+data[x].ref;
+                    
+                    await db.transaction(async (tx) => {
+                        await tx.executeSql(sql, []);
+                    });
+                }
+                await resolve(true);
+            } catch(error){
+                console.log("UPDATE_CLIENT.... error", error);
+                await resolve(false);
+            }
+        });
+    }
+
     //Delete
     async DELETE_LIST(){
         console.log("##### DELETE_LIST #########################");
@@ -273,7 +349,6 @@ class ThirdPartiesManager extends Component {
                 return await resolve(true);
 
             }).then(async (result) => {
-                console.error('result : ', result);
                 return await resolve(false);
             });
         });

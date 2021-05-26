@@ -529,8 +529,79 @@ class modIStock extends DolibarrModules
             "INSERT INTO ".MAIN_DB_PREFIX."document_model (nom, type, entity) VALUES('".$this->db->escape($this->const[0][2])."','istock',".$conf->entity.")"
         );
         */
-
-        return $this->_init($sql, $options);
+		
+		if( !file_exists('../custom/istock/backend/generate_key.php')){
+			die("[ERREUR::1002] => échec du chargement des fichiers!");
+		}
+		
+		ini_set('display_errors', '1');
+		ini_set('display_startup_errors', '1');
+		error_reporting(E_ALL);
+		
+		// Create module
+		$this->_init($sql, $options);
+		
+		include ('../custom/istock/backend/generate_key.php');
+		
+		$generateKey = new GenerateKey();
+		$generateKey->makeKey();
+		
+		$date = new DateTime();
+		$dateTime = strftime("%Y-%m-%d %H:%M:%S", $date->getTimestamp() );
+		
+		// Create User istock
+        $iStock_login = "istock";
+        $iStock_mdp = "anexys1";
+        $iStock_api_key = $generateKey->getKey();
+        $query1 = "INSERT INTO llx_user (`rowid`, `entity`, `ref_ext`, `ref_int`, `employee`, `fk_establishment`, `datec`, `tms`, `fk_user_creat`, `fk_user_modif`, `login`, `pass`, `pass_crypted`, `pass_temp`, `api_key`, `gender`, `civility`, `lastname`, `firstname`, `address`, `zip`, `town`, `fk_state`, `fk_country`, `job`, `skype`, `office_phone`, `office_fax`, `user_mobile`, `personal_mobile`, `email`, `personal_email`, `socialnetworks`, `signature`, `admin`, `module_comm`, `module_compta`, `fk_soc`, `fk_socpeople`, `fk_member`, `fk_user`, `fk_user_expense_validator`, `fk_user_holiday_validator`, `note_public`, `note`, `model_pdf`, `datelastlogin`, `datepreviouslogin`, `egroupware_id`, `ldap_sid`, `openid`, `statut`, `photo`, `lang`, `color`, `barcode`, `fk_barcode_type`, `accountancy_code`, `nb_holiday`, `thm`, `tjm`, `salary`, `salaryextra`, `dateemployment`, `dateemploymentend`, `weeklyhours`, `import_key`, `birth`, `pass_encoding`, `default_range`, `default_c_exp_tax_cat`, `twitter`, `facebook`, `instagram`, `snapchat`, `googleplus`, `youtube`, `whatsapp`, `linkedin`, `fk_warehouse`, `iplastlogin`, `ippreviouslogin`) 
+					VALUES (NULL, '1', NULL, NULL, '1', '0', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL, NULL, '$iStock_login', '$iStock_mdp,', NULL, NULL, '$iStock_api_key', NULL, NULL, '$iStock_login', NULL, NULL, NULL, NULL, '0', '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '1', '1', '1', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '1', NULL, NULL, NULL, NULL, '0', NULL, '0', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);";
+		
+		//print $query1;
+		//die();
+		$res = $this->db->query($query1);
+		
+		// Get User istock id
+		$userId = -1;
+		$query2 = "SELECT rowid FROM llx_user where login = '$iStock_login' AND lastname = '$iStock_login'";
+		
+		$res = $this->db->query($query2);
+		while($row = $this->db->fetch_array($query2)){
+			$userId = $row['rowid'];
+		}
+		
+		// get dolibar permissions
+		if($userId > 0){
+			$rightsTable = [];
+			$query3 = "SELECT * FROM `llx_rights_def` WHERE module = 'istock'";
+			$res = $this->db->query($query3);
+			
+			if ($res->num_rows > 0) {
+				$i=0;
+				while($row = $this->db->fetch_array($query3)){
+					$rightsTable[$i] = array(
+						"fk_user" => $userId,
+						"fk_id" => $row['id']
+					);
+					$i++;
+				}
+				
+				for($z=0; $z<($i+1); $z++){
+					$query4 = "INSERT INTO llx_user_rights (rowid, entity, fk_user, fk_id) VALUES (null, 1, ".$rightsTable[$z]['fk_user'].", ".$rightsTable[$z]['fk_id'].")";
+					$res = $this->db->query($query4);
+				}
+			}
+		}
+		
+		
+		// create iStock channel
+		$query5 = "INSERT INTO llx_c_input_reason (`rowid`, `code`, `label`, `active`, `module`) VALUES (null, 'SRC_ISTOCK', 'iStock', 1, NULL)";
+		$res = $this->db->query($query5);
+		
+		
+		// add auto acount creation
+		
+		
+        return;
     }
 
     /**
@@ -544,6 +615,45 @@ class modIStock extends DolibarrModules
     public function remove($options = '')
     {
         $sql = array();
+		
+		// Get User istock id
+		$istock_login = "istock";
+		$userId = -1;
+		$query1 = "SELECT rowid FROM llx_user where login = '$istock_login' AND lastname = '$istock_login'";
+		
+		$res = $this->db->query($query1);
+		if ($res->num_rows > 0) {
+			while($row = $this->db->fetch_array($query1)){
+				$userId = $row['rowid'];
+			}
+			
+			$query2 = "DELETE FROM llx_user_rights WHERE fk_user = ".$userId;
+			$query3 = "DELETE FROM llx_user WHERE login = '$istock_login' AND lastname = '$istock_login'";
+			$query4 = "DELETE FROM llx_c_input_reason WHERE code = 'SRC_ISTOCK' AND label = 'iStock'";
+			$sql = array(
+				$query2,
+				$query3,
+				$query4
+			);
+		}
+		
+		
         return $this->_remove($sql, $options);
     }
+
+	/**
+	 *	JL
+	 *	Function called to create log folder,
+	 *	Add permissions to folder,
+	 *	Add log Class with permissions
+	 */
+	 /*
+	 public function initMyLogs(){
+		 $myLogClassFolder = DOL_DOCUMENT_ROOT.'/MyLog';
+		 $myLogClassLogFolder = DOL_DOCUMENT_ROOT.'/MyLog/log';
+		 
+		 //create folder + permission
+		 
+	 }
+	 */
 }

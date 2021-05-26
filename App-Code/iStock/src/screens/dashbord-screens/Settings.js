@@ -27,6 +27,7 @@ import TokenManager from '../../Database/TokenManager';
 import SettingsDetailButton from './assets/SettingsDetailButton';
 import moment from 'moment';
 import DefaultSettings from '../../utilities/DefaultSettings';
+
 const DEFAULT_SETTINGS = new DefaultSettings();
 const IMG_SRC = require('../../../img/bg_login.png');
 
@@ -113,7 +114,7 @@ class Settings extends Component {
       isUseDetailedShipment: (config == null ? false : config.isUseDetailedShipment),
       dataList_limitDownloadOrders_selected: limitDownloadOrders_selected_obj,
       dataList_limitDownloadShipments_selected: limitDownloadShipments_selected_obj,
-      appVersion: "0.9.6",
+      appVersion: DeviceInfo.getVersion(),
     }
 
     this.setState({
@@ -366,7 +367,7 @@ class Settings extends Component {
                 ))}
               </ScrollView>
             </View>
-            
+
 
             <View style={[styles.action]}>
               <View style={styles.action_}>

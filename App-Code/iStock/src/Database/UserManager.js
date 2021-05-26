@@ -154,6 +154,24 @@ class UserManager extends Component {
         });
     }
 
+    async IS_USER_EXIST_BY_USER_REF(ref){
+        console.log("##### IS_USER_EXIST_BY_USER_REF #########################");
+
+        return await new Promise(async (resolve) => {
+            let user = {};
+            await db.transaction(async (tx) => {
+                await tx.executeSql("SELECT * FROM "+TABLE_NAME+" WHERE "+COLUMN_REF+" = "+ref+"", []).then(async ([tx,results]) => {
+                    user = results.rows.item(0);
+                });
+            }).then(async (result) => {
+                //await this.closeDatabase(db);
+                await resolve(user);
+            }).catch(async (err) => {
+                console.log(err);
+                await resolve(null);
+            });
+        });
+    }
 
     //Get by id
     async GET_USER_BY_ID(id){
@@ -230,6 +248,34 @@ class UserManager extends Component {
                 console.log('err: ', err);
                 await resolve([]);
             });
+        });
+    }
+
+
+    //Update
+    async UPDATE_USER_BY_REF(data_){
+        console.log("##### UPDATE_USER_BY_REF #########################");
+        console.log("updating.... ", data_.length);
+
+        return await new Promise(async (resolve) => {
+            try{
+                for(let x = 0; x < data_.length; x++){
+                    const sql = "UPDATE " + TABLE_NAME + " SET " + 
+                    ""+COLUMN_FIRSTNAME + " = '"+(data_[x].firstname != null ? data_[x].firstname : '')+"', "+
+                    ""+COLUMN_LASTNAME+" = '"+(data_[x].lastname != null ? data_[x].lastname : '')+"', "+
+                    ""+COLUMN_ADMIN+" = '"+(data_[x].admin != null ? data_[x].admin : '')+"', "+
+                    ""+COLUMN_EMAIL+" = '"+(data_[x].email != null ? data_[x].email : '')+"', "+
+                    ""+COLUMN_JOB+" = '"+(data_[x].job != null ? data_[x].job : '')+"' "+
+                    "WHERE " + COLUMN_REF + " = '" + data_[x].ref+"'";
+
+                    await db.transaction(async (tx) => {
+                        await tx.executeSql(sql, []);
+                    });
+                }
+                await resolve(true);
+            } catch(error){
+                await resolve(false);
+            }
         });
     }
 

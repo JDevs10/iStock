@@ -3,8 +3,7 @@ import {StyleSheet, View, Text, Image, TouchableHighlight, Animated, Alert} from
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import DeviceInfo from 'react-native-device-info';
-import Strings from '../../../utilities/Strings';
-const STRINGS = new Strings();
+import { STRINGS } from '../../../utilities/STRINGS';
 
 export default class OrderButton extends Component {
   constructor(props) {

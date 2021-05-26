@@ -48,7 +48,7 @@ class ShipmentLineDetailBatchManager extends Component {
     _TABLE_NAME_ = TABLE_NAME;
     _COLUMN_FK_ORIGIN_STOCK_ = COLUMN_FK_ORIGIN_STOCK;
     _COLUMN_STOCK = COLUMN_STOCK;
-    _COLUMN_FK_PRODUCT = COLUMN_FK_PRODUCT;
+    _COLUMN_FK_PRODUCT_ = COLUMN_FK_PRODUCT;
     _COLUMN_ENTREPOT_ID_ = COLUMN_ENTREPOT_ID;
     _COLUMN_QTY_ = COLUMN_QTY;
     _COLUMN_FK_EXPEDITIONDET_ = COLUMN_FK_EXPEDITIONDET;
@@ -118,28 +118,17 @@ class ShipmentLineDetailBatchManager extends Component {
             }
         });
     }
-
-//     const COLUMN_ID = "id";
-// const COLUMN_FK_ORIGIN_STOCK = "fk_origin_stock";
-// const COLUMN_STOCK = "stock";
-// const COLUMN_FK_PRODUCT = "fk_product";
-// const COLUMN_QTY = "qty";
-// const COLUMN_BATCH = "batch";
-// const COLUMN_SELLBY = "sellby";
-// const COLUMN_EATBY = "eatby";
-// const COLUMN_ENTREPOT_LABEL = "entrepot_label";
-// const COLUMN_ENTREPOT_ID = "entrepot_id";
-// const COLUMN_FK_EXPEDITIONDET = "fk_expeditiondet";
-
+    
 
     //Insert
-    async INSERT_SHIPMENT_LINE_DETAIL_BATCH(inserted_shipment_line_id, data_){
+    async INSERT_SHIPMENT_LINE_DETAIL_BATCH(inserted_shipment_line_id, fk_product, data_){
         console.log("##### INSERT_SHIPMENT_LINE_DETAIL_BATCH #########################");
         console.log("inserting.... ", data_.length);
         return await new Promise(async (resolve) => {
             try{
                 for(let x = 0; x < data_.length; x++){
                     data_[x].fk_expeditiondet = inserted_shipment_line_id;
+                    data_[x].fk_product = fk_product;
                     const SQL_INSERT = "INSERT INTO " + TABLE_NAME + " ("+COLUMN_ID+", "+COLUMN_FK_ORIGIN_STOCK+", "+COLUMN_STOCK+", "+COLUMN_FK_PRODUCT+", "+COLUMN_QTY+", "+COLUMN_BATCH+", "+COLUMN_SELLBY+", "+COLUMN_EATBY+", "+COLUMN_ENTREPOT_LABEL+", "+COLUMN_ENTREPOT_ID+", "+COLUMN_FK_EXPEDITIONDET+") "+
                         "VALUES ("+data_[x].id+", '"+data_[x].fk_origin_stock+"', '"+data_[x].stock+"', '"+data_[x].fk_product+"', "+data_[x].qty+", '"+data_[x].batch+"', '"+data_[x].sellby+"', '"+data_[x].eatby+"', '"+data_[x].entrepot_label+"', '"+data_[x].entrepot_id+"', '"+data_[x].fk_expeditiondet+"')";
 
@@ -259,6 +248,17 @@ class ShipmentLineDetailBatchManager extends Component {
         return await new Promise(async (resolve) => {
             await db.transaction(async (tx) => {
                 await tx.executeSql("DELETE FROM " + TABLE_NAME + " WHERE "+COLUMN_FK_PRODUCT+" = "+id, []);
+            });
+            return await resolve(true);
+        });
+    }
+
+    async DELETE_SHIPMENT_LINE_DETAIL_BATCH_BY_FK_PRODUCT_N_FK_EXPEDITIONDET(fk_expeditiondet, fk_product){
+        console.log("##### DELETE_SHIPMENT_LINE_DETAIL_BATCH_BY_FK_PRODUCT_N_FK_EXPEDITIONDET #########################");
+
+        return await new Promise(async (resolve) => {
+            await db.transaction(async (tx) => {
+                await tx.executeSql("DELETE FROM " + TABLE_NAME + " WHERE "+COLUMN_FK_EXPEDITIONDET+" = "+fk_expeditiondet+" AND "+COLUMN_FK_PRODUCT+" = "+fk_product, []);
             });
             return await resolve(true);
         });
