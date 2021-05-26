@@ -16,5 +16,5 @@ L'application ont les fonctionnalitée suivante :
 
 
 ### version 1.2.8 (05/2021 - Paris)
-### Developped by Anexys - BDC Team
+### Developped by [JDevs](https://github.com/JDevs10) from [Anexys](https://github.com/Bdc-ops) - BDC Team
 ### www.bigdataconsulting.fr
